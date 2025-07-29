@@ -24,17 +24,17 @@
         --border-color: rgb(209, 213, 219);
 
         /* UI Colors (shared between modes) */
-        --ui-green-bg: rgb(7 177 124 / 15%);
+        --ui-green-bg: rgba(7, 177, 124, 0.3);
         --ui-green-fills: rgb(7, 177, 124);
-        --ui-green-bg-hover: rgb(7 177 124 / 25%);
+        --ui-green-bg-hover: rgba(7, 177, 124, 0.35);
 
-        --ui-blue-bg: rgba(71, 141, 255, 0.2);
+        --ui-blue-bg: rgba(71, 141, 255, 0.3);
         --ui-blue-fills: rgba(71, 141, 255);
-        --ui-blue-bg-hover: rgba(71, 141, 255, 0.3);
+        --ui-blue-bg-hover: rgba(71, 141, 255, 0.35);
 
-        --ui-red-bg: rgba(255, 71, 71, 0.2);
+        --ui-red-bg: rgba(255, 71, 71, 0.3);
         --ui-red-fills: rgba(255, 71, 71);
-        --ui-red-bg-hover: rgba(255, 71, 71, 0.3);
+        --ui-red-bg-hover: rgba(255, 71, 71, 0.35);
 
         --ui-main-bg: rgba(229, 231, 235, 0.3);
         --ui-main-fills: rgba(107, 114, 128, 0.5);
@@ -47,7 +47,7 @@
         --secondary-color: rgba(50, 50, 50);
         --layout-background: rgba(10,10,10,0.3);
         --main-content-bg: rgba(25,25,25,0.5);
-        --secondary-content-bg: rgba(10, 10, 10, 0.35);
+        --secondary-content-bg: rgba(10, 10, 10, 0.6);
         --text-primary: rgba(240, 240, 240);
         --text-secondary: rgba(200, 200, 200);
         --layout-box-shadow: rgba(0, 0, 0, 0.3);
@@ -101,10 +101,9 @@
     .quiz-container {
         width: 50rem;
         margin: 1rem auto;
-        padding: 2rem; 
         border-radius: 1.5rem; 
         position: relative;
-        overflow-y: hidden;
+        overflow-y: hidden; /* This will be managed by inner containers now */
         display: flex;
         flex-direction: column;
     }
@@ -115,7 +114,7 @@
         font-weight: 600;
         transition: all 0.2s ease-in-out;
         cursor: pointer;
-        border-width: 1px;
+        border-width: 0.15rem;
         border-style: solid;
         white-space: normal;
         line-height: 1.1;
@@ -161,7 +160,8 @@
     }
     .btn-main:hover {
         background-color: var(--ui-main-bg-hover);
-        border-color: var(--ui-main-fills-hover);
+        border-color: none;
+        box-shadow: 0 0 1rem 0.2rem var(--ui-main-fills-hover);
     }
     .btn-option {
         text-align: left;
@@ -178,38 +178,40 @@
     }
     .btn-option:disabled {
         cursor: not-allowed;
-        opacity: 0.7;
     }
+
     .btn-option.correct {
-        background-color: var(--ui-green-fills) !important;
+        background-color: var(--ui-green-bg) !important;
         color: white !important;
         border-color: var(--ui-green-fills) !important;
+        backdrop-filter: blur(15rem);
     }
     .btn-option.incorrect {
-        background-color: var(--ui-red-fills) !important;
+        background-color: var(--ui-red-bg) !important;
         color: white !important;
         border-color: var(--ui-red-fills) !important;
+        backdrop-filter: blur(15rem);
     }
     .btn-option.user-selected-option {
-        border-color: var(--ui-blue-fills);
-        box-shadow: 0 0 5px var(--ui-blue-fills);
+        border-color: var(--ui-main-fills-hover);
+        backdrop-filter: blur(15rem);
     }
 
     .feedback-message {
         margin-top: 1rem;
-        padding: 1rem;
+        padding: 0.5rem;
         border-radius: 0.75rem;
         font-weight: 500;
         animation: fadeIn 0.5s ease-out;
     }
     .feedback-correct {
-        background-color: var(--ui-green-bg);
-        color: var(--ui-green-fills);
+        background-color: var(--secondary-content-bg);
+        color: var(--text-primary);
         border: 1px solid var(--ui-green-fills);
     }
     .feedback-incorrect {
-        background-color: var(--ui-red-bg);
-        color: var(--ui-red-fills);
+        background-color: var(--secondary-content-bg);
+        color: var(--text-primary);
         border: 1px solid var(--ui-red-fills);
     }
     
@@ -217,6 +219,7 @@
         display: flex;
         flex-direction: column;
         flex-grow: 1;
+        padding: 2rem;
     }
     .textarea-container {
         position: relative;
@@ -228,13 +231,12 @@
     #quiz-data-input {
         border-radius: 0.75rem;
         border: 1px solid var(--border-color);
-        padding: 1rem; 
+        padding: 0.75rem; 
         width: 100%;
         font-family: 'Figtree';
         background-color: var(--main-content-bg);
         color: var(--text-primary);
         resize: none;
-        overflow-y: auto; 
     }
     #textarea-placeholder {
         position: absolute;
@@ -256,42 +258,75 @@
         margin-top: 1rem;
         font-size: 1.25rem;
     }
+    
+    /* --- Universal Scrollbar Styling (Revised) --- */
+    #quiz-scrollable-content, 
+    #quiz-data-input, 
+    #results-details-container, 
+    .timeline-nav-container, 
+    #custom-select-options {
+        overflow: auto; /* Ensure scrollability */
+        /* For Firefox */
+        scrollbar-width: auto; /* 'auto' is thicker than 'thin' */
+    }
 
-    textarea::-webkit-scrollbar, #results-details-container::-webkit-scrollbar, .timeline-nav-container::-webkit-scrollbar, #custom-select-options::-webkit-scrollbar, #question-display-wrapper::-webkit-scrollbar { 
-        width: 8px;
-        height: 10px; 
+    /* For Webkit browsers (Chrome, Safari, Edge) */
+    #quiz-scrollable-content::-webkit-scrollbar, 
+    #quiz-data-input::-webkit-scrollbar, 
+    #results-details-container::-webkit-scrollbar, 
+    .timeline-nav-container::-webkit-scrollbar, 
+    #custom-select-options::-webkit-scrollbar {
+        width: 8px;  /* Thicker scrollbar */
+        height: 8px; /* Thicker scrollbar for horizontal */
     }
-    textarea::-webkit-scrollbar-track, #results-details-container::-webkit-scrollbar-track, .timeline-nav-container::-webkit-scrollbar-track, #custom-select-options::-webkit-scrollbar-track, #question-display-wrapper::-webkit-scrollbar-track { 
-        background: transparent; 
+
+    #quiz-scrollable-content::-webkit-scrollbar-track, 
+    #quiz-data-input::-webkit-scrollbar-track, 
+    #results-details-container::-webkit-scrollbar-track, 
+    .timeline-nav-container::-webkit-scrollbar-track, 
+    #custom-select-options::-webkit-scrollbar-track {
+        background: transparent; /* Make the track invisible */
     }
-    textarea::-webkit-scrollbar-thumb, #results-details-container::-webkit-scrollbar-thumb, .timeline-nav-container::-webkit-scrollbar-thumb, #custom-select-options::-webkit-scrollbar-thumb, #question-display-wrapper::-webkit-scrollbar-thumb { 
-        background: var(--secondary-color);
-        border-radius: 0.75rem; 
+
+    #quiz-scrollable-content::-webkit-scrollbar-thumb, 
+    #quiz-data-input::-webkit-scrollbar-thumb, 
+    #results-details-container::-webkit-scrollbar-thumb, 
+    .timeline-nav-container::-webkit-scrollbar-thumb, 
+    #custom-select-options::-webkit-scrollbar-thumb {
+        background-color: var(--ui-main-bg); /* Use requested variable */
+        border-radius: 99px;
+        background-clip: content-box; /* This is key for the padding effect */
     }
-    textarea::-webkit-scrollbar-thumb:hover, #results-details-container::-webkit-scrollbar-thumb:hover, .timeline-nav-container::-webkit-scrollbar-thumb:hover, #custom-select-options::-webkit-scrollbar-thumb:hover, #question-display-wrapper::-webkit-scrollbar-thumb:hover { 
-        background: var(--text-secondary); 
+
+    #quiz-scrollable-content::-webkit-scrollbar-thumb:hover, 
+    #quiz-data-input::-webkit-scrollbar-thumb:hover, 
+    #results-details-container::-webkit-scrollbar-thumb:hover, 
+    .timeline-nav-container::-webkit-scrollbar-thumb:hover, 
+    #custom-select-options::-webkit-scrollbar-thumb:hover {
+        background-color: var(--ui-main-bg-hover); /* Use requested hover variable */
     }
+
+    /* Explicitly remove scrollbar arrows for Webkit */
+    #quiz-scrollable-content::-webkit-scrollbar-button,
+    #quiz-data-input::-webkit-scrollbar-button,
+    #results-details-container::-webkit-scrollbar-button,
+    .timeline-nav-container::-webkit-scrollbar-button,
+    #custom-select-options::-webkit-scrollbar-button {
+        display: none;
+    }
+
 
     .line-break-1{
-        height:1px;
+        height: 0.3rem;
         border-width:0;
-        background-color: var(--secondary-color);
+        border-radius: 99px;
+        background-color: var(--secondary-content-bg);
         width: 100%;
         align-self: center;
         margin-top: 1rem;
         margin-bottom: 0.5rem;
     }
     
-    #question-display-wrapper {
-        overflow-y: auto;
-        flex-grow: 1;
-        position: relative;
-        width: 100%;
-        margin-bottom: 2px;
-        padding: 4px;
-        padding-bottom: 12rem;
-    }
-
     .timeline-circle {
         min-width: 28px;
         width: 28px;
@@ -344,15 +379,19 @@
         display: flex;
         flex-direction: column;
         height: 100%;
+        padding: 2rem;
     }
 
     .result-question-item { 
         border-radius: 0.75rem;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
         padding: 1rem;
         transition: all 0.3s ease-in-out; 
         border-left-width: 5px;
         background-color: var(--main-content-bg);
+    }
+    .result-question-item:last-child {
+        margin-bottom: 0; /* Remove margin for last item */
     }
     .result-question-item.correct {
         border-left-color: var(--ui-green-fills);
@@ -379,22 +418,24 @@
     .result-option {
         padding: 0.5rem;
         margin-bottom: 0.25rem;
-        border-radius: 0.25rem;
+        border-radius: 0.5rem;
         border: 1px solid transparent;
     }
     .result-option.user-selected {
-        border: 2px solid var(--ui-blue-fills);
+        border: 2px solid var(--ui-main-fills-hover);
     }
     .result-option.correct-answer {
         background-color: var(--ui-green-bg);
         color: var(--ui-green-fills);
     }
     .result-option.user-selected.incorrect-answer {
-        border: 2px solid var(--ui-red-fills);
+        border: 2px solid var(--ui-main-fills-hover);
         background-color: var(--ui-red-bg);
     }
     .explanation-container {
         background-color: var(--secondary-content-bg);
+        border-radius: 0.5rem;
+        padding: 0.5rem;
     }
 
     .dropdown-arrow {
@@ -407,8 +448,6 @@
 
     #results-details-container {
         flex-grow: 1;
-        overflow-y: auto;
-        padding-right: 1rem;
         min-height: 0; /* Flexbox overflow fix */
     }
 
@@ -422,16 +461,20 @@
         transition: background-color 0.5s ease;
     }
     #score-display-container.default {
-        background-color: rgba(96, 165, 250, 0.3);
+        background-color: rgba(96, 165, 250, 0.4);
+        border: 2px solid rgba(96, 165, 250, 0.5);
     }
     #score-display-container.gold {
         background-color: rgba(255, 187, 0, 0.4);
+        border: 2rem solid rgba(255, 187, 0, 0.5);
     }
     #score-display-container.silver {
         background-color: rgba(192, 192, 192, 0.4);
+        border: 2px solid rgba(192, 192, 192, 0.5);
     }
     #score-display-container.bronze {
         background-color: rgba(205, 127, 50, 0.4);
+        border: 2px solid rgba(205, 127, 50, 0.5);
     }
 
     .top-controls-area {
@@ -581,7 +624,7 @@
         border: none;
     }
     .app-footer > p {
-        flex: 0 1 auto; /* Prevent growing, allow shrinking */
+        flex: 1; /* Prevent growing, allow shrinking */
     }
     .author-credits {
         text-align: center;
@@ -601,15 +644,27 @@
         min-height: 0;
     }
 
-    #quiz-bottom-controls {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
+    #quiz-sticky-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: var(--layout-background);
+        padding: 2rem 2rem 0 2rem;
+        flex-shrink: 0;
+    }
+
+    #quiz-scrollable-content {
+        flex-grow: 1;
+        min-height: 0;
+        overflow-x: hidden; /* Prevent horizontal scroll during question transition */
+        padding: 1rem 2rem 1rem 2rem;
         display: flex;
         flex-direction: column;
-        box-sizing: border-box; 
-        padding: 1rem 0 0 0;
+    }
+
+    #quiz-bottom-controls {
+        margin-top: auto; /* Pushes to the bottom */
+        padding-top: 1rem;
     }
 
     #prompt-builder-container {
@@ -621,7 +676,7 @@
         background-color: var(--main-content-bg);
         color: var(--text-primary);
         position: relative;
-        padding-bottom: 70px;
+        padding-bottom: 50px;
     }
     .prompt-builder-row {
         display: inline-flex;
@@ -650,7 +705,7 @@
         border-radius: 0.75rem;
         z-index: 10;
         max-height: 200px;
-        overflow-y: auto;
+        scrollbar-gutter: stable; /* Reserve space for scrollbar to prevent layout shift */
         backdrop-filter: blur(1rem);
         -webkit-backdrop-filter: blur(1rem);
     }
@@ -667,8 +722,8 @@
         cursor: not-allowed;
         background-color: transparent !important;
     }
-    .custom-option:first-child { border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; }
-    .custom-option:last-child { border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
+    .custom-option:first-child { border-top-left-radius: 0.75rem;}
+    .custom-option:last-child { border-bottom-left-radius: 0.75rem;}
 
     .number-input-container {
         display: flex; 
@@ -733,6 +788,17 @@
     .screen {
         animation: fadeInScreen 0.3s ease-out;
     }
+
+    @media (max-width: 600px) {
+    .app-footer {
+        justify-content: space-around;
+    }
+    .app-footer > p {
+        flex-grow: 0;
+        flex-shrink: 1;
+        flex-basis: auto;
+    } }
+
 </style>
 </head>
 <body>
@@ -776,7 +842,7 @@
                             <span>Select your AI Model:</span>
                             <div id="custom-select-container" class="relative">
                                 <button id="custom-select-trigger" class="btn btn-main">
-                                    <span id="custom-select-value">--Please choose a model--</span>
+                                    <span id="custom-select-value">Choose an AI Model</span>
                                     <div class="select-arrow">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </div>
@@ -825,19 +891,23 @@
         </div>
 
         <div id="quiz-screen" class="hidden screen">
-             <div class="flex justify-between items-center mb-2">
-                <h2 id="quiz-screen-title" class="text-2xl font-semibold">Question 1</h2>
-                <div id="current-question-timer" class="question-timer">Time: 0s</div>
-            </div>
-            <div id="question-display-wrapper">
-                <div id="question-content-slider" class="flex transition-transform duration-300 ease-in-out w-full"></div>
+            <div id="quiz-sticky-header">
+                 <div class="flex justify-between items-center mb-2">
+                    <h2 id="quiz-screen-title" class="text-2xl font-semibold text-right">Question 1</h2>
+                    <div id="current-question-timer" class="question-timer">Time: 0s</div>
+                </div>
+                <p id="sticky-question-text" class="whitespace-normal break-words text-lg leading-relaxed mb-2 max-w-full"></p>
             </div>
             
-            <div id="quiz-bottom-controls">
-                <button id="submit-answer-btn" class="btn btn-blue w-full">Submit Answer</button>
-                <hr class="line-break-1">
-                <div id="timeline-nav-container" class="timeline-nav-container w-full max-w-full overflow-x-auto p-0">
-                    <div id="timeline-nav-track" class="flex items-center p-2 min-w-min h-[60px]"></div>
+            <div id="quiz-scrollable-content">
+                <div id="question-content-slider" class="flex transition-transform duration-300 ease-in-out w-full"></div>
+                
+                <div id="quiz-bottom-controls">
+                    <button id="submit-answer-btn" class="btn btn-blue w-full">Submit Answer</button>
+                    <hr class="line-break-1">
+                    <div id="timeline-nav-container" class="timeline-nav-container w-full max-w-full p-0">
+                        <div id="timeline-nav-track" class="flex items-center p-2 min-w-min h-[60px]"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -855,14 +925,14 @@
                 </div>
             </div>
             <h3 class="text-xl font-semibold mb-4">Review Your Answers:</h3>
-            <div id="results-details-container" class="space-y-3"></div>
+            <div id="results-details-container"></div>
         </div>
     </div>
 
     <footer class="app-footer">
-        <p class="version-info">v1.2.4</p> 
+        <p class="version-info">v1.2.7</p> 
         <p class="author-credits">Made by Pranay Bhana with Gemini</p> 
-        <p id="last-updated" class="last-updated"></p>
+        <p class="last-updated">Last Updated: 30th July 2025</p>
     </footer>
 
     <!-- Modals -->
@@ -886,7 +956,7 @@
         <div class="modal-content">
             <h3 id="modal-title">Are you sure?</h3>
             <p id="modal-message">This action cannot be undone.</p>
-            <div class="modal-buttons">
+            <div class="modal-buttons mt-6">
                 <button id="modal-confirm-btn" class="btn btn-red">Confirm</button>
                 <button id="modal-cancel-btn" class="btn btn-main">Cancel</button>
             </div>
@@ -925,6 +995,7 @@
         const quizScreenTitle = document.getElementById('quiz-screen-title');
         const resultsScreen = document.getElementById('results-screen');
         const resultsTitle = document.getElementById('results-title');
+        const stickyQuestionText = document.getElementById('sticky-question-text');
 
         // --- Custom Select Dropdown Elements ---
         const customSelectContainer = document.getElementById('custom-select-container');
@@ -938,7 +1009,6 @@
         const qCountPlusBtn = document.getElementById('q-count-plus-btn');
         const qCountMaxBtn = document.getElementById('q-count-max-btn');
         const todayDateSpan = document.getElementById('today-date');
-        const lastUpdatedSpan = document.getElementById('last-updated');
         const copyFormatBtn = document.getElementById('copy-format-btn');
 
         const quizDataInput = document.getElementById('quiz-data-input');
@@ -1026,7 +1096,7 @@
         let smudgeEffectColors = [...backgroundPalettes.light[0]];
 
         let smudgeCircles = [];
-        const numSmudgeCircles = 18; // Increased particle count again
+        const numSmudgeCircles = 25; // Increased particle count again
 
         function resizeSmudgeCanvas() {
             smudgeBackgroundCanvas.width = window.innerWidth;
@@ -1232,15 +1302,33 @@
             }
         }
 
-        redoIncorrectBtnExt.addEventListener('click', handleRedoIncorrect);
-        redoQuizBtnExt.addEventListener('click', () => {
-             showConfirmationModal(
-                "Retake Quiz?", 
-                "Are you sure you want to restart the quiz from the beginning?", 
-                handleRedoQuiz
+        redoIncorrectBtnExt.addEventListener('click', () => {
+            showConfirmationModal(
+                "Redo Incorrect Questions?",
+                "This will start a new quiz with only the questions you answered incorrectly. Are you sure?",
+                handleRedoIncorrect,
+                'btn-green'
             );
         });
-        newQuizBtnExt.addEventListener('click', () => commonNewQuizLogic());
+
+        redoQuizBtnExt.addEventListener('click', () => {
+            showConfirmationModal(
+                "Retake Quiz?",
+                "Are you sure you want to restart the quiz from the beginning?",
+                handleRedoQuiz,
+                'btn-blue'
+            );
+        });
+
+        newQuizBtnExt.addEventListener('click', () => {
+            showConfirmationModal(
+                "Start New Quiz?",
+                "This will end your current session and you will lose your results. Are you sure?",
+                commonNewQuizLogic,
+                'btn-red'
+            );
+        });
+
 
         function initializeQuiz(questionsToUse, shuffle = true, isContinuation = false, isRedoIncorrectMode = false) {
             isQuizActive = true;
@@ -1281,7 +1369,6 @@
             questionDiv.className = 'question-instance min-w-full flex-shrink-0 opacity-100 box-border max-w-full';
             const uniqueIdPrefix = `q-${question.id}-inst-${Date.now() % 10000}`;
             questionDiv.innerHTML = `
-                <p id="${uniqueIdPrefix}-text" class="question-text-element whitespace-normal break-words text-lg leading-relaxed mb-6 min-h-[60px] max-w-full">${question.questionText}</p>
                 <div id="${uniqueIdPrefix}-opts" class="space-y-3 max-w-full"></div>
                 <div id="${uniqueIdPrefix}-feedback" class="mt-4 min-h-[50px]"></div>
             `;
@@ -1324,6 +1411,8 @@
             }
 
             quizScreenTitle.textContent = `Question ${currentQuestionDisplayOrderIndex + 1}`;
+            stickyQuestionText.innerHTML = question.questionText;
+
             const newQuestionDOM = buildQuestionDOM(question);
             questionContentSlider.style.transition = 'none'; 
             if (isInitialLoad || !currentQuestionDOM || questionContentSlider.children.length === 0) { 
@@ -1556,9 +1645,17 @@
         externalPauseBtn.addEventListener('click', pauseQuiz);
         resumeQuizBtn.addEventListener('click', resumeQuiz);
 
-        function showConfirmationModal(title, message, onConfirm) {
-            modalTitle.textContent = title; modalMessage.textContent = message;
+        function showConfirmationModal(title, message, onConfirm, confirmBtnClass = 'btn-red') {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
             confirmActionCallback = onConfirm;
+            
+            // Dynamically set button color
+            modalConfirmBtn.className = 'btn'; // Reset classes
+            modalConfirmBtn.classList.add(confirmBtnClass);
+            modalConfirmBtn.textContent = 'Confirm';
+
+
             confirmationModal.classList.add('visible');
         }
         modalCancelBtn.addEventListener('click', () => { confirmationModal.classList.remove('visible'); confirmActionCallback = null; });
@@ -1572,29 +1669,37 @@
             pauseModal.classList.remove('visible');
             showResults(true, isRedoMode); 
         }
-        endQuizEarlyBtn.addEventListener('click', () => showConfirmationModal("End Quiz?", "Are you sure you want to end the quiz now? Your current progress will be shown.", endQuizPrematurelyAction)); 
-        externalSubmitEarlyBtn.addEventListener('click', () => showConfirmationModal("Submit Quiz?", "Are you sure you want to submit the quiz now? You cannot answer more questions.", endQuizPrematurelyAction)); 
+        endQuizEarlyBtn.addEventListener('click', () => showConfirmationModal("End Quiz?", "Are you sure you want to end the quiz now? Your current progress will be shown.", endQuizPrematurelyAction, 'btn-red')); 
+        externalSubmitEarlyBtn.addEventListener('click', () => showConfirmationModal("Submit Quiz?", "Are you sure you want to submit the quiz now? You cannot answer more questions.", endQuizPrematurelyAction, 'btn-red')); 
 
         function showResults(isPrematureEnd = false, wasRedoIncorrectMode = false) {
             isQuizActive = false; stopTimers(true); isQuizPaused = true;
             quizScreen.classList.add('hidden');
             resultsScreen.classList.remove('hidden');
             externalPauseBtn.classList.add('hidden'); externalSubmitEarlyBtn.classList.add('hidden');
-            redoQuizBtnExt.classList.remove('hidden'); newQuizBtnExt.classList.remove('hidden');
+            
+            redoQuizBtnExt.classList.remove('hidden'); 
+            newQuizBtnExt.classList.remove('hidden');
+            
             resultsTitle.textContent = isPrematureEnd ? "Quiz Submitted Early" : "Quiz Complete!";
+            
             if (!wasRedoIncorrectMode) {
                 currentQuizQuestions.forEach(cq => {
                     const originalQ = originalAllQuestionsData.find(oq => oq.id === cq.id);
                     if (originalQ) { Object.assign(originalQ, { isAnsweredCorrectly: cq.isAnsweredCorrectly, userSelectedOptionLetter: cq.userSelectedOptionLetter, status: cq.status, timeTakenMs: cq.timeTakenMs }); }
                 });
             }
+
             let correctAnswers = 0, answeredQuestionsCount = 0;
             currentQuizQuestions.forEach(q => { if (q.isAnsweredCorrectly !== null) answeredQuestionsCount++; if (q.isAnsweredCorrectly) correctAnswers++; });
+            
             const totalQuestionsInSet = currentQuizQuestions.length;
             const percentage = totalQuestionsInSet > 0 ? ((correctAnswers / totalQuestionsInSet) * 100) : 0;
+            
             scorePercentageDisplay.textContent = `${percentage.toFixed(1)}%`;
             scoreDetailsDisplay.textContent = `${correctAnswers} / ${totalQuestionsInSet} correct`;
             totalQuizTimeDisplay.textContent = formatTime(accumulatedTotalQuizTimeMs);
+            
             scoreDisplayContainer.className = 'flex justify-between items-center p-4 rounded-lg transition-colors duration-500 mb-4';
             if (isPrematureEnd) {
                 scoreDisplayContainer.classList.add('default');
@@ -1606,6 +1711,7 @@
                 else if (roundedPercentage >= 65) { scoreDisplayContainer.classList.add('bronze'); scoreMessageDisplay.textContent = "Needs Work!"; } 
                 else { scoreDisplayContainer.classList.add('default'); scoreMessageDisplay.textContent = "Keep Practicing!"; }
             }
+
             resultsDetailsContainer.innerHTML = '';
             const questionsToReview = questionOrder.map(qIndex => currentQuizQuestions[qIndex]);
             questionsToReview.forEach((question, index) => {
@@ -1619,7 +1725,7 @@
                             <svg class="dropdown-arrow w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
                     </div>
-                    <div class="result-options-container mt-2 pl-4 ml-1"></div>`;
+                    <div class="result-options-container pl-4 ml-1"></div>`;
                 const optionsDiv = itemDiv.querySelector('.result-options-container');
                 if (question.options && question.options.length > 0) {
                     question.options.forEach(opt => {
@@ -1635,7 +1741,7 @@
                     });
                     if (question.explanation) {
                         const explanationDiv = document.createElement('div');
-                        explanationDiv.className = 'explanation-container mt-3 p-2 rounded-md';
+                        explanationDiv.className = 'explanation-container mt-3';
                         explanationDiv.innerHTML = `<p class="font-semibold text-sm">Explanation:</p><p class="text-sm">${question.explanation}</p>`;
                         optionsDiv.appendChild(explanationDiv);
                     }
@@ -1647,9 +1753,14 @@
                     target.querySelector('.dropdown-arrow').classList.toggle('expanded');
                 });
             });
+
             const sourceForRedoCheck = wasRedoIncorrectMode ? currentQuizQuestions : originalAllQuestionsData;
             const incorrectForRedoButton = sourceForRedoCheck.filter(q => q.isAnsweredCorrectly === false);
-            redoIncorrectBtnExt.style.display = incorrectForRedoButton.length > 0 ? 'block' : 'none';
+            if (incorrectForRedoButton.length > 0) {
+                redoIncorrectBtnExt.classList.remove('hidden');
+            } else {
+                redoIncorrectBtnExt.classList.add('hidden');
+            }
         }
 
         function hideExternalResultsButtons() {
@@ -1688,15 +1799,16 @@
                 () => {
                     pauseModal.classList.remove('visible');
                     handleRedoQuiz();
-                }
+                },
+                'btn-blue'
             );
         });
        
         const aiModelData = {
-            'chatgpt': { max: 35, format: 'chatgpt-format' },
-            'chatgpt-plus': { max: 100, format: 'chatgpt-plus-format' },
+            'chatgpt': { max: 35, format: 'not-defined' },
+            'chatgpt-plus': { max: 100, format: 'not-defined' },
             'notebook-lm': { max: 50, format: 'notebook-lm-format' },
-            'gemini': { max: 15, format: 'gemini-format' },
+            'gemini': { max: 15, format: 'not-defined' },
             'claude': { max: 5, format: 'not-defined' },
             'deepseek': { max: 5, format: 'not-defined' },
             'llama': { max: 5, format: 'not-defined' }
@@ -1830,7 +1942,6 @@ Example Question Formatting:
 
             const formattedDate = getFormattedDate();
             if(todayDateSpan) todayDateSpan.textContent = formattedDate;
-            if(lastUpdatedSpan) lastUpdatedSpan.textContent = `Last Updated: ${formattedDate}`;
         }
         
         quizDataInput.addEventListener('input', () => {
@@ -1850,7 +1961,6 @@ Example Question Formatting:
             const topHeight = topControls.offsetHeight;
             const footerHeight = footer.offsetHeight;
             
-            // BUGFIX: Increased bottom gap for better spacing
             const verticalMargin = 56; // Represents 1rem top margin + 2rem bottom margin
             
             const availableHeight = window.innerHeight - topHeight - footerHeight - verticalMargin;
