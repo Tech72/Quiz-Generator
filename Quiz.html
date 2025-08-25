@@ -80,6 +80,7 @@
         width: 100%;
         height: 100%;
         z-index: -1; 
+        filter: blur(40px); /* Apply a large blur to the entire canvas */
     }
 
     #app {
@@ -119,8 +120,7 @@
         white-space: normal;
         line-height: 1.1;
         word-break: break-word; 
-        backdrop-filter: blur(1rem);
-        -webkit-backdrop-filter: blur(1rem);
+        /* Removed backdrop-filter from general buttons */
     }
     .btn:active {
         transform: translateY(1px);
@@ -184,17 +184,17 @@
         background-color: var(--ui-green-bg) !important;
         color: white !important;
         border-color: var(--ui-green-fills) !important;
-        backdrop-filter: blur(15rem);
+        /* Removed backdrop-filter */
     }
     .btn-option.incorrect {
         background-color: var(--ui-red-bg) !important;
         color: white !important;
         border-color: var(--ui-red-fills) !important;
-        backdrop-filter: blur(15rem);
+        /* Removed backdrop-filter */
     }
     .btn-option.user-selected-option {
         border-color: var(--ui-main-fills-hover);
-        backdrop-filter: blur(15rem);
+        /* Removed backdrop-filter */
     }
 
     .feedback-message {
@@ -219,7 +219,7 @@
         display: flex;
         flex-direction: column;
         flex-grow: 1;
-        padding: 2rem;
+        padding: 1.5rem;
     }
     .textarea-container {
         position: relative;
@@ -293,7 +293,7 @@
     #results-details-container::-webkit-scrollbar-thumb, 
     .timeline-nav-container::-webkit-scrollbar-thumb, 
     #custom-select-options::-webkit-scrollbar-thumb {
-        background-color: var(--ui-main-bg); /* Use requested variable */
+        background-color: var(--secondary-content-bg); /* Use requested variable */
         border-radius: 99px;
         background-clip: content-box; /* This is key for the padding effect */
     }
@@ -317,14 +317,14 @@
 
 
     .line-break-1{
-        height: 0.3rem;
-        border-width:0;
+        border-width: 0.15rem;
         border-radius: 99px;
-        background-color: var(--secondary-content-bg);
-        width: 100%;
+        border-color: var(--secondary-content-bg);
+        width: 99.5%;
         align-self: center;
-        margin-top: 1rem;
-        margin-bottom: 0.5rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.1rem;
+        justify-self: center;
     }
     
     .timeline-circle {
@@ -334,13 +334,13 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 2px solid var(--secondary-color);
+        border: 2px solid var(--ui-main-fills);
         border-radius: 50%;
         font-size: 0.75rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.1s ease-in-out, transform 0.1s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
-        background-color: var(--main-content-bg);
+        background-color: var(--ui-main-bg);
         color: var(--text-secondary);
         position: relative;
         z-index: 1;
@@ -358,19 +358,19 @@
     } 
     .timeline-circle.current {
         transform: scale(1.6);
-        background-color: var(--ui-blue-fills);
+        background-color: var(--ui-blue-bg);
         color: white !important; 
         border-color: var(--ui-blue-fills);
         font-weight: 700;
         z-index: 2;
     }
     .timeline-circle.answered-correct {
-        background-color: var(--ui-green-fills);
+        background-color: var(--ui-green-bg);
         color: white;
         border-color: var(--ui-green-fills);
     }
     .timeline-circle.answered-incorrect {
-        background-color: var(--ui-red-fills);
+        background-color: var(--ui-red-bg);
         color: white;
         border-color: var(--ui-red-fills);
     }
@@ -379,7 +379,7 @@
         display: flex;
         flex-direction: column;
         height: 100%;
-        padding: 2rem;
+        padding: 1.5rem;
     }
 
     .result-question-item { 
@@ -462,19 +462,19 @@
     }
     #score-display-container.default {
         background-color: rgba(96, 165, 250, 0.4);
-        border: 2px solid rgba(96, 165, 250, 0.5);
+        border: 0.15rem solid rgba(96, 165, 250, 0.5);
     }
     #score-display-container.gold {
-        background-color: rgba(255, 187, 0, 0.4);
-        border: 2rem solid rgba(255, 187, 0, 0.5);
+        background-color: rgba(255, 175, 0, 0.4);
+        border: 0.15rem solid rgba(255, 153, 0, 0.5);
     }
     #score-display-container.silver {
         background-color: rgba(192, 192, 192, 0.4);
-        border: 2px solid rgba(192, 192, 192, 0.5);
+        border: 0.15rem solid rgba(192, 192, 192, 0.5);
     }
     #score-display-container.bronze {
-        background-color: rgba(205, 127, 50, 0.4);
-        border: 2px solid rgba(205, 127, 50, 0.5);
+        background-color: rgba(102, 54, 7, 0.4);
+        border: 0.15rem solid rgba(102, 54, 7, 0.5);
     }
 
     .top-controls-area {
@@ -509,6 +509,7 @@
         display: flex;
     }
     .control-button { 
+        transition: all 0.2s ease-in-out;
         width: 2.25rem;
         height: 2.25rem;
         border-radius: 50%;
@@ -522,11 +523,15 @@
         color: var(--text-primary);
     }
     .control-button:hover {
+        transition: all 0.2s ease-in-out;
         background-color: var(--main-content-bg);
+        border: 0.15rem solid var(--ui-main-fills-hover);
     }
     .control-button.active {
-        background-color: var(--ui-blue-fills);
-        color: white !important;
+        transition: all 0.2s ease-in-out;
+        background-color: var(--ui-blue-bg);
+        color: var(--ui-blue-fills) !important;
+        border: 0.15rem solid var(--ui-blue-fills);
     } 
     .control-button svg {
         width: 1.25rem;
@@ -657,7 +662,7 @@
         flex-grow: 1;
         min-height: 0;
         overflow-x: hidden; /* Prevent horizontal scroll during question transition */
-        padding: 1rem 2rem 1rem 2rem;
+        padding: 0.75rem 1.5rem 0.75rem 1.5rem;
         display: flex;
         flex-direction: column;
     }
@@ -706,8 +711,7 @@
         z-index: 10;
         max-height: 200px;
         scrollbar-gutter: stable; /* Reserve space for scrollbar to prevent layout shift */
-        backdrop-filter: blur(1rem);
-        -webkit-backdrop-filter: blur(1rem);
+        /* Removed backdrop-filter */
     }
     .custom-option {
         padding: 0.75rem;
@@ -794,7 +798,7 @@
         justify-content: space-around;
     }
     .app-footer > p {
-        flex-grow: 0;
+        flex-grow: 1;
         flex-shrink: 1;
         flex-basis: auto;
     } }
@@ -930,9 +934,9 @@
     </div>
 
     <footer class="app-footer">
-        <p class="version-info">v1.2.7</p> 
+        <p class="version-info">v1.2.9</p> 
         <p class="author-credits">Made by Pranay Bhana with Gemini</p> 
-        <p class="last-updated">Last Updated: 30th July 2025</p>
+        <p class="last-updated">Last Updated: 25th August 2025</p>
     </footer>
 
     <!-- Modals -->
@@ -1096,7 +1100,7 @@
         let smudgeEffectColors = [...backgroundPalettes.light[0]];
 
         let smudgeCircles = [];
-        const numSmudgeCircles = 25; // Increased particle count again
+        const numSmudgeCircles = 10; // Reduced particle count
 
         function resizeSmudgeCanvas() {
             smudgeBackgroundCanvas.width = window.innerWidth;
@@ -1112,7 +1116,8 @@
                 this.canvasHeight = canvasHeight;
                 
                 const smallerDimension = Math.min(this.canvasWidth, this.canvasHeight);
-                this.radius = Math.random() * (smallerDimension * 0.4) + (smallerDimension * 0.5); 
+                // Increased particle size by 2x
+                this.radius = (Math.random() * (smallerDimension * 0.4) + (smallerDimension * 0.5)) * 2; 
                 
                 this.x = Math.random() * (this.canvasWidth + 2 * this.radius) - this.radius;
                 this.y = Math.random() * (this.canvasHeight + 2 * this.radius) - this.radius;
@@ -1123,13 +1128,16 @@
                 this.vx = (Math.random() - 0.5) * 0.5; 
                 this.vy = (Math.random() - 0.5) * 0.5; 
                 
-                this.opacity = 0; 
+                // New animation properties
+                this.opacity = 0; // Start dark (transparent)
                 this.targetOpacity = Math.random() * 0.2 + 0.6;
-                this.opacityChangeSpeed = 0.003;
-                this.colorChangeSpeed = 0.001;
+                this.creationTime = performance.now();
+                this.animationCompleted = false;
+                this.colorChangeSpeed = 0.0005;
             }
 
             update() {
+                // Movement logic
                 this.x += this.vx;
                 this.y += this.vy;
 
@@ -1138,15 +1146,31 @@
                 if (this.y - this.radius > this.canvasHeight) { this.y = -this.radius; } 
                 else if (this.y + this.radius < 0) { this.y = this.canvasHeight + this.radius; }
                 
-                if (this.opacity < this.targetOpacity) {
-                    this.opacity = Math.min(this.targetOpacity, this.opacity + this.opacityChangeSpeed);
-                } else if (this.opacity > this.targetOpacity && Math.random() < 0.01) { 
-                     this.targetOpacity = Math.random() * 0.2 + 0.6; 
-                }
-                 if (this.opacity > this.targetOpacity) { 
-                    this.opacity = Math.max(this.targetOpacity, this.opacity - this.opacityChangeSpeed * 0.5);
+                // New opacity animation logic
+                if (!this.animationCompleted) {
+                    const age = performance.now() - this.creationTime;
+                    const animationDuration = 3000; // 3 seconds
+                    if (age < animationDuration) {
+                        // Simple linear ramp-up from dark to bright
+                        this.opacity = this.targetOpacity * (age / animationDuration);
+                    } else {
+                        this.opacity = this.targetOpacity;
+                        this.animationCompleted = true; // End initial animation
+                    }
+                } else {
+                    // After initial animation, do gentle fluctuations
+                    if (Math.random() < 0.005) { // Occasionally pick a new target opacity
+                        this.targetOpacity = Math.random() * 0.2 + 0.6;
+                    }
+                    // Slowly move towards the target opacity
+                    if (this.opacity < this.targetOpacity) {
+                        this.opacity = Math.min(this.targetOpacity, this.opacity + 0.001);
+                    } else if (this.opacity > this.targetOpacity) {
+                        this.opacity = Math.max(0, this.opacity - 0.001);
+                    }
                 }
 
+                // Color transition logic
                 if (this.color !== this.targetColor) {
                     const c1 = hexToRgbSmudge(this.color);
                     const c2 = hexToRgbSmudge(this.targetColor);
@@ -1189,9 +1213,10 @@
         }
         function animateSmudgeBackground() {
             smudgeCtx.clearRect(0, 0, smudgeBackgroundCanvas.width, smudgeBackgroundCanvas.height);
-            smudgeCtx.globalCompositeOperation = 'lighter'; smudgeCtx.filter = 'blur(55px)';
+            smudgeCtx.globalCompositeOperation = 'lighter'; 
+            // Removed per-particle blur. The blur is now on the canvas element via CSS.
             smudgeCircles.forEach(circle => { circle.update(); circle.draw(smudgeCtx); });
-            smudgeCtx.filter = 'none'; smudgeCtx.globalCompositeOperation = 'source-over'; 
+            smudgeCtx.globalCompositeOperation = 'source-over'; 
             requestAnimationFrame(animateSmudgeBackground);
         }
         function applyBackgroundPalette() {
