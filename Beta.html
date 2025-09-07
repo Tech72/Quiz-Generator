@@ -1,0 +1,2955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <style>
+    
+    :root {
+        /* Light Mode Defaults */
+        --main-color: #f3f4f6;
+        --secondary-color: rgb(110, 110, 110);
+        --layout-background: rgba(240, 240, 240, 0.25);
+        --main-content-bg: rgba(240, 240, 240, 0.5);
+        --secondary-content-bg: rgba(229, 231, 235, 0.5);
+        --text-primary: rgb(31, 31, 31);
+        --text-secondary: rgb(37, 37, 37);
+        --layout-box-shadow: rgba(0, 0, 0, 0.1);
+        --border-color: rgb(209, 213, 219);
+
+        /* UI Colors (shared between modes) */
+        --ui-green-bg: rgba(7, 177, 124, 0.3);
+        --ui-green-fills: rgb(7, 177, 124);
+        --ui-green-bg-hover: rgba(7, 177, 124, 0.35);
+        --ui-green-fills-hover: rgb(111, 250, 206);
+
+        --ui-blue-bg: rgba(71, 141, 255, 0.3);
+        --ui-blue-fills: rgba(71, 141, 255);
+        --ui-blue-bg-hover: rgba(71, 141, 255, 0.35);
+        --ui-blue-fills-hover: rgb(144, 186, 253);
+
+        --ui-red-bg: rgba(255, 71, 71, 0.3);
+        --ui-red-fills: rgba(255, 71, 71);
+        --ui-red-bg-hover: rgba(255, 71, 71, 0.35);
+        --ui-red-fills-hover: rgb(255, 150, 150);
+
+        --ui-main-bg: rgba(229, 231, 235, 0.3);
+        --ui-main-fills: rgba(107, 114, 128, 0.5);
+        --ui-main-bg-hover: rgba(209, 213, 219, 0.5);
+        --ui-main-fills-hover: rgba(55, 65, 81, 0.8);
+    }
+
+    html.dark {
+        --main-color: rgba(10, 10, 10);
+        --secondary-color: rgba(50, 50, 50);
+        --layout-background: rgba(10,10,10,0.3);
+        --main-content-bg: rgba(25,25,25,0.5);
+        --secondary-content-bg: rgba(10, 10, 10, 0.6);
+        --text-primary: rgba(240, 240, 240);
+        --text-secondary: rgba(200, 200, 200);
+        --layout-box-shadow: rgba(0, 0, 0, 0.3);
+        --border-color: rgba(75, 75, 75, 0.1);
+
+        --ui-main-bg: rgba(10, 10, 10, 0.35);
+        --ui-main-fills: rgba(100, 100, 100, 0.5);
+        --ui-main-bg-hover: rgba(50, 50, 50, 0.5);
+        --ui-main-fills-hover: rgba(240, 240, 240, 0.8);
+    }
+
+    body {
+        font-family: 'Figtree', sans-serif;
+        background-color: var(--main-color); 
+        transition: background-color 0.3s ease;
+        color: var(--text-primary);
+        overflow: hidden; 
+        padding-top: 5rem;
+        padding-bottom: 2.5rem;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        box-sizing: border-box; 
+    }
+    
+    /* --- Background Elements --- */
+    #smudge-background-canvas, #gradient-background { 
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1; 
+    }
+    
+    body:not(.power-saving-mode) #smudge-background-canvas,
+    body:not(.power-saving-mode) #gradient-background {
+        filter: blur(20px);
+    }
+
+
+    #gradient-background {
+        background: conic-gradient(from 180deg at 50% 70%, var(--gradient-color-1), var(--gradient-color-2), var(--gradient-color-3), var(--gradient-color-4), var(--gradient-color-5), var(--main-color), var(--gradient-color-1));
+        animation: rotateGradient 120s linear infinite;
+        transform-origin: center;
+        opacity: 0.8;
+    }
+
+    @keyframes rotateGradient {
+        from { transform: rotate(0deg) scale(2.5); }
+        to { transform: rotate(360deg) scale(2.5); }
+    }
+
+
+    #app {
+       flex-grow: 1;
+       position: relative;
+       z-index: 1;
+       display: flex;
+       flex-direction: column;
+    }
+
+    .quiz-container, .top-controls-area, .app-footer, .settings-panel {
+        background-color: var(--layout-background); 
+        border: 1px solid var(--border-color);
+    }
+
+    body:not(.power-saving-mode) .quiz-container,
+    body:not(.power-saving-mode) .top-controls-area,
+    body:not(.power-saving-mode) .app-footer,
+    body:not(.power-saving-mode) .modal-overlay
+    {
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px); 
+        box-shadow: 0px 0px 10px 1px var(--layout-box-shadow);
+    }
+    
+    .quiz-container {
+        width: 50rem;
+        margin: 1rem auto;
+        border-radius: 1.5rem; 
+        position: relative;
+        overflow-y: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .btn {
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+        border-width: 0.15rem;
+        border-style: solid;
+        white-space: normal;
+        line-height: 1.1;
+        word-break: break-word; 
+    }
+    .btn:active {
+        transform: translateY(1px);
+    }
+
+    .btn-blue {
+        background-color: var(--ui-blue-bg);
+        color: var(--ui-blue-fills);
+        border-color: var(--ui-blue-fills);
+    }
+    body:not(.power-saving-mode) .btn-blue:hover {
+        background-color: var(--ui-blue-bg-hover);
+        border-color: var(--ui-blue-fills-hover);
+        box-shadow: 0 0 1rem 0.2rem var(--ui-blue-fills);
+    }
+    .btn-green {
+        background-color: var(--ui-green-bg);
+        color: var(--ui-green-fills);
+        border-color: var(--ui-green-fills);
+    }
+    body:not(.power-saving-mode) .btn-green:hover {
+        background-color: var(--ui-green-bg-hover);
+        border-color: var(--ui-green-fills-hover);
+        box-shadow: 0 0 1rem 0.2rem var(--ui-green-fills);
+    }
+    .btn-red {
+        background-color: var(--ui-red-bg);
+        color: var(--ui-red-fills);
+        border-color: var(--ui-red-fills);
+    }
+    body:not(.power-saving-mode) .btn-red:hover {
+        background-color: var(--ui-red-bg-hover);
+        border-color: var(--ui-red-fills-hover);
+        box-shadow: 0 0 1rem 0.2rem var(--ui-red-fills);
+    }
+    .btn-main {
+        background-color: var(--ui-main-bg);
+        color: var(--text-primary);
+        border-color: var(--ui-main-fills);
+    }
+    body:not(.power-saving-mode) .btn-main:hover {
+        background-color: var(--ui-main-bg-hover);
+        border-color: var(--ui-main-fills-hover);
+        box-shadow: 0 0 1rem 0.2rem var(--ui-main-fills-hover);
+    }
+    .btn-option {
+        text-align: left;
+        width: 100%;
+        max-width: 100%;
+        min-height: 3.5rem; 
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center; 
+        line-height: 1.5;
+        box-sizing: border-box;
+        overflow-wrap: break-word;
+        word-break: break-word;
+    }
+    .btn-option:disabled {
+        cursor: not-allowed;
+    }
+
+    body:not(.power-saving-mode) .btn-option:disabled:hover {
+        box-shadow: none;
+    }
+
+    .btn-option.correct {
+        background-color: var(--ui-green-bg) !important;
+        color: white !important;
+        border-color: var(--ui-green-fills) !important;
+    }
+    .btn-option.incorrect {
+        background-color: var(--ui-red-bg) !important;
+        color: white !important;
+        border-color: var(--ui-red-fills) !important;
+    }
+    .btn-option.user-selected-option, .btn-option.keyboard-selected {
+        border-color: var(--ui-main-fills-hover);
+    }
+
+    body:not(.power-saving-mode) .btn-option.correct:hover, 
+    body:not(.power-saving-mode) .btn-option.incorrect:hover {
+        box-shadow: none;
+    }
+
+    .feedback-message {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        font-weight: 500;
+        animation: fadeIn 0.5s ease-out;
+        border-style: solid;
+        border-width: 0.15rem;
+    }
+    .feedback-correct {
+        background-color: var(--secondary-content-bg);
+        color: var(--text-primary);
+        border-color: var(--ui-green-fills);
+    }
+    .feedback-incorrect {
+        background-color: var(--secondary-content-bg);
+        color: var(--text-primary);
+        border-color: var(--ui-red-fills);
+    }
+    
+    #input-screen {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        padding: 1.5rem;
+    }
+    .textarea-container {
+        position: relative;
+        width: 100%;
+        flex-grow: 1;
+        margin-top: 1rem;
+        display: flex;
+    }
+    #quiz-data-input {
+        border-radius: 0.75rem;
+        border: 1px solid var(--border-color);
+        padding: 0.75rem; 
+        width: 100%;
+        font-family: 'Figtree';
+        background-color: var(--main-content-bg);
+        color: var(--text-primary);
+        resize: none;
+    }
+    #textarea-placeholder {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        color: var(--text-secondary);
+        font-size: 1.25rem;
+        opacity: 0.6;
+    }
+    #quiz-data-input:focus, #question-count-input:focus {
+        outline: none;
+        background-color: var(--ui-main-bg-hover);
+        box-shadow: none;
+    }
+    .create-quiz-btn {
+        margin-top: 1rem;
+        font-size: 1.25rem;
+    }
+    
+    .scrollable-content,
+    #quiz-data-input, 
+    .timeline-nav-container,
+    .custom-select-options {
+        overflow: auto;
+        scrollbar-width: auto;
+    }
+
+    .scrollable-content::-webkit-scrollbar, 
+    #quiz-data-input::-webkit-scrollbar, 
+    .timeline-nav-container::-webkit-scrollbar, 
+    .custom-select-options::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .scrollable-content::-webkit-scrollbar-track, 
+    #quiz-data-input::-webkit-scrollbar-track, 
+    .timeline-nav-container::-webkit-scrollbar-track, 
+    .custom-select-options::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .scrollable-content::-webkit-scrollbar-thumb, 
+    #quiz-data-input::-webkit-scrollbar-thumb, 
+    .timeline-nav-container::-webkit-scrollbar-thumb, 
+    .custom-select-options::-webkit-scrollbar-thumb {
+        background-color: var(--secondary-content-bg);
+        border-radius: 99px;
+        background-clip: content-box;
+    }
+
+    .scrollable-content::-webkit-scrollbar-thumb:hover, 
+    #quiz-data-input::-webkit-scrollbar-thumb:hover, 
+    .timeline-nav-container::-webkit-scrollbar-thumb:hover, 
+    .custom-select-options::-webkit-scrollbar-thumb:hover {
+        background-color: var(--ui-main-bg-hover);
+    }
+
+    .scrollable-content::-webkit-scrollbar-button,
+    #quiz-data-input::-webkit-scrollbar-button,
+    .timeline-nav-container::-webkit-scrollbar-button,
+    .custom-select-options::-webkit-scrollbar-button {
+        display: none;
+    }
+
+
+    .line-break-1{
+        border-width: 0.15rem;
+        border-radius: 99px;
+        border-color: var(--secondary-content-bg);
+        width: 99.5%;
+        align-self: center;
+        margin-top: 0.5rem;
+        margin-bottom: 0.1rem;
+        justify-self: center;
+    }
+    
+    .timeline-circle {
+        min-width: 28px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-width: 0.15rem;
+        border-style: solid;
+        border-color: var(--ui-main-fills);
+        border-radius: 50%;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.1s ease-in-out, transform 0.1s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
+        background-color: var(--ui-main-bg);
+        color: var(--text-secondary);
+        position: relative;
+        z-index: 1;
+    }
+    .timeline-line {
+        height: 2px;
+        background-color: var(--secondary-color);
+        flex-grow: 1;
+        min-width: 20px;
+        margin: 0 -1px;
+    }
+    .timeline-circle:hover {
+        transform: scale(1.3);
+        border-color: var(--text-primary);
+    } 
+    .timeline-circle.current {
+        transform: scale(1.6);
+        background-color: var(--ui-blue-bg);
+        color: white !important; 
+        border-color: var(--ui-blue-fills);
+        font-weight: 700;
+        z-index: 2;
+    }
+    .timeline-circle.answered-correct {
+        background-color: var(--ui-green-bg);
+        color: white;
+        border-color: var(--ui-green-fills);
+    }
+    .timeline-circle.answered-incorrect {
+        background-color: var(--ui-red-bg);
+        color: white;
+        border-color: var(--ui-red-fills);
+    }
+    
+    #results-screen:not(.hidden) {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 1.5rem;
+    }
+
+    .result-question-item { 
+        border-radius: 0.75rem;
+        margin-bottom: 0.5rem;
+        padding: 1rem;
+        transition: all 0.3s ease-in-out; 
+        border-left-width: 0.3rem;
+        border-left-style: solid;
+        background-color: var(--main-content-bg);
+    }
+    .result-question-item:last-child {
+        margin-bottom: 0;
+    }
+    .result-question-item.correct {
+        border-left-color: var(--ui-green-fills);
+    }
+    .result-question-item.incorrect {
+        border-left-color: var(--ui-red-fills);
+    }
+    .result-question-item.unanswered {
+        border-left-color: var(--secondary-color);
+    }
+    .result-options-container { 
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+        padding-top: 0;
+        padding-bottom: 0; 
+        border-left: 2px solid var(--secondary-color);
+    }
+    .result-options-container.expanded {
+        max-height: 500px;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+    .result-option {
+        padding: 0.5rem;
+        margin-bottom: 0.25rem;
+        border-radius: 0.5rem;
+        border: 1px solid transparent;
+    }
+    .result-option.user-selected {
+        border: 2px solid var(--ui-main-fills-hover);
+    }
+    .result-option.correct-answer {
+        background-color: var(--ui-green-bg);
+        color: var(--ui-green-fills);
+    }
+    .result-option.user-selected.incorrect-answer {
+        border: 2px solid var(--ui-main-fills-hover);
+        background-color: var(--ui-red-bg);
+    }
+    .explanation-container {
+        background-color: var(--secondary-content-bg);
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    .result-option-time{
+        width: max-content;
+    }
+
+    .result-option-question{
+        padding-right: 0.5rem;
+    }
+    
+    .dropdown-arrow, .select-arrow svg {
+        transition: transform 0.3s ease-in-out;
+    }
+    .dropdown-arrow.expanded, .select-arrow.expanded svg {
+        transform: rotate(180deg);
+    }
+
+    #results-details-container {
+        flex-grow: 1;
+        min-height: 0;
+    }
+
+    #score-display-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        transition: background-color 0.5s ease;
+        border-width: 0.15rem;
+        border-style: solid;
+    }
+    #score-display-container.default {
+        background-color: rgba(96, 165, 250, 0.4);
+        border-color: rgba(96, 165, 250, 0.5);
+    }
+    #score-display-container.gold {
+        background-color: rgba(255, 175, 0, 0.4);
+        border-color: rgba(255, 153, 0, 0.5);
+    }
+    #score-display-container.silver {
+        background-color: rgba(192, 192, 192, 0.4);
+        border-color: rgba(192, 192, 192, 0.5);
+    }
+    #score-display-container.bronze {
+        background-color: rgba(102, 54, 7, 0.4);
+        border-color: rgba(102, 54, 7, 0.5);
+    }
+
+    .top-controls-area {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4rem;
+        padding: 0.5rem 1rem; 
+        display: flex;
+        justify-content: space-between;
+        align-items: center; 
+        z-index: 1000;
+        pointer-events: none;
+        border: none;
+    }
+    .top-controls-area > div {
+        pointer-events: auto;
+    }
+    .left-controls, .right-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-shrink: 0;
+    }
+    
+    .control-button { 
+        padding: 0.5rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+        border-width: 0.15rem;
+        border-style: solid;
+        background-color: var(--ui-main-bg);
+        color: var(--text-primary);
+        border-color: var(--ui-main-fills);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+     body:not(.power-saving-mode) .control-button:hover {
+        background-color: var(--ui-main-bg-hover);
+        border-color: var(--ui-main-fills-hover);
+        box-shadow: 0 0 1rem 0.2rem var(--ui-main-fills-hover);
+    }
+    .control-button svg {
+        width: 1.5rem;
+        height: 1.5rem;
+        stroke-width: 1.5;
+    }
+
+    .external-quiz-action-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        height: 2.5rem;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--secondary-content-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    body:not(.power-saving-mode) .modal-overlay {
+       backdrop-filter: blur(10px);
+       -webkit-backdrop-filter: blur(10px);
+    }
+    #settings-modal { z-index: 1900; }
+    #pause-modal { z-index: 2000; }
+    #confirmation-modal { z-index: 2100; }
+    #format-error-modal { z-index: 2100; }
+
+    .modal-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .modal-content {
+        background-color: var(--layout-background);
+        padding: 2rem;
+        border-radius: 1.5rem;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        transform: scale(0.90);
+        transition: transform 0.3s ease;
+        border: 1px solid var(--border-color);
+    }
+    .modal-overlay.visible .modal-content {
+        transform: scale(1);
+    }
+    .modal-content h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+    .modal-content p {
+        font-size: 1rem;
+        color: var(--text-secondary);
+    }
+    .modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .app-footer {
+        font-size: 0.75rem;
+        padding: 3px 0.5rem;
+        width: 100%;
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        color: var(--text-primary);
+        height: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: none;
+    }
+    .app-footer > p {
+        flex: 1;
+    }
+    .author-credits {
+        text-align: center;
+    }
+    .version-info {
+        text-align: left;
+    }
+    .last-updated {
+        text-align: right;
+    }
+
+    #quiz-screen {
+        position: relative;
+        flex-grow: 1; 
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    #quiz-sticky-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: var(--layout-background);
+        padding: 2rem 2rem 0 2rem;
+        flex-shrink: 0;
+        transition: height 0.4s ease-in-out;
+    }
+
+    #quiz-scrollable-content {
+        flex-grow: 1;
+        min-height: 0;
+        overflow-x: hidden;
+        padding: 0.75rem 1.5rem 0.75rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #quiz-bottom-controls {
+        margin-top: auto;
+        padding-top: 1rem;
+    }
+
+    #prompt-builder-container {
+        border-radius: 0.75rem;
+        border: 1px solid var(--border-color); 
+        padding: 1rem;
+        width: 100%;
+        font-family: 'Figtree';
+        background-color: var(--main-content-bg);
+        color: var(--text-primary);
+        position: relative;
+        padding-bottom: 50px;
+    }
+    .prompt-builder-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: max-content;
+    }
+    
+    .custom-select-trigger {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 12rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 0.75rem;
+        border: none;
+    }
+    .custom-select-options {
+        position: absolute;
+        top: calc(100% + 5px);
+        left: 0;
+        right: 0;
+        background-color: var(--main-content-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        z-index: 10;
+        max-height: 200px;
+        scrollbar-gutter: stable;
+    }
+
+    body:not(.power-saving-mode) .custom-select-options {
+        backdrop-filter: blur(5px);
+    }
+    .power-saving-mode .custom-select-options {
+        background-color: rgba(var(--main-color-rgb), 0.9);
+    }
+
+    .power-saving-mode .settings-panel{
+        background-color: rgba(var(--main-color-rgb), 0.9);
+    }
+
+    .custom-option {
+        padding: 0.75rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .custom-option:hover {
+        background-color: var(--ui-main-bg-hover);
+    }
+    .custom-option.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: transparent !important;
+    }
+    .custom-option:first-child { border-top-left-radius: 0.75rem;}
+    .custom-option:last-child { border-bottom-left-radius: 0.75rem;}
+    #palette-select .custom-option {
+        border-left: 5px solid;
+    }
+
+    .number-input-container {
+        display: flex; 
+        align-items: center; 
+        flex-grow: 1;
+        border: none;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        line-height: normal;
+    }
+    .number-input, .settings-number-input {
+        width: 2.5rem; 
+        padding: 0.35rem 0.1rem; 
+        text-align: center;
+        background-color: var(--ui-main-bg);
+        color: var(--text-primary);
+        border: none;
+    }
+    .number-input::-webkit-outer-spin-button, 
+    .number-input::-webkit-inner-spin-button,
+    .settings-number-input::-webkit-outer-spin-button,
+    .settings-number-input::-webkit-inner-spin-button {
+        -webkit-appearance: none; 
+        margin: 0;
+    }
+    .number-input-btn {
+        padding: 0.35rem 0.5rem; 
+        background-color: var(--ui-main-bg);
+        cursor: pointer; 
+        transition: background-color 0.2s;
+        min-width: 1.5rem; 
+        color: var(--text-primary); 
+        border: none;
+        height: 100%;
+    }
+    .number-input-btn:hover {
+        background-color: var(--ui-main-bg-hover);
+    }
+    .number-input-btn:active {
+        background-color: var(--ui-main-fills-hover);
+        transition: ease-out 0.3s;
+    }
+    .number-input-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .number-input-btn:disabled:hover {
+        background-color: var(--ui-main-bg);
+    }
+
+    .copy-format-btn {
+        border-bottom: none;
+        border-left: none;
+        border-right: none; 
+        border-top: none;
+        background-color: var(--ui-main-bg);
+    }
+     body:not(.power-saving-mode) .copy-format-btn {
+        backdrop-filter: none;
+     }
+
+    /* Settings Panel */
+    .settings-panel {
+        width: 50rem;
+        margin: 1rem auto;
+        border-radius: 1.5rem; 
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+    }
+    .modal-overlay.visible .settings-panel {
+        transform: scale(1);
+    }
+
+    .settings-sticky-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: var(--layout-background);
+        padding: 1rem 1.5rem;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .settings-nav-pills {
+        padding: 1rem 1.5rem;
+        display: flex;
+        gap: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .settings-pill {
+        color: var(--text-primary);
+        background-color: var(--ui-main-bg);
+        border-color: var(--ui-main-fills);
+    }
+    .settings-pill:hover {
+         background-color: var(--ui-main-bg-hover);
+    }
+    .settings-pill.active.general {
+        background-color: var(--ui-blue-bg);
+        border-color: var(--ui-blue-fills);
+        color: var(--text-primary);
+    }
+    .settings-pill.active.multiple-choice {
+        background-color: var(--ui-red-bg);
+        border-color: var(--ui-red-fills);
+        color: var(--text-primary);
+    }
+    
+    .settings-page {
+        padding: 1rem 1.5rem;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .settings-section-heading {
+        text-align: center;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 1rem 0;
+    }
+
+    .setting-item {
+        background-color: var(--main-content-bg);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .setting-text-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .setting-text {
+        color: var(--text-secondary);
+    }
+    .info-tooltip {
+        position: relative;
+        cursor: help;
+    }
+    .info-tooltip .tooltip-text {
+        visibility: hidden;
+        width: 220px;
+        background-color: var(--secondary-content-bg);
+        color: var(--text-primary);
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -110px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 0.875rem;
+        font-weight: 400;
+    }
+    .info-tooltip:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+    
+    .toggle-switch {
+        width: 56px;
+        height: 32px;
+        background-color: var(--ui-main-bg);
+        border-radius: 9999px;
+        position: relative;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        transition: background-color 0.3s ease;
+    }
+    .toggle-switch-circle {
+        width: 24px;
+        height: 24px;
+        background-color: white;
+        border: 1px solid var(--ui-main-fills);
+        border-radius: 50%;
+        position: absolute;
+        left: 4px;
+        transition: transform 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .toggle-switch input:checked + .toggle-switch-circle {
+        transform: translateX(24px);
+    }
+    .toggle-switch input { display: none; }
+    .toggle-switch-icon {
+        width: 16px;
+        height: 16px;
+        position: absolute;
+        transition: opacity 0.3s ease;
+    }
+    .toggle-switch .icon-off {
+        right: 8px; opacity: 1;
+    }
+    .toggle-switch .icon-on {
+        left: 8px; opacity: 0;
+    }
+    .toggle-switch input:checked ~ .icon-off { opacity: 0; }
+    .toggle-switch input:checked ~ .icon-on { opacity: 1; }
+
+    /* Theme Toggle Specifics */
+    #theme-toggle-setting.toggle-switch {
+        background-color: var(--ui-yellow-bg);
+    }
+    #theme-toggle-setting input:checked + .toggle-switch-circle {
+        border-color: var(--ui-blue-fills);
+    }
+     #theme-toggle-setting input:checked {
+        background-color: var(--ui-blue-bg);
+    }
+    
+    /* Power Saving Toggle Specifics */
+    #power-saving-toggle.toggle-switch { background-color: var(--ui-blue-bg); }
+    #power-saving-toggle input:checked + .toggle-switch-circle { border-color: var(--ui-green-fills); }
+    #power-saving-toggle input:checked { background-color: var(--ui-green-bg); }
+
+    .setting-item.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .setting-item.disabled .toggle-switch {
+        pointer-events: none;
+    }
+    .setting-item.disabled .custom-select-trigger {
+        cursor: not-allowed;
+    }
+
+
+    .hidden {
+        display: none !important;
+    }
+    @keyframes fadeInScreen {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .screen {
+        animation: fadeInScreen 0.3s ease-out;
+    }
+    
+    /* --- NEW FADE ANIMATIONS --- */
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .is-fading-out { animation: fadeOut 0.2s forwards; }
+    .is-fading-in { animation: fadeIn 0.2s forwards 0.2s; opacity: 0; }
+
+    .is-fading-out-fast { animation: fadeOut 0.1s forwards; }
+    .is-fading-in-fast { animation: fadeIn 0.1s forwards 0.1s; opacity: 0;}
+
+
+    @media (max-width: 600px) {
+    .app-footer {
+        justify-content: space-around;
+    }
+    .app-footer > p {
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: auto;
+    } }
+
+</style>
+</head>
+<body>
+    <canvas id="smudge-background-canvas"></canvas> 
+    <div id="gradient-background"></div>
+
+    <div class="top-controls-area">
+        <div class="left-controls">
+             <button id="settings-btn" class="control-button" aria-label="Open settings">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.242 1.417l-1.07 1.07a.998.998 0 0 0 0 1.414l1.07 1.07c.418.418.418 1.097 0 1.515l-1.296 2.247a1.125 1.125 0 0 1-1.37-.49l-1.217-.456a1.125 1.125 0 0 0-1.075.124.998.998 0 0 0-.22.127c-.331.183-.581.495-.645.87l-.213 1.281c-.09.543-.56.94-1.11.94h-2.593c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a.998.998 0 0 0-.22-.127c-.355-.133-.75-.072-1.075.124l-1.217.456a1.125 1.125 0 0 1-1.37-.49l-1.296-2.247a1.125 1.125 0 0 1 .242-1.417l1.07-1.07a.998.998 0 0 0 0-1.414l-1.07-1.07a1.125 1.125 0 0 1 0-1.515l1.296-2.247a1.125 1.125 0 0 1 1.37.49l1.217.456a1.125 1.125 0 0 0 1.075-.124.998.998 0 0 0 .22-.127c.332-.183.582-.495.645-.87l.213-1.281Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+            </button>
+            <button id="change-palette-btn" class="control-button" aria-label="Change color palette">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+            </button>
+        </div>
+        <div class="right-controls">
+            <button id="pause-quiz-btn-ext" class="external-quiz-action-btn btn btn-blue hidden">Pause</button>
+            <button id="submit-quiz-early-btn-ext" class="external-quiz-action-btn btn btn-red hidden">Submit Quiz</button>
+            
+            <button id="redo-incorrect-btn-ext" class="external-quiz-action-btn btn btn-green hidden">Redo Incorrect</button>
+            <button id="redo-quiz-btn-ext" class="external-quiz-action-btn btn btn-blue hidden">Retake Quiz</button>
+            <button id="new-quiz-btn-ext" class="external-quiz-action-btn btn btn-red hidden">New Quiz</button>
+        </div>
+    </div>
+
+    <div id="app" class="quiz-container">
+        <!-- Input Screen -->
+        <div id="input-screen" class="screen">
+            <h1 class="text-3xl font-bold mb-4 text-center">Quiz Generator For AI Models</h1>
+            <div id="prompt-builder-container">
+                <ol class="list-decimal list-inside space-y-2 text-secondary">
+                    <li>
+                        <div class="prompt-builder-row">
+                            <span>Select your AI Model:</span>
+                            <div id="custom-select-container" class="relative">
+                                <button id="custom-select-trigger" class="btn btn-main custom-select-trigger">
+                                    <span id="custom-select-value">Choose an AI Model</span>
+                                    <div class="select-arrow">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </button>
+                                <div id="custom-select-options" class="hidden custom-select-options">
+                                    <div class="custom-option" data-value="chatgpt">ChatGPT</div>
+                                    <div class="custom-option" data-value="chatgpt-plus">ChatGPT Plus</div>
+                                    <div class="custom-option" data-value="notebook-lm">Notebook LM</div>
+                                    <div class="custom-option" data-value="gemini">Gemini</div>
+                                    <div class="custom-option disabled" data-value="claude">Claude</div>
+                                    <div class="custom-option disabled" data-value="deepseek">Deepseek</div>
+                                    <div class="custom-option disabled" data-value="llama">Llama</div>
+                                </div>
+                                <input type="hidden" id="ai-model-select-hidden">
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="prompt-builder-row">
+                            <span>Enter number of questions:</span>
+                            <div class="number-input-container">
+                                <input type="number" id="question-count-input" class="number-input" min="1" value="10">
+                                <button class="number-input-btn" id="q-count-minus-btn">-</button>
+                                <button class="number-input-btn" id="q-count-plus-btn">+</button>
+                                <button class="number-input-btn" id="q-count-max-btn">MAX</button>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        Copy the prompt by clicking the button below and add any other limits to the end of the prompt e.g
+                        <em>&nbsp;**Copied Prompt** "Only use content from the lecture on the  <span id="today-date"></span>”</em>
+                    </li>
+                </ol>
+                <button id="copy-format-btn" class="absolute bottom-0 left-0 w-full btn btn-main rounded-t-none copy-format-btn">
+                    Required Prompt. Click to Copy
+                </button>
+            </div>
+            <div class="textarea-container">
+                <textarea id="quiz-data-input"></textarea>
+                <div id="textarea-placeholder">Paste the quiz response from your AI model here...</div>
+            </div>
+            <button id="create-quiz-btn" class="btn btn-blue create-quiz-btn">Create Quiz</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden screen">
+            <div id="quiz-sticky-header">
+                 <div class="flex justify-between items-center mb-2">
+                    <h2 id="quiz-screen-title" class="text-2xl font-semibold text-right">Question 1</h2>
+                    <div id="current-question-timer" class="question-timer">Time: 0s</div>
+                </div>
+                <p id="sticky-question-text" class="whitespace-normal break-words text-lg leading-relaxed mb-2 max-w-full"></p>
+            </div>
+            <div id="quiz-scrollable-content" class="scrollable-content">
+                <div id="question-content-container"></div>
+                <div id="quiz-bottom-controls">
+                    <button id="submit-answer-btn" class="btn btn-blue w-full">Submit Answer</button>
+                    <hr class="line-break-1">
+                    <div id="timeline-nav-container" class="timeline-nav-container w-full max-w-full p-0">
+                        <div id="timeline-nav-track" class="flex items-center p-2 min-w-min h-[60px]"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden screen">
+            <h2 id="results-title" class="text-3xl font-bold mb-4 text-center">Quiz Complete!</h2>
+            <div id="score-display-container">
+                <div class="score-left-panel">
+                    <div id="score-percentage" class="text-4xl font-bold">0%</div>
+                    <div id="score-details" class="text-sm">0/0 correct</div>
+                </div>
+                <div class="score-right-panel text-sm text-right">
+                    <p id="score-message"></p>
+                    <p>Total Quiz Time: <strong id="total-quiz-time">0s</strong></p>
+                </div>
+            </div>
+            <h3 class="text-xl font-semibold mb-4">Review Your Answers:</h3>
+            <div id="results-details-container" class="scrollable-content"></div>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <p class="version-info">v1.5.0</p> 
+        <p class="author-credits">Made by Pranay Bhana with Gemini</p> 
+        <p class="last-updated">Last Updated: 6th September 2025</p>
+    </footer>
+
+    <!-- Modals -->
+    <div id="settings-modal" class="modal-overlay">
+         <div class="settings-panel">
+            <div class="settings-sticky-header">
+                <h2 class="text-2xl font-bold text-center flex-grow">Settings</h2>
+                <button id="close-settings-btn" class="p-2 rounded-full hover:bg-[var(--ui-main-bg-hover)]">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="settings-nav-pills">
+                <button class="btn settings-pill general active" data-page="general">General</button>
+                <button class="btn settings-pill multiple-choice" data-page="multiple-choice">Multiple Choice</button>
+            </div>
+            <div id="settings-content-container" class="scrollable-content flex-grow">
+                <!-- General Settings Page -->
+                <div id="settings-page-general" class="settings-page">
+                    <h3 class="settings-section-heading">Performance</h3>
+                    <div class="setting-item">
+                        <div class="setting-text-container">
+                           <span class="setting-text">Power Saving Mode</span>
+                           <div class="info-tooltip">
+                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                               <span class="tooltip-text">Sets background to none and removes other UI elements for better performance and battery life.</span>
+                           </div>
+                        </div>
+                        <label id="power-saving-toggle" class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="toggle-switch-circle"></span>
+                            <svg class="toggle-switch-icon icon-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" /></svg>
+                            <svg class="toggle-switch-icon icon-on" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502" /></svg>
+                        </label>
+                    </div>
+
+                    <h3 class="settings-section-heading">Background & Theme</h3>
+                    <div class="setting-item">
+                        <span class="setting-text">Theme</span>
+                         <label id="theme-toggle-setting" class="toggle-switch">
+                            <input type="checkbox"> <!-- Unchecked = Light, Checked = Dark -->
+                            <span class="toggle-switch-circle"></span>
+                            <svg class="toggle-switch-icon icon-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" /></svg>
+                            <svg class="toggle-switch-icon icon-on" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" /></svg>
+                        </label>
+                    </div>
+                     <div class="setting-item">
+                        <div class="setting-text-container">
+                           <span class="setting-text">Background Type</span>
+                           <div class="info-tooltip">
+                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                               <span class="tooltip-text">Particle - Heavy Resource, Gradient - Laptop Friendly, Auto - Based on Charging Status.</span>
+                           </div>
+                        </div>
+                        <div id="background-type-select" class="relative">
+                            <button class="btn btn-main custom-select-trigger" style="width: 10rem;">
+                                <span class="custom-select-value">Auto</span>
+                                <div class="select-arrow">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </button>
+                            <div class="hidden custom-select-options">
+                                <div class="custom-option" data-value="auto">Auto</div>
+                                <div class="custom-option" data-value="particle">Particle</div>
+                                <div class="custom-option" data-value="gradient">Gradient</div>
+                                <div class="custom-option" data-value="none">None</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="settings-section-heading">Color Palettes</h3>
+                    <div class="setting-item">
+                        <span class="setting-text">Combine Light & Dark Mode Palettes</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="combine-palettes-toggle">
+                            <span class="toggle-switch-circle"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                       <span class="setting-text">Default Colour Palettes</span>
+                       <div id="palette-select" class="relative">
+                           <button class="btn btn-main custom-select-trigger" style="width: 10rem;">
+                               <span class="custom-select-value">All</span>
+                               <div class="select-arrow">
+                                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                               </div>
+                           </button>
+                           <div class="hidden custom-select-options">
+                               <!-- Options will be populated by JS -->
+                           </div>
+                       </div>
+                   </div>
+                </div>
+
+                <!-- Multiple Choice Settings Page -->
+                <div id="settings-page-multiple-choice" class="settings-page hidden">
+                    <h3 class="settings-section-heading">Navigation</h3>
+                    <div class="setting-item">
+                        <div class="setting-text-container">
+                           <span class="setting-text">Keyboard Functions</span>
+                           <div class="info-tooltip">
+                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                               <span class="tooltip-text">W/S/↑/↓ to select. A/D/←/→ to navigate. Space/Enter to submit.</span>
+                           </div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="keyboard-functions-toggle">
+                            <span class="toggle-switch-circle"></span>
+                        </label>
+                    </div>
+                     <div class="setting-item">
+                        <div class="setting-text-container">
+                           <span class="setting-text">Auto Next Type</span>
+                           <div class="info-tooltip">
+                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                               <span class="tooltip-text">Automatically goes to next question based on question result.</span>
+                           </div>
+                        </div>
+                        <div id="auto-next-type-select" class="relative">
+                            <button class="btn btn-main custom-select-trigger" style="width: 10rem;">
+                                <span class="custom-select-value">None</span>
+                                <div class="select-arrow">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </button>
+                            <div class="hidden custom-select-options">
+                               <div class="custom-option" data-value="none">None</div>
+                               <div class="custom-option" data-value="correct">Correct</div>
+                               <div class="custom-option" data-value="incorrect">Incorrect</div>
+                               <div class="custom-option" data-value="all">All</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="auto-next-duration-item" class="setting-item">
+                        <span class="setting-text">Auto Next Duration (s)</span>
+                        <div class="number-input-container">
+                            <input type="number" id="auto-next-duration-input" class="settings-number-input" min="1" max="60" value="5">
+                        </div>
+                    </div>
+
+                    <h3 class="settings-section-heading">Submission</h3>
+                     <div class="setting-item">
+                        <span class="setting-text">Click To Submit</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="click-to-submit-toggle">
+                            <span class="toggle-switch-circle"></span>
+                        </label>
+                    </div>
+                     <div class="setting-item">
+                        <span class="setting-text">Double Click To Submit</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="double-click-to-submit-toggle">
+                            <span class="toggle-switch-circle"></span>
+                        </label>
+                    </div>
+                     <div id="hide-submit-button-item" class="setting-item">
+                        <div class="setting-text-container">
+                           <span class="setting-text">Hide Submit Button</span>
+                           <div class="info-tooltip">
+                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                               <span class="tooltip-text">Hides Submit Button. Only available when Click/Double Click is enabled.</span>
+                           </div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="hide-submit-button-toggle">
+                            <span class="toggle-switch-circle"></span>
+                        </label>
+                    </div>
+
+                    <h3 class="settings-section-heading">Randomisation</h3>
+                     <div class="setting-item">
+                         <div class="setting-text-container">
+                            <span class="setting-text">Randomise Question Order</span>
+                            <div class="info-tooltip">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                <span class="tooltip-text">Randomizes the order of questions when you retake a quiz.</span>
+                            </div>
+                         </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="randomise-question-order-toggle">
+                            <span class="toggle-switch-circle"></span>
+                        </label>
+                    </div>
+                     <div class="setting-item">
+                        <span class="setting-text">Randomise Answer Choice Order</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="randomise-answer-order-toggle">
+                            <span class="toggle-switch-circle"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="pause-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="text-3xl font-bold mb-6 text-center">Quiz Paused</h3>
+            <div class="text-center space-y-2 mb-8">
+                <p class="text-lg">Current Score: <strong id="paused-score">0/0 (0%)</strong></p>
+                <p class="text-lg">Questions Remaining: <strong id="paused-remaining">0</strong></p>
+                <p class="text-lg">Total Time Elapsed: <strong id="paused-time">0s</strong></p>
+            </div>
+            <div class="modal-buttons flex-col sm:flex-row space-y-3 sm:space-y-0">
+                <button id="resume-quiz-btn" class="btn btn-green w-full sm:w-auto">Resume Quiz</button> 
+                <button id="redo-quiz-paused-btn" class="btn btn-blue w-full sm:w-auto">Retake Quiz</button> 
+                <button id="end-quiz-early-btn" class="btn btn-red w-full sm:w-auto">Submit Quiz</button> 
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmation-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-title">Are you sure?</h3>
+            <p id="modal-message">This action cannot be undone.</p>
+            <div class="modal-buttons mt-6">
+                <button id="modal-confirm-btn" class="btn btn-red">Confirm</button>
+                <button id="modal-cancel-btn" class="btn btn-main">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="format-error-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="format-modal-title" style="color: var(--ui-red-fills);">Incorrect Format!</h3>
+            <p id="format-modal-message" class="text-left">Please check your prompt's format or try generating another answer from your AI model (ensure to refresh the AI model's page if you do this).</p>
+            <p class="text-left font-semibold my-2">The correct format should look like this:</p>
+            <pre class="bg-secondary-content-bg p-2 rounded text-left text-sm whitespace-pre-wrap">1. Which planet is known as the Red Planet?
+    A. Venus.
+    B. **Mars. [explanation] Mars is often called the Red Planet due to its iron oxide-rich surface.**
+    C. Jupiter.
+    D. Earth.</pre>
+            <div class="modal-buttons mt-6">
+                <button id="format-modal-ok-btn" class="btn btn-green">I understand</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // DOM Elements
+        const docHtml = document.documentElement;
+        const bodyElement = document.body;
+        
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeSettingsBtn = document.getElementById('close-settings-btn');
+        const settingsNavPills = document.querySelectorAll('.settings-pill');
+        const settingsPages = document.querySelectorAll('.settings-page');
+
+        const powerSavingToggle = document.querySelector('#power-saving-toggle input');
+        const themeToggle = document.querySelector('#theme-toggle-setting input');
+        
+        const changePaletteBtn = document.getElementById('change-palette-btn');
+        const externalPauseBtn = document.getElementById('pause-quiz-btn-ext');
+        const externalSubmitEarlyBtn = document.getElementById('submit-quiz-early-btn-ext');
+
+        const inputScreen = document.getElementById('input-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const quizScreenTitle = document.getElementById('quiz-screen-title');
+        const resultsScreen = document.getElementById('results-screen');
+        const resultsTitle = document.getElementById('results-title');
+        const stickyQuestionText = document.getElementById('sticky-question-text');
+
+        const mainCustomSelectTrigger = document.getElementById('custom-select-trigger');
+        const mainCustomSelectValue = document.getElementById('custom-select-value');
+        const mainCustomSelectOptions = document.getElementById('custom-select-options');
+        const hiddenSelectInput = document.getElementById('ai-model-select-hidden');
+
+        const questionCountInput = document.getElementById('question-count-input');
+        const qCountMinusBtn = document.getElementById('q-count-minus-btn');
+        const qCountPlusBtn = document.getElementById('q-count-plus-btn');
+        const qCountMaxBtn = document.getElementById('q-count-max-btn');
+        const todayDateSpan = document.getElementById('today-date');
+        const copyFormatBtn = document.getElementById('copy-format-btn');
+
+        const quizDataInput = document.getElementById('quiz-data-input');
+        const textareaPlaceholder = document.getElementById('textarea-placeholder');
+        const createQuizBtn = document.getElementById('create-quiz-btn');
+
+        const currentQuestionTimerDisplay = document.getElementById('current-question-timer');
+        
+        const questionContentContainer = document.getElementById('question-content-container');
+        let currentQuestionDOM = null; 
+
+        const submitAnswerBtn = document.getElementById('submit-answer-btn');
+        
+        const timelineNavContainer = document.getElementById('timeline-nav-container');
+        const timelineNavTrack = document.getElementById('timeline-nav-track');
+        
+        const scoreDisplayContainer = document.getElementById('score-display-container'); 
+        const scorePercentageDisplay = document.getElementById('score-percentage');
+        const scoreDetailsDisplay = document.getElementById('score-details');
+        const scoreMessageDisplay = document.getElementById('score-message');
+        const totalQuizTimeDisplay = document.getElementById('total-quiz-time');
+        const resultsDetailsContainer = document.getElementById('results-details-container');
+
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+        let confirmActionCallback = null;
+
+        const pauseModal = document.getElementById('pause-modal');
+        const resumeQuizBtn = document.getElementById('resume-quiz-btn');
+        const pausedScoreDisplay = document.getElementById('paused-score');
+        const pausedRemainingDisplay = document.getElementById('paused-remaining');
+        const pausedTimeDisplay = document.getElementById('paused-time');
+        const redoQuizPausedBtn = document.getElementById('redo-quiz-paused-btn');
+        const endQuizEarlyBtn = document.getElementById('end-quiz-early-btn'); 
+
+        const formatErrorModal = document.getElementById('format-error-modal');
+        const formatModalOkBtn = document.getElementById('format-modal-ok-btn');
+
+        const redoIncorrectBtnExt = document.getElementById('redo-incorrect-btn-ext');
+        const redoQuizBtnExt = document.getElementById('redo-quiz-btn-ext');
+        const newQuizBtnExt = document.getElementById('new-quiz-btn-ext');
+        
+        // Settings Panel Elements
+        const combinePalettesToggle = document.getElementById('combine-palettes-toggle');
+        const keyboardFunctionsToggle = document.getElementById('keyboard-functions-toggle');
+        const autoNextDurationItem = document.getElementById('auto-next-duration-item');
+        const autoNextDurationInput = document.getElementById('auto-next-duration-input');
+        const clickToSubmitToggle = document.getElementById('click-to-submit-toggle');
+        const doubleClickToSubmitToggle = document.getElementById('double-click-to-submit-toggle');
+        const hideSubmitButtonItem = document.getElementById('hide-submit-button-item');
+        const hideSubmitButtonToggle = document.getElementById('hide-submit-button-toggle');
+        const randomiseQuestionOrderToggle = document.getElementById('randomise-question-order-toggle');
+        const randomiseAnswerOrderToggle = document.getElementById('randomise-answer-order-toggle');
+
+
+        // Quiz State Variables
+        let originalAllQuestionsData = []; 
+        let currentQuizQuestions = []; 
+        let questionOrder = []; 
+        let currentQuestionDisplayOrderIndex = 0; 
+        let currentTimerInterval = null;
+        let questionSpecificTimerStartMs = 0; 
+        let totalQuizTimerStartMs = 0; 
+        let accumulatedTotalQuizTimeMs = 0; 
+        let selectedOptionLetter = null;
+        let isQuizPaused = false;
+        let isQuizActive = false;
+        let autoAdvanceTimeout = null;
+        let isTimelineDragging = false;
+        let timelineStartX;
+        let timelineScrollLeftStart;
+        let copyTimeout = null;
+        let questionCountInputTimeout = null;
+        let lastClickTime = 0;
+
+        // --- ANIMATED BACKGROUND LOGIC ---
+        const smudgeBackgroundCanvas = document.getElementById('smudge-background-canvas');
+        const gradientBackgroundDiv = document.getElementById('gradient-background');
+        const smudgeCtx = smudgeBackgroundCanvas.getContext('2d');
+        let isParticleAnimationRunning = false;
+        
+        const backgroundPalettes = {
+            dark: {
+                "Instagram": ["rgba(131, 58, 180, 1)", "rgba(193, 53, 132, 1)", "rgba(225, 48, 108, 1)", "rgba(245, 96, 64, 1)", "rgba(64, 93, 230, 1)"],
+                "Sunset": ["rgba(255, 189, 0, 1)", "rgba(255, 84, 0, 1)", "rgba(255, 0, 84, 1)", "rgba(158, 0, 89, 1)", "rgba(57, 0, 153, 1)"],
+                "Ocean": ["rgba(0, 43, 54, 1)", "rgba(0, 87, 138, 1)", "rgba(0, 120, 120, 1)", "rgba(10, 60, 90, 1)", "rgba(0, 150, 199, 1)"],
+                "Molten Steel": ["rgba(60, 60, 60, 1)", "rgba(105, 105, 105, 1)", "rgba(169, 169, 169, 1)", "rgba(255, 87, 34, 1)", "rgba(226, 131, 22, 1)"],
+                "Crimson": ["rgba(37, 9, 2, 1)", "rgba(56, 4, 14, 1)", "rgba(100, 13, 20, 1)", "rgba(128, 14, 19, 1)", "rgba(173, 40, 49, 1)"]
+            },
+            light: {
+                "Sunrise": ["rgba(255, 94, 77, 1)", "rgba(255, 142, 83, 1)", "rgba(255, 193, 94, 1)", "rgba(255, 214, 165, 1)", "rgba(255, 234, 208, 1)"],
+                "Beach": ["rgba(5, 102, 141, 1)", "rgba(2, 128, 144, 1)", "rgba(0, 168, 150, 1)", "rgba(2, 195, 154, 1)", "rgba(240, 243, 189, 1)"],
+                "Cherry Blossom": ["rgba(248, 97, 127, 1)", "rgba(253, 142, 164, 1)", "rgba(255, 214, 224, 1)", "rgba(255, 240, 245, 1)", "rgba(150, 193, 239, 1)"],
+                "Earthy Forest": ["rgba(52, 78, 65, 1)", "rgba(58, 90, 64, 1)", "rgba(88, 129, 87, 1)", "rgba(163, 177, 138, 1)", "rgba(218, 215, 205, 1)"],
+                "Rainbow": ["rgba(255, 0, 0, 1)", "rgba(255, 238, 0, 1)", "rgba(0, 255, 55, 1)", "rgba(0, 183, 255, 1)", "rgba(247, 0, 255, 1)"]
+            }
+        };
+
+        let currentBgPaletteName = 'All';
+        let smudgeEffectColors = [...backgroundPalettes.light.Sunrise];
+        let smudgeCircles = [];
+        const numSmudgeCircles = 10;
+
+        function resizeSmudgeCanvas() {
+            smudgeBackgroundCanvas.width = window.innerWidth;
+            smudgeBackgroundCanvas.height = window.innerHeight;
+            if (isParticleAnimationRunning) {
+                 initSmudgeEffect();
+            }
+        }
+        
+        class SmudgeCircle {
+            constructor(canvasWidth, canvasHeight) {
+                this.canvasWidth = canvasWidth;
+                this.canvasHeight = canvasHeight;
+                const smallerDimension = Math.min(this.canvasWidth, this.canvasHeight);
+                this.radius = (Math.random() * (smallerDimension * 0.4) + (smallerDimension * 0.5)) * 2; 
+                this.x = Math.random() * (this.canvasWidth + 2 * this.radius) - this.radius;
+                this.y = Math.random() * (this.canvasHeight + 2 * this.radius) - this.radius;
+                this.color = smudgeEffectColors[Math.floor(Math.random() * smudgeEffectColors.length)];
+                this.targetColor = this.color;
+                this.vx = (Math.random() - 0.5) * 0.5; 
+                this.vy = (Math.random() - 0.5) * 0.5; 
+                this.opacity = 0;
+                this.targetOpacity = Math.random() * 0.2 + 0.6;
+                this.creationTime = performance.now();
+                this.animationCompleted = false;
+                this.colorChangeSpeed = 0.0005;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x - this.radius > this.canvasWidth) { this.x = -this.radius; } 
+                else if (this.x + this.radius < 0) { this.x = this.canvasWidth + this.radius; }
+                if (this.y - this.radius > this.canvasHeight) { this.y = -this.radius; } 
+                else if (this.y + this.radius < 0) { this.y = this.canvasHeight + this.radius; }
+                
+                if (!this.animationCompleted) {
+                    const age = performance.now() - this.creationTime;
+                    const animationDuration = 3000;
+                    if (age < animationDuration) {
+                        this.opacity = this.targetOpacity * (age / animationDuration);
+                    } else {
+                        this.opacity = this.targetOpacity;
+                        this.animationCompleted = true;
+                    }
+                } else {
+                    if (Math.random() < 0.005) { this.targetOpacity = Math.random() * 0.2 + 0.6; }
+                    if (this.opacity < this.targetOpacity) { this.opacity = Math.min(this.targetOpacity, this.opacity + 0.001); } 
+                    else if (this.opacity > this.targetOpacity) { this.opacity = Math.max(0, this.opacity - 0.001); }
+                }
+
+                if (this.color !== this.targetColor) {
+                    const c1 = rgbaToRgb(this.color);
+                    const c2 = rgbaToRgb(this.targetColor);
+                    if (c1 && c2) {
+                        let r = c1.r + (c2.r - c1.r) * this.colorChangeSpeed;
+                        let g = c1.g + (c2.g - c1.g) * this.colorChangeSpeed;
+                        let b = c1.b + (c2.b - c1.b) * this.colorChangeSpeed;
+                        this.color = `rgba(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)}, 1)`;
+                        if (Math.abs(r - c2.r) < 2 && Math.abs(g - c2.g) < 2 && Math.abs(b - c2.b) < 2) { this.color = this.targetColor; }
+                    }
+                } else if (Math.random() < 0.002) { 
+                    this.targetColor = smudgeEffectColors[Math.floor(Math.random() * smudgeEffectColors.length)];
+                }
+            }
+
+            draw(ctx) {
+                ctx.beginPath();
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                const baseColor = rgbaToRgb(this.color);
+                if (baseColor) {
+                    gradient.addColorStop(0, `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, ${this.opacity})`); 
+                    gradient.addColorStop(0.6, `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, ${this.opacity * 0.4})`);
+                    gradient.addColorStop(1, `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, 0)`); 
+                }
+                ctx.fillStyle = gradient; ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+        function rgbaToRgb(rgba) {
+            const result = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/.exec(rgba);
+            return result ? { r: parseInt(result[1]), g: parseInt(result[2]), b: parseInt(result[3]) } : null;
+        }
+        
+        function initSmudgeEffect() {
+            if (!smudgeEffectColors || smudgeEffectColors.length === 0) return;
+            smudgeCircles = [];
+            for (let i = 0; i < numSmudgeCircles; i++) smudgeCircles.push(new SmudgeCircle(smudgeBackgroundCanvas.width, smudgeBackgroundCanvas.height));
+        }
+        
+        function animateSmudgeBackground() {
+            if (!isParticleAnimationRunning) return;
+            smudgeCtx.clearRect(0, 0, smudgeBackgroundCanvas.width, smudgeBackgroundCanvas.height);
+            smudgeCtx.globalCompositeOperation = 'lighter'; 
+            smudgeCircles.forEach(circle => { circle.update(); circle.draw(smudgeCtx); });
+            smudgeCtx.globalCompositeOperation = 'source-over'; 
+            requestAnimationFrame(animateSmudgeBackground);
+        }
+
+        function getAllPalettes() {
+            const isDarkMode = docHtml.classList.contains('dark');
+            const combine = combinePalettesToggle.checked;
+
+            if (combine) {
+                return { ...backgroundPalettes.dark, ...backgroundPalettes.light };
+            } else {
+                return isDarkMode ? backgroundPalettes.dark : backgroundPalettes.light;
+            }
+        }
+
+        function applyBackgroundPalette() {
+            const allPalettes = getAllPalettes();
+            let chosenPalette;
+
+            if (currentBgPaletteName === 'All') {
+                const paletteKeys = Object.keys(allPalettes);
+                const randomKey = paletteKeys[Math.floor(Math.random() * paletteKeys.length)];
+                chosenPalette = allPalettes[randomKey];
+            } else {
+                chosenPalette = allPalettes[currentBgPaletteName];
+            }
+            
+            if (!chosenPalette) { // Fallback
+                chosenPalette = backgroundPalettes.light.Sunrise;
+            }
+            smudgeEffectColors = [...chosenPalette];
+            
+            if (smudgeEffectColors.length >= 5) {
+                 docHtml.style.setProperty('--gradient-color-1', smudgeEffectColors[0]);
+                 docHtml.style.setProperty('--gradient-color-2', smudgeEffectColors[1]);
+                 docHtml.style.setProperty('--gradient-color-3', smudgeEffectColors[2]);
+                 docHtml.style.setProperty('--gradient-color-4', smudgeEffectColors[3]);
+                 docHtml.style.setProperty('--gradient-color-5', smudgeEffectColors[4]);
+            }
+
+            if(isParticleAnimationRunning) initSmudgeEffect();
+        }
+
+        async function setBackgroundType(type, fromUserAction = false) {
+            if (fromUserAction && powerSavingToggle.checked && (type === 'particle' || type === 'gradient')) {
+                showConfirmationModal(
+                    "Are you sure?",
+                    "Turning on this background type will decrease performance and battery life.",
+                    () => {
+                        localStorage.setItem('backgroundType', type);
+                        applyBackgroundType(type);
+                    },
+                    'btn-red'
+                );
+                return; // Don't proceed until confirmed
+            }
+            localStorage.setItem('backgroundType', type);
+            await applyBackgroundType(type);
+        }
+
+        async function applyBackgroundType(type) {
+             if (powerSavingToggle.checked) {
+                type = 'none';
+            }
+
+            if (type === 'auto') {
+                try {
+                    const battery = await navigator.getBattery();
+                    if (battery.charging || !('level' in battery)) { // No battery API or charging
+                        type = 'particle';
+                    } else if (battery.level < 0.15) {
+                        type = 'none';
+                    } else {
+                        type = 'gradient';
+                    }
+                } catch (e) {
+                    type = 'gradient'; // Fallback if battery API fails
+                }
+            }
+            
+            smudgeBackgroundCanvas.style.display = 'none';
+            gradientBackgroundDiv.style.display = 'none';
+            isParticleAnimationRunning = false;
+            
+            if (type === 'particle') {
+                smudgeBackgroundCanvas.style.display = 'block';
+                if (!isParticleAnimationRunning) {
+                    isParticleAnimationRunning = true;
+                    applyBackgroundPalette();
+                    animateSmudgeBackground();
+                }
+            } else if (type === 'gradient') {
+                gradientBackgroundDiv.style.display = 'block';
+                applyBackgroundPalette();
+            }
+            // If 'none', both are hidden
+        }
+        
+        changePaletteBtn.addEventListener('click', () => { 
+            applyBackgroundPalette();
+        });
+        
+        function setLightMode() {
+            docHtml.classList.remove('dark');
+            themeToggle.checked = false;
+            localStorage.setItem('quizTheme', 'light'); 
+            populatePaletteSelect();
+            applyBackgroundPalette();
+            setMainColorRGB();
+        }
+        function setDarkMode() {
+            docHtml.classList.add('dark'); 
+            themeToggle.checked = true;
+            localStorage.setItem('quizTheme', 'dark'); 
+            populatePaletteSelect();
+            applyBackgroundPalette();
+            setMainColorRGB();
+        }
+        
+        themeToggle.addEventListener('change', () => {
+            if (themeToggle.checked) setDarkMode();
+            else setLightMode();
+        });
+
+        function setMainColorRGB() {
+            const mainColor = getComputedStyle(docHtml).getPropertyValue('--main-color').trim();
+            const rgb = rgbaToRgb(mainColor) || {r: 10, g: 10, b: 10};
+            docHtml.style.setProperty('--main-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+        }
+        
+        // --- SETTINGS LOGIC ---
+
+        function setupCustomSelect(containerId, storageKey, callback) {
+            const container = document.getElementById(containerId);
+            if(!container) return;
+            const trigger = container.querySelector('.custom-select-trigger');
+            const valueSpan = container.querySelector('.custom-select-value');
+            const optionsContainer = container.querySelector('.custom-select-options');
+            const arrow = container.querySelector('.select-arrow');
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isHidden = optionsContainer.classList.contains('hidden');
+                 // Close all other dropdowns
+                document.querySelectorAll('.custom-select-options').forEach(opt => opt.classList.add('hidden'));
+                document.querySelectorAll('.select-arrow').forEach(a => a.classList.remove('expanded'));
+                
+                if(isHidden) {
+                    optionsContainer.classList.remove('hidden');
+                    arrow.classList.add('expanded');
+                }
+            });
+
+            optionsContainer.addEventListener('click', (e) => {
+                 if (e.target.classList.contains('custom-option') && !e.target.classList.contains('disabled')) {
+                    const value = e.target.dataset.value;
+                    const text = e.target.textContent;
+                    
+                    valueSpan.textContent = text;
+                    if (storageKey) localStorage.setItem(storageKey, value);
+                    if (callback) callback(value);
+
+                    optionsContainer.classList.add('hidden');
+                    arrow.classList.remove('expanded');
+                }
+            });
+        }
+        
+        document.addEventListener('click', () => {
+             document.querySelectorAll('.custom-select-options').forEach(opt => opt.classList.add('hidden'));
+             document.querySelectorAll('.select-arrow').forEach(a => a.classList.remove('expanded'));
+        });
+        
+        function populatePaletteSelect() {
+            const container = document.querySelector('#palette-select .custom-select-options');
+            const valueSpan = document.querySelector('#palette-select .custom-select-value');
+            if (!container || !valueSpan) return;
+
+            container.innerHTML = ''; // Clear existing
+            
+            const addOption = (name, value, colors) => {
+                const option = document.createElement('div');
+                option.className = 'custom-option';
+                option.textContent = name;
+                option.dataset.value = value;
+                if(colors && colors.length > 0) {
+                     option.style.borderImage = `linear-gradient(to right, ${colors.join(', ')}) 1`;
+                }
+                container.appendChild(option);
+            };
+
+            addOption('All', 'all', []);
+            
+            const isDarkMode = docHtml.classList.contains('dark');
+            const combine = combinePalettesToggle.checked;
+
+            const primaryPalettes = isDarkMode ? backgroundPalettes.dark : backgroundPalettes.light;
+            for (const name in primaryPalettes) {
+                addOption(name, name, primaryPalettes[name]);
+            }
+            
+            if (combine) {
+                const secondaryPalettes = isDarkMode ? backgroundPalettes.light : backgroundPalettes.dark;
+                 for (const name in secondaryPalettes) {
+                    addOption(name, name, secondaryPalettes[name]);
+                }
+            }
+
+            const savedPalette = localStorage.getItem('selectedPalette') || 'All';
+            const allPalettes = getAllPalettes();
+            if (allPalettes[savedPalette] || savedPalette === 'All') {
+                currentBgPaletteName = savedPalette;
+                valueSpan.textContent = savedPalette;
+            } else {
+                currentBgPaletteName = 'All';
+                valueSpan.textContent = 'All';
+                localStorage.setItem('selectedPalette', 'All');
+            }
+        }
+
+
+        // --- POWER SAVING MODE ---
+        function applyPowerSavingMode(enabled) {
+            if(enabled) {
+                bodyElement.classList.add('power-saving-mode');
+                docHtml.style.setProperty('--layout-background', 'rgba(10,10,10,0.45)');
+                applyBackgroundType('none');
+            } else {
+                bodyElement.classList.remove('power-saving-mode');
+                 docHtml.style.removeProperty('--layout-background');
+                 const savedBgType = localStorage.getItem('backgroundType') || 'auto';
+                 applyBackgroundType(savedBgType);
+            }
+        }
+        
+        powerSavingToggle.addEventListener('change', () => {
+            applyPowerSavingMode(powerSavingToggle.checked);
+        });
+
+        async function checkInitialPowerState() {
+            try {
+                const battery = await navigator.getBattery();
+                if (battery.level < 0.15 && !battery.charging) {
+                    powerSavingToggle.checked = true;
+                    applyPowerSavingMode(true);
+                }
+            } catch (e) {
+                // Battery API not supported or failed.
+            }
+        }
+        
+
+        // --- QUIZ LOGIC ---
+        
+        function shuffleArray(array) { 
+            for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; }
+            return array;
+        }
+
+        function shuffleOptionsForQuestion(question) {
+            const options = question.options;
+            const hasNonShuffleableOption = options.some(opt => 
+                opt.text.toLowerCase().includes('all of the above') ||
+                opt.text.toLowerCase().includes('none of the above')
+            );
+
+            if (hasNonShuffleableOption) {
+                return; // Don't shuffle if it contains a fixed option
+            }
+
+            for (let i = options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
+            }
+
+            const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+            options.forEach((opt, index) => {
+                opt.letter = letters[index];
+            });
+        }
+
+        function formatTime(milliseconds) {
+            if (milliseconds < 0) milliseconds = 0;
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            let timeString = '';
+            if (hours > 0) timeString += `${hours}h `;
+            if (minutes > 0 || hours > 0) timeString += `${minutes}m `;
+            timeString += `${seconds}s`;
+            
+            return timeString.trim();
+        }
+
+        function parseInput(text) {
+            const lines = text.split('\n').filter(line => line.trim() !== '' || line === '');
+            const questions = [];
+            let currentQuestionBuilder = null;
+            const questionRegex = /^(\d+)\.\s+(.*)/;
+            const optionRegex = /^\s*([A-Z])\.\s+(.*)/;
+            const explanationRegex = /\[explanation\](.*)/;
+            let questionNumber = 0;
+
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                const questionMatch = trimmedLine.match(questionRegex);
+                const optionMatch = trimmedLine.match(optionRegex);
+
+                if (questionMatch) {
+                    if (currentQuestionBuilder && currentQuestionBuilder.options.length > 0 && currentQuestionBuilder.options.some(opt => opt.isCorrectOption)) {
+                        questions.push(currentQuestionBuilder);
+                    }
+                    questionNumber = parseInt(questionMatch[1], 10);
+                    currentQuestionBuilder = {
+                        id: questions.length, questionText: questionMatch[2], options: [],
+                        originalOrder: questionNumber, explanation: ''
+                    };
+                } else if (optionMatch && currentQuestionBuilder) {
+                    let optionText = optionMatch[2];
+                    let isCorrectOpt = false;
+                    if (optionText.startsWith('**') && optionText.endsWith('**')) {
+                        isCorrectOpt = true;
+                        optionText = optionText.substring(2, optionText.length - 2);
+                        const explanationMatch = optionText.match(explanationRegex);
+                        if (explanationMatch) {
+                            currentQuestionBuilder.explanation = explanationMatch[1].trim();
+                            optionText = optionText.replace(explanationRegex, '').trim();
+                        }
+                    }
+                    currentQuestionBuilder.options.push({ text: optionText.trim(), letter: optionMatch[1], isCorrectOption: isCorrectOpt });
+                }
+            }
+            if (currentQuestionBuilder && currentQuestionBuilder.options.length > 0 && currentQuestionBuilder.options.some(opt => opt.isCorrectOption)) {
+                questions.push(currentQuestionBuilder);
+            }
+            return questions.map(q => ({ ...q, userSelectedOptionLetter: null, isAnsweredCorrectly: null, timeTakenMs: 0, status: 'unanswered', wasRetaken: false }));
+        }
+        
+        function handleRedoIncorrect() {
+            let firstIncorrectDisplayIndex = -1;
+            
+            // Before starting a new redo, reset the retaken flag for all questions
+            currentQuizQuestions.forEach(q => q.wasRetaken = false);
+
+            questionOrder.forEach((questionIndexInCurrent, displayIndex) => {
+                const question = currentQuizQuestions[questionIndexInCurrent];
+                if (question.isAnsweredCorrectly === false) {
+                    question.isAnsweredCorrectly = null;
+                    question.userSelectedOptionLetter = null;
+                    question.status = 'unanswered';
+                    question.wasRetaken = true; // Flag only the questions being retaken in this session
+                    
+                    if (randomiseAnswerOrderToggle.checked) {
+                        shuffleOptionsForQuestion(question);
+                    }
+
+                    if (firstIncorrectDisplayIndex === -1) {
+                        firstIncorrectDisplayIndex = displayIndex;
+                    }
+                }
+            });
+            
+            if (firstIncorrectDisplayIndex !== -1) {
+                resultsScreen.classList.add('hidden');
+                quizScreen.classList.remove('hidden');
+                hideExternalResultsButtons();
+                isQuizActive = true;
+                isQuizPaused = false;
+                totalQuizTimerStartMs = Date.now();
+                navigateToQuestion(firstIncorrectDisplayIndex, false, 'next');
+                renderTimelineNav();
+            }
+        }
+
+        function handleRedoQuiz() {
+            if (originalAllQuestionsData && Array.isArray(originalAllQuestionsData) && originalAllQuestionsData.length > 0) {
+                const shuffleQuestions = randomiseQuestionOrderToggle.checked;
+                const shuffleAnswers = randomiseAnswerOrderToggle.checked;
+                initializeQuiz(originalAllQuestionsData, shuffleQuestions, shuffleAnswers, false);
+            } else {
+                commonNewQuizLogic();
+            }
+        }
+
+        redoIncorrectBtnExt.addEventListener('click', () => {
+            showConfirmationModal(
+                "Redo Incorrect Questions?",
+                "This will mark your incorrect answers as unanswered and let you try them again. Your timer for those questions will continue. Are you sure?",
+                handleRedoIncorrect,
+                'btn-green'
+            );
+        });
+
+        redoQuizBtnExt.addEventListener('click', () => {
+            showConfirmationModal(
+                "Retake Quiz?",
+                "Are you sure you want to restart the quiz from the beginning?",
+                handleRedoQuiz,
+                'btn-blue'
+            );
+        });
+
+        newQuizBtnExt.addEventListener('click', () => {
+            showConfirmationModal(
+                "Start New Quiz?",
+                "This will end your current session and you will lose your results. Are you sure?",
+                commonNewQuizLogic,
+                'btn-red'
+            );
+        });
+
+
+        function initializeQuiz(questionsToUse, shuffleQ = true, shuffleA = true, isContinuation = false) {
+            stopTimers(true); 
+            clearTimeout(autoAdvanceTimeout);
+
+            // FIX: Reset the single question timer to prevent carry-over time from previous quiz.
+            questionSpecificTimerStartMs = 0;
+
+            isQuizActive = true;
+            hideExternalResultsButtons();
+            currentQuizQuestions = JSON.parse(JSON.stringify(questionsToUse)); 
+            if (currentQuizQuestions.length === 0) {
+                showFormatErrorModal();
+                isQuizActive = false;
+                return;
+            }
+            if (!isContinuation) { 
+                currentQuizQuestions.forEach(q => {
+                    q.userSelectedOptionLetter = null; 
+                    q.isAnsweredCorrectly = null;
+                    q.timeTakenMs = 0; 
+                    q.status = 'unanswered';
+                    q.wasRetaken = false;
+                    if (shuffleA) {
+                         shuffleOptionsForQuestion(q);
+                    }
+                });
+                accumulatedTotalQuizTimeMs = 0;
+                currentQuestionDisplayOrderIndex = 0;
+                questionOrder = Array.from(Array(currentQuizQuestions.length).keys());
+                if (shuffleQ) {
+                    shuffleArray(questionOrder);
+                }
+            }
+            isQuizPaused = false;
+            totalQuizTimerStartMs = Date.now(); 
+            inputScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            renderTimelineNav();
+            navigateToQuestion(currentQuestionDisplayOrderIndex, true, 'next'); 
+        }
+
+        function getCurrentQuestionData() {
+            if (questionOrder.length === 0 || currentQuestionDisplayOrderIndex >= questionOrder.length) return null;
+            const questionIndexInCurrentArray = questionOrder[currentQuestionDisplayOrderIndex];
+            return currentQuizQuestions[questionIndexInCurrentArray]; 
+        }
+        
+        function buildQuestionDOM(question) {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-instance min-w-full flex-shrink-0 box-border max-w-full';
+            const uniqueIdPrefix = `q-${question.id}-inst-${Date.now() % 10000}`;
+            questionDiv.innerHTML = `
+                <div id="${uniqueIdPrefix}-opts" class="space-y-3 max-w-full"></div>
+                <div id="${uniqueIdPrefix}-feedback" class="mt-4 min-h-[50px]"></div>
+            `;
+            const optsContainer = questionDiv.querySelector(`#${uniqueIdPrefix}-opts`);
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'btn btn-main btn-option';
+                button.innerHTML = `${option.letter}. ${option.text}`;
+                button.dataset.letter = option.letter;
+                
+                button.addEventListener('click', () => {
+                    if (question.isAnsweredCorrectly !== null || isQuizPaused) return; 
+                    
+                    const now = new Date().getTime();
+                    const timeSinceLastClick = now - lastClickTime;
+                    
+                    if (doubleClickToSubmitToggle.checked) {
+                        if (timeSinceLastClick < 400 && selectedOptionLetter === option.letter) {
+                            handleSubmitAnswer();
+                        } else {
+                            selectOption(button, option.letter);
+                        }
+                    } else if (clickToSubmitToggle.checked) {
+                         selectOption(button, option.letter);
+                         handleSubmitAnswer();
+                    } else {
+                        selectOption(button, option.letter);
+                    }
+                    lastClickTime = now;
+                });
+                optsContainer.appendChild(button);
+            });
+            return questionDiv;
+        }
+
+        function selectOption(buttonEl, letter) {
+            const optsContainer = buttonEl.parentElement;
+            optsContainer.querySelectorAll('.btn-option').forEach(btn => btn.classList.remove('user-selected-option'));
+            buttonEl.classList.add('user-selected-option');
+            selectedOptionLetter = letter; 
+            submitAnswerBtn.disabled = false;
+        }
+
+        function displayQuestion(isInitialLoad = false, direction = 'next') {
+            clearTimeout(autoAdvanceTimeout);
+            const question = getCurrentQuestionData();
+            if (!question) {
+                // If there are no more questions, go to results. This handles the end of the quiz.
+                if(isQuizActive) showResults(false); 
+                return;
+            }
+            selectedOptionLetter = null; 
+            
+            externalPauseBtn.classList.remove('hidden');
+            externalSubmitEarlyBtn.classList.remove('hidden');
+
+            if (question.isAnsweredCorrectly !== null) {
+                submitAnswerBtn.textContent = currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null) ? "See Results" : "Next Question";
+                submitAnswerBtn.disabled = false;
+            } else {
+                submitAnswerBtn.textContent = "Submit Answer";
+                submitAnswerBtn.disabled = true;
+            }
+            
+            quizScreenTitle.textContent = `Question ${currentQuestionDisplayOrderIndex + 1}`;
+            
+            const updateContent = () => {
+                stickyQuestionText.innerHTML = question.questionText;
+                const newQuestionDOM = buildQuestionDOM(question);
+                
+                questionContentContainer.innerHTML = '';
+                questionContentContainer.className = '';
+                stickyQuestionText.className = 'whitespace-normal break-words text-lg leading-relaxed mb-2 max-w-full';
+
+
+                questionContentContainer.appendChild(newQuestionDOM);
+                currentQuestionDOM = newQuestionDOM;
+
+                stickyQuestionText.classList.add('is-fading-in-fast');
+                questionContentContainer.classList.add('is-fading-in');
+
+
+                const currentOptsContainer = currentQuestionDOM.querySelector(`[id$="-opts"]`);
+                const currentFeedbackContainer = currentQuestionDOM.querySelector(`[id$="-feedback"]`);
+                if (question.isAnsweredCorrectly !== null) { 
+                    showAnswerFeedbackDOM(question, currentFeedbackContainer, currentOptsContainer);
+                    if (currentOptsContainer) { 
+                        currentOptsContainer.querySelectorAll('.btn-option').forEach(btn => {
+                            btn.disabled = true; 
+                            if (btn.dataset.letter === question.userSelectedOptionLetter) btn.classList.add(question.isAnsweredCorrectly ? 'correct' : 'incorrect');
+                            const optData = question.options.find(o => o.letter === btn.dataset.letter);
+                            if (optData && optData.isCorrectOption) btn.classList.add('correct'); 
+                        });
+                    }
+                    currentQuestionTimerDisplay.textContent = `Time: ${formatTime(question.timeTakenMs)}`;
+                } else { 
+                    questionSpecificTimerStartMs = Date.now();
+                    startTimers();
+                }
+                updateTimelineNav(); centerCurrentTimelineCircle();
+            };
+
+            if (isInitialLoad) {
+                updateContent();
+            } else {
+                stickyQuestionText.classList.remove('is-fading-in-fast');
+                questionContentContainer.classList.remove('is-fading-in');
+                
+                stickyQuestionText.classList.add('is-fading-out-fast');
+                questionContentContainer.classList.add('is-fading-out');
+                
+                setTimeout(updateContent, 200); 
+            }
+        }
+        
+        function handleSubmitAnswer() { 
+            const question = getCurrentQuestionData();
+            if (!question || question.isAnsweredCorrectly !== null || !selectedOptionLetter || isQuizPaused) return;
+
+            stopTimers(false); 
+            const timeElapsed = Date.now() - questionSpecificTimerStartMs;
+            question.timeTakenMs = (question.timeTakenMs || 0) + timeElapsed;
+            
+            question.userSelectedOptionLetter = selectedOptionLetter;
+            const correctOption = question.options.find(opt => opt.isCorrectOption);
+            question.isAnsweredCorrectly = (selectedOptionLetter === correctOption.letter);
+            question.status = question.isAnsweredCorrectly ? 'answered-correct' : 'answered-incorrect';
+            
+            const currentFeedbackDOM = currentQuestionDOM ? currentQuestionDOM.querySelector(`[id$="-feedback"]`) : null;
+            const currentOptsDOM = currentQuestionDOM ? currentQuestionDOM.querySelector(`[id$="-opts"]`) : null;
+            if (currentFeedbackDOM && currentOptsDOM) { 
+                showAnswerFeedbackDOM(question, currentFeedbackDOM, currentOptsDOM);
+                updateTimelineNav();
+                currentOptsDOM.querySelectorAll('.btn-option').forEach(btn => {
+                    btn.disabled = true;
+                    if (btn.dataset.letter === selectedOptionLetter) {
+                        btn.classList.add(question.isAnsweredCorrectly ? 'correct' : 'incorrect');
+                    }
+                    if (question.options.find(o => o.letter === btn.dataset.letter && o.isCorrectOption)) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+
+            const allAnswered = currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null);
+            if (allAnswered) {
+                submitAnswerBtn.textContent = "See Results";
+                submitAnswerBtn.disabled = false;
+                externalPauseBtn.classList.add('hidden');
+                externalSubmitEarlyBtn.classList.add('hidden');
+                return;
+            }
+
+            submitAnswerBtn.textContent = "Next Question"; submitAnswerBtn.disabled = false;
+            
+            const autoNextType = localStorage.getItem('autoNextType') || 'none';
+            const autoNextDuration = (parseInt(localStorage.getItem('autoNextDuration'), 10) || 5) * 1000;
+
+            const shouldAutoNext = (autoNextType === 'all') ||
+                                   (autoNextType === 'correct' && question.isAnsweredCorrectly) ||
+                                   (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
+
+            if (shouldAutoNext) {
+                 autoAdvanceTimeout = setTimeout(() => { if (!isQuizPaused && isQuizActive) handleNextAction(); }, autoNextDuration);
+            }
+        }
+
+        function showAnswerFeedbackDOM(question, feedbackEl, optionsEl) {
+            if (!feedbackEl || !optionsEl) return;
+            let feedbackMsg = '';
+            
+            if (question.explanation) {
+                const explanationHtml = `<div class="explanation-text" style="margin: 0; padding: 0;">${question.explanation}</div>`;
+                if (question.isAnsweredCorrectly) {
+                    feedbackMsg = `<div class="feedback-message feedback-correct"><strong>Correct! Here’s why:</strong><br>${explanationHtml}</div>`;
+                } else {
+                    feedbackMsg = `<div class="feedback-message feedback-incorrect"><strong>Incorrect. Here’s why:</strong><br>${explanationHtml}</div>`;
+                }
+            } else {
+                 if (question.isAnsweredCorrectly) {
+                    feedbackMsg = `<div class="feedback-message feedback-correct"><strong>Correct!</strong> Well done.</div>`;
+                } else {
+                    const correctOpt = question.options.find(opt => opt.isCorrectOption);
+                    feedbackMsg = `<div class="feedback-message feedback-incorrect"><strong>Incorrect.</strong> The correct answer was: <strong>${correctOpt.letter}. ${correctOpt.text}</strong></div>`;
+                }
+            }
+
+            feedbackEl.innerHTML = feedbackMsg;
+        }
+
+        function handleNextAction() { 
+            clearTimeout(autoAdvanceTimeout);
+            const question = getCurrentQuestionData();
+            if(question && question.isAnsweredCorrectly === null) { handleSubmitAnswer(); return; }
+            if (currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null)) { showResults(false); return; }
+            let foundNext = false;
+            let nextDisplayIdx = currentQuestionDisplayOrderIndex;
+            for (let i = 1; i < currentQuizQuestions.length; i++) {
+                nextDisplayIdx = (currentQuestionDisplayOrderIndex + i) % currentQuizQuestions.length;
+                const nextQuestionIndexInCurrent = questionOrder[nextDisplayIdx];
+                if (currentQuizQuestions[nextQuestionIndexInCurrent].isAnsweredCorrectly === null) {
+                    navigateToQuestion(nextDisplayIdx, false, 'next'); foundNext = true; break;
+                }
+            }
+            if (!foundNext) showResults(false);
+        }
+
+        function startTimers() {
+            stopTimers(false);
+            const updateTimerDisplay = () => {
+                 if (isQuizPaused) return;
+                const question = getCurrentQuestionData();
+                if(question) {
+                     const elapsedTime = Date.now() - questionSpecificTimerStartMs;
+                    currentQuestionTimerDisplay.textContent = `Time: ${formatTime((question.timeTakenMs || 0) + elapsedTime)}`;
+                }
+            };
+            updateTimerDisplay();
+            currentTimerInterval = setInterval(updateTimerDisplay, 1000);
+        }
+        function stopTimers(isPausingOrEndingQuiz = false) {
+            clearInterval(currentTimerInterval); currentTimerInterval = null;
+            if (isPausingOrEndingQuiz && totalQuizTimerStartMs > 0) { 
+                accumulatedTotalQuizTimeMs += (Date.now() - totalQuizTimerStartMs); totalQuizTimerStartMs = 0; 
+            }
+        }
+        function navigateToQuestion(displayOrderIndex, isInitial = false, direction = 'next') {
+            const oldQuestion = getCurrentQuestionData();
+            if (oldQuestion && oldQuestion.isAnsweredCorrectly === null && questionSpecificTimerStartMs > 0) {
+                 const timeElapsed = Date.now() - questionSpecificTimerStartMs;
+                 oldQuestion.timeTakenMs = (oldQuestion.timeTakenMs || 0) + timeElapsed; 
+            }
+            stopTimers(false);
+            currentQuestionDisplayOrderIndex = displayOrderIndex;
+            displayQuestion(isInitial, direction); 
+        }
+
+        function renderTimelineNav() { 
+            timelineNavTrack.innerHTML = '';
+            questionOrder.forEach((questionIndexInCurrentArray, indexInDisplayOrder) => { 
+                const questionData = currentQuizQuestions[questionIndexInCurrentArray];
+                if (!questionData) return;
+                const circle = document.createElement('div');
+                circle.className = 'timeline-circle';
+                circle.textContent = indexInDisplayOrder + 1; 
+                circle.dataset.displayOrderIndex = indexInDisplayOrder;
+                circle.id = `timeline-circle-${indexInDisplayOrder}`;
+                if (questionData.status === 'answered-correct') circle.classList.add('answered-correct');
+                else if (questionData.status === 'answered-incorrect') circle.classList.add('answered-incorrect');
+                if (indexInDisplayOrder === currentQuestionDisplayOrderIndex) circle.classList.add('current');
+                circle.addEventListener('click', () => {
+                    if (isQuizPaused) return;
+                    navigateToQuestion(indexInDisplayOrder, false, indexInDisplayOrder > currentQuestionDisplayOrderIndex ? 'next' : 'prev');
+                });
+                timelineNavTrack.appendChild(circle);
+                if (indexInDisplayOrder < questionOrder.length - 1) {
+                    const line = document.createElement('div');
+                    line.className = 'timeline-line';
+                    timelineNavTrack.appendChild(line);
+                }
+            });
+            updateTimelineNav(); requestAnimationFrame(centerCurrentTimelineCircle); 
+        }
+        function updateTimelineNav() { 
+            timelineNavTrack.querySelectorAll('.timeline-circle').forEach(circle => {
+                const displayIdx = parseInt(circle.dataset.displayOrderIndex);
+                const questionIndexInCurrentArray = questionOrder[displayIdx];
+                const questionData = currentQuizQuestions[questionIndexInCurrentArray];
+                if (!questionData) return;
+                circle.classList.remove('current', 'answered-correct', 'answered-incorrect');
+                if (questionData.status === 'answered-correct') circle.classList.add('answered-correct');
+                else if (questionData.status === 'answered-incorrect') circle.classList.add('answered-incorrect');
+                if (displayIdx === currentQuestionDisplayOrderIndex) circle.classList.add('current');
+            });
+        }
+        function centerCurrentTimelineCircle() { 
+            const currentCircle = document.getElementById(`timeline-circle-${currentQuestionDisplayOrderIndex}`);
+            if (currentCircle && timelineNavContainer) { 
+                const containerWidth = timelineNavContainer.offsetWidth;
+                const scrollLeftTarget = currentCircle.offsetLeft - (containerWidth / 2) + (currentCircle.offsetWidth / 2);
+                timelineNavContainer.scrollTo({ left: scrollLeftTarget, behavior: 'smooth' });
+            }
+        }
+        
+        timelineNavContainer.addEventListener('mousedown', (e) => { isTimelineDragging = true; timelineStartX = e.pageX - timelineNavContainer.offsetLeft; timelineScrollLeftStart = timelineNavContainer.scrollLeft; });
+        timelineNavContainer.addEventListener('mouseleave', () => { isTimelineDragging = false; });
+        timelineNavContainer.addEventListener('mouseup', () => { isTimelineDragging = false; });
+        timelineNavContainer.addEventListener('mousemove', (e) => {
+            if (!isTimelineDragging) return; e.preventDefault();
+            const x = e.pageX - timelineNavContainer.offsetLeft;
+            const walk = (x - timelineStartX) * 1.5; 
+            timelineNavContainer.scrollLeft = timelineScrollLeftStart - walk;
+        });
+
+        function pauseQuiz() {
+            if (isQuizPaused) return; 
+            isQuizPaused = true; 
+            stopTimers(true); 
+            const currentQ = getCurrentQuestionData();
+            if (currentQ && currentQ.isAnsweredCorrectly === null && questionSpecificTimerStartMs > 0) {
+                const timeElapsed = Date.now() - questionSpecificTimerStartMs;
+                currentQ.timeTakenMs = (currentQ.timeTakenMs || 0) + timeElapsed;
+            }
+            
+            let answeredCount = 0; let correctCount = 0;
+            currentQuizQuestions.forEach(q => { if (q.isAnsweredCorrectly !== null) { answeredCount++; if (q.isAnsweredCorrectly) correctCount++; } });
+            const answeredPercentage = answeredCount > 0 ? ((correctCount / answeredCount) * 100).toFixed(1) : 0;
+            pausedScoreDisplay.textContent = `${correctCount}/${answeredCount} (${answeredPercentage}%)`;
+            pausedRemainingDisplay.textContent = currentQuizQuestions.filter(q => q.isAnsweredCorrectly === null).length;
+            pausedTimeDisplay.textContent = formatTime(accumulatedTotalQuizTimeMs);
+            
+            pauseModal.classList.add('visible');
+        }
+
+        function resumeQuiz() {
+            isQuizPaused = false; 
+            pauseModal.classList.remove('visible');
+            totalQuizTimerStartMs = Date.now(); 
+            const currentQ = getCurrentQuestionData();
+            if (currentQ && currentQ.isAnsweredCorrectly === null) { 
+                questionSpecificTimerStartMs = Date.now(); 
+                startTimers();
+            } else if (currentQ) {
+                 currentQuestionTimerDisplay.textContent = `Time: ${formatTime(currentQ.timeTakenMs || 0)}`;
+            }
+        }
+        externalPauseBtn.addEventListener('click', pauseQuiz);
+        resumeQuizBtn.addEventListener('click', resumeQuiz);
+
+        function showConfirmationModal(title, message, onConfirm, confirmBtnClass = 'btn-red') {
+            modalTitle.innerHTML = title.replace(/\*new line\*/g, '<br>');
+            modalMessage.textContent = message;
+            confirmActionCallback = onConfirm;
+            
+            modalConfirmBtn.className = 'btn';
+            modalConfirmBtn.classList.add(confirmBtnClass);
+            modalConfirmBtn.textContent = 'Confirm';
+
+            confirmationModal.classList.add('visible');
+        }
+        modalCancelBtn.addEventListener('click', () => { confirmationModal.classList.remove('visible'); confirmActionCallback = null; });
+        modalConfirmBtn.addEventListener('click', () => { if (confirmActionCallback) confirmActionCallback(); confirmationModal.classList.remove('visible'); confirmActionCallback = null; });
+        
+        function endQuizPrematurelyAction() {
+            isQuizActive = false; isQuizPaused = true; stopTimers(true);
+            const currentQ = getCurrentQuestionData();
+            if (currentQ && currentQ.isAnsweredCorrectly === null && questionSpecificTimerStartMs > 0) {
+                 const timeElapsed = Date.now() - questionSpecificTimerStartMs;
+                 currentQ.timeTakenMs = (currentQ.timeTakenMs || 0) + timeElapsed;
+            }
+            pauseModal.classList.remove('visible');
+            showResults(true); 
+        }
+        endQuizEarlyBtn.addEventListener('click', () => showConfirmationModal("End Quiz?", "Are you sure you want to end the quiz now? Your current progress will be shown.", endQuizPrematurelyAction, 'btn-red')); 
+        externalSubmitEarlyBtn.addEventListener('click', () => showConfirmationModal("Submit Quiz?", "Are you sure you want to submit the quiz now? You cannot answer more questions.", endQuizPrematurelyAction, 'btn-red')); 
+
+        function showResults(isPrematureEnd = false) {
+            isQuizActive = false; stopTimers(true); isQuizPaused = true;
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+            externalPauseBtn.classList.add('hidden'); externalSubmitEarlyBtn.classList.add('hidden');
+            
+            redoQuizBtnExt.classList.remove('hidden'); 
+            newQuizBtnExt.classList.remove('hidden');
+            
+            resultsTitle.textContent = isPrematureEnd ? "Quiz Submitted Early" : "Quiz Complete!";
+            
+            currentQuizQuestions.forEach(cq => {
+                const originalQ = originalAllQuestionsData.find(oq => oq.id === cq.id);
+                if (originalQ) { Object.assign(originalQ, cq); }
+            });
+
+            let correctAnswers = 0, answeredQuestionsCount = 0;
+            originalAllQuestionsData.forEach(q => { if (q.isAnsweredCorrectly !== null) answeredQuestionsCount++; if (q.isAnsweredCorrectly) correctAnswers++; });
+            
+            const totalQuestionsInSet = originalAllQuestionsData.length;
+            const percentage = totalQuestionsInSet > 0 ? ((correctAnswers / totalQuestionsInSet) * 100) : 0;
+            
+            scorePercentageDisplay.textContent = `${percentage.toFixed(1)}%`;
+            scoreDetailsDisplay.textContent = `${correctAnswers} / ${totalQuestionsInSet} correct`;
+            totalQuizTimeDisplay.textContent = formatTime(accumulatedTotalQuizTimeMs);
+            
+            scoreDisplayContainer.className = 'flex justify-between items-center p-4 rounded-lg transition-colors duration-500 mb-4';
+            if (isPrematureEnd) {
+                scoreDisplayContainer.classList.add('default');
+                scoreMessageDisplay.textContent = `You answered ${answeredQuestionsCount} of ${totalQuestionsInSet} questions.`;
+            } else {
+                const roundedPercentage = Math.round(percentage);
+                if (roundedPercentage === 100) { scoreDisplayContainer.classList.add('gold'); scoreMessageDisplay.textContent = "Excellent Work!"; } 
+                else if (roundedPercentage >= 80) { scoreDisplayContainer.classList.add('silver'); scoreMessageDisplay.textContent = "Almost There!"; } 
+                else if (roundedPercentage >= 65) { scoreDisplayContainer.classList.add('bronze'); scoreMessageDisplay.textContent = "Needs Work!"; } 
+                else { scoreDisplayContainer.classList.add('default'); scoreMessageDisplay.textContent = "Keep Practicing!"; }
+            }
+
+            resultsDetailsContainer.innerHTML = '';
+            
+            const retakenQuestions = originalAllQuestionsData.filter(q => q.wasRetaken).sort((a, b) => a.originalOrder - b.originalOrder);
+            const otherQuestions = originalAllQuestionsData.filter(q => !q.wasRetaken).sort((a, b) => a.originalOrder - b.originalOrder);
+            
+            const buildResultItemDOM = (question, displayNum) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `result-question-item ${question.isAnsweredCorrectly === true ? 'correct' : question.isAnsweredCorrectly === false ? 'incorrect' : 'unanswered'}`;
+                itemDiv.innerHTML = `
+                    <div class="flex justify-between items-center cursor-pointer">
+                        <span class="font-semibold result-option-question">${displayNum}. ${question.questionText}</span>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 mr-2 result-option-time">Time: ${formatTime(question.timeTakenMs || 0)}</span>
+                            <svg class="dropdown-arrow w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                    <div class="result-options-container pl-4 ml-1"></div>`;
+                const optionsDiv = itemDiv.querySelector('.result-options-container');
+                if (question.options && question.options.length > 0) {
+                    question.options.forEach(opt => {
+                        const optP = document.createElement('p');
+                        optP.className = 'result-option text-sm';
+                        optP.innerHTML = `${opt.letter}. ${opt.text}`;
+                        if (opt.isCorrectOption) optP.classList.add('correct-answer');
+                        if (opt.letter === question.userSelectedOptionLetter) {
+                            optP.classList.add('user-selected');
+                            if (!question.isAnsweredCorrectly && question.userSelectedOptionLetter !== null) optP.classList.add('incorrect-answer');
+                        }
+                        optionsDiv.appendChild(optP);
+                    });
+                    if (question.explanation) {
+                        const explanationDiv = document.createElement('div');
+                        explanationDiv.className = 'explanation-container mt-3';
+                        explanationDiv.innerHTML = `<p class="font-semibold text-sm">Explanation:</p><p class="text-sm">${question.explanation}</p>`;
+                        optionsDiv.appendChild(explanationDiv);
+                    }
+                }
+                itemDiv.querySelector('.cursor-pointer').addEventListener('click', (e) => {
+                    optionsDiv.classList.toggle('expanded');
+                    e.currentTarget.querySelector('.dropdown-arrow').classList.toggle('expanded');
+                });
+                return itemDiv;
+            };
+
+            if (retakenQuestions.length > 0) {
+                retakenQuestions.forEach(q => resultsDetailsContainer.appendChild(buildResultItemDOM(q, q.originalOrder)));
+                const separator = document.createElement('hr');
+                separator.className = 'my-6 border-t-2 rounded-full';
+                separator.style.borderColor = 'var(--border-color)';
+                resultsDetailsContainer.appendChild(separator);
+            }
+            otherQuestions.forEach(q => resultsDetailsContainer.appendChild(buildResultItemDOM(q, q.originalOrder)));
+
+            const incorrectForRedoButton = originalAllQuestionsData.filter(q => q.isAnsweredCorrectly === false);
+            if (incorrectForRedoButton.length > 0) {
+                redoIncorrectBtnExt.classList.remove('hidden');
+            } else {
+                redoIncorrectBtnExt.classList.add('hidden');
+            }
+        }
+
+        function hideExternalResultsButtons() {
+            redoIncorrectBtnExt.classList.add('hidden');
+            redoQuizBtnExt.classList.add('hidden');
+            newQuizBtnExt.classList.add('hidden');
+        }
+
+        createQuizBtn.addEventListener('click', () => {
+            const rawData = quizDataInput.value;
+            if (!rawData.trim()) { showFormatErrorModal(); return; }
+            originalAllQuestionsData = parseInput(rawData);
+            if (originalAllQuestionsData.length === 0) { showFormatErrorModal(); return; }
+            // Initial quiz creation: question order is NOT randomized, answer order IS.
+            initializeQuiz(originalAllQuestionsData, false, true, false); 
+        });
+
+        submitAnswerBtn.addEventListener('click', handleNextAction);
+
+        const commonNewQuizLogic = () => { 
+            isQuizActive = false; hideExternalResultsButtons();
+            resultsScreen.classList.add('hidden');
+            quizScreen.classList.add('hidden'); externalPauseBtn.classList.add('hidden');
+            externalSubmitEarlyBtn.classList.add('hidden'); inputScreen.classList.remove('hidden');
+            quizDataInput.value = ''; 
+            textareaPlaceholder.style.display = 'flex';
+            originalAllQuestionsData = []; currentQuizQuestions = [];
+            questionOrder = []; currentQuestionDisplayOrderIndex = 0;
+            accumulatedTotalQuizTimeMs = 0; stopTimers(true); isQuizPaused = false; 
+            currentQuestionDOM = null; questionContentContainer.innerHTML = ''; 
+        };
+        
+        redoQuizPausedBtn.addEventListener('click', () => {
+            showConfirmationModal(
+                "Retake Quiz?", 
+                "Are you sure you want to discard your paused progress and restart?",
+                () => {
+                    pauseModal.classList.remove('visible');
+                    handleRedoQuiz();
+                },
+                'btn-blue'
+            );
+        });
+       
+        const aiModelData = {
+            'chatgpt': { max: 35, format: 'not-defined' },
+            'chatgpt-plus': { max: 100, format: 'not-defined' },
+            'notebook-lm': { max: 50, format: 'notebook-lm-format' },
+            'gemini': { max: 15, format: 'not-defined' },
+            'claude': { max: 5, format: 'not-defined' },
+            'deepseek': { max: 5, format: 'not-defined' },
+            'llama': { max: 5, format: 'not-defined' }
+        };
+
+        const promptFormats = {
+            'not-defined': 'Prompt not defined for this model.',
+            'notebook-lm-format': `
+Numbered Questions: Each question starts with 1., 2., etc.
+Lettered Options: Options for each question are A., B., C., D.
+No blank lines between questions and their options, or between options of the same question. Use a blank line to separate different questions.
+Explanation: Immediately after the correct answer's text, add [explanation] followed by the explanation. 
+Do not mention the source, rather explain why the correct answer is correct and do not just restate the correct answer.
+The correct answer should have ** around it and its explanation. This is a must. It should also be bolded.
+Example of Correct answer that has bold text and ** surround it: **B. This is correct [explanation] Because of this reason.**
+One Correct Answer: Only one correct answer per question.
+All options (correct and incorrect) must seem plausible.
+At least one wrong answer choice must be at least 3 characters longer than the correct answer choice.
+At least one wrong answer choice must be at least 3 characters shorter than the correct answer choice.
+The correct answers shouldn't be evenly distributed among A, B, C, D.
+No single answer letter (A, B, C, or D) can have less than 10% of the total correct answers.
+Example: 35% A, 10% B, 25% C, 30% D is valid.
+Do not include any other text before or after the questions and answers.
+Example Question Formatting:
+1. Which planet is known as the Red Planet?
+    A. Venus.
+    B. **Mars. [explanation] Mars is often called the Red Planet due to its iron oxide-rich surface.**
+    C. Jupiter.
+    D. Earth.
+`,
+            'chatgpt-format': `Please generate a series of multiple-choice questions. For each question, provide four options labeled A, B, C, and D. Indicate the correct answer clearly by bolding it and adding a brief explanation in brackets. Ensure there are no extra line breaks between a question and its options. Separate each question block with a single blank line. The difficulty should be varied, and the position of the correct answer should be randomized.`,
+            'chatgpt-plus-format': `Produce a set of high-quality multiple-choice questions. Each question must have four plausible options (A, B, C, D). The correct option must be bolded and followed by a detailed explanation within brackets, like so: **Correct Answer [explanation]**. Maintain a compact format with no blank lines within a question block, but use one blank line to separate each question from the next. The distribution of correct answers (A, B, C, D) should be uneven.`,
+            'gemini-format': `Create a multiple-choice quiz. Follow these rules strictly: - Start each question with a number (1., 2., ...). - Provide four options: A., B., C., D. - The correct answer MUST be enclosed in double asterisks (e.g., **B. Answer here**). - Immediately after the correct answer text, provide an explanation in the format [explanation]...[/explanation]. - Do not use blank lines between a question and its set of options.`
+        };
+
+        function updateQuestionCount(value) {
+            const selectedModel = hiddenSelectInput.value;
+            const maxQuestions = (selectedModel && aiModelData[selectedModel]?.max) || 100;
+            let numValue = parseInt(value, 10);
+            if (isNaN(numValue) || numValue < 1) numValue = 1;
+            else if (numValue > maxQuestions) numValue = maxQuestions;
+            questionCountInput.value = numValue;
+            localStorage.setItem('savedQuestionCount', numValue);
+        }
+        
+        questionCountInput.addEventListener('change', (e) => updateQuestionCount(e.target.value));
+        qCountMinusBtn.addEventListener('click', () => updateQuestionCount(parseInt(questionCountInput.value, 10) - 1));
+        qCountPlusBtn.addEventListener('click', () => updateQuestionCount(parseInt(questionCountInput.value, 10) + 1));
+        qCountMaxBtn.addEventListener('click', () => { const selectedModel = hiddenSelectInput.value; if (selectedModel && aiModelData[selectedModel]) updateQuestionCount(aiModelData[selectedModel].max); });
+        
+        copyFormatBtn.addEventListener('click', () => {
+            const model = hiddenSelectInput.value; const qCount = questionCountInput.value;
+            if (!model || !qCount || qCount < 1) {
+                clearTimeout(copyTimeout);
+                copyFormatBtn.textContent = 'Select Model & Question Amount First!';
+                copyFormatBtn.classList.remove('btn-main', 'btn-green'); copyFormatBtn.classList.add('btn-red');
+                copyTimeout = setTimeout(() => { copyFormatBtn.textContent = 'Required Prompt. Click to Copy'; copyFormatBtn.classList.remove('btn-red'); copyFormatBtn.classList.add('btn-main'); }, 3000);
+                return;
+            }
+            const formatId = aiModelData[model].format; const formatText = promptFormats[formatId];
+            const fullPrompt = `Create a ${qCount} question multiple choice quiz. You must follow the required formatting presented below and should never deviate from it for any reason.\n\n${formatText}`;
+            navigator.clipboard.writeText(fullPrompt).then(() => {
+                clearTimeout(copyTimeout); copyFormatBtn.textContent = 'Copied! Paste into your AI Model.';
+                copyFormatBtn.classList.remove('btn-main', 'btn-red'); copyFormatBtn.classList.add('btn-green');
+                copyTimeout = setTimeout(() => { copyFormatBtn.textContent = 'Required Prompt. Click to Copy'; copyFormatBtn.classList.remove('btn-green'); copyFormatBtn.classList.add('btn-main'); }, 3000); 
+            }).catch(err => { console.error('Failed to copy text: ', err); });
+        });
+
+        function getOrdinalSuffix(day) {
+            if (day > 3 && day < 21) return 'th';
+            switch (day % 10) {
+                case 1:  return "st";
+                case 2:  return "nd";
+                case 3:  return "rd";
+                default: return "th";
+            }
+        }
+        function getFormattedDate() {
+            const date = new Date();
+            const day = date.getDate();
+            const month = date.toLocaleString('en-GB', { month: 'long' });
+            const year = date.getFullYear();
+            return `${day}${getOrdinalSuffix(day)} ${month} ${year}`;
+        }
+
+        function loadPromptBuilderSettings() {
+            const savedModel = localStorage.getItem('savedAiModel');
+            const savedCount = localStorage.getItem('savedQuestionCount');
+            
+            if (savedModel) {
+                 const option = document.querySelector(`#custom-select-options .custom-option[data-value="${savedModel}"]`);
+                 if (option) {
+                    hiddenSelectInput.value = savedModel;
+                    mainCustomSelectValue.textContent = option.textContent;
+                 }
+            }
+            if(savedCount) { 
+                questionCountInput.value = savedCount; 
+                updateQuestionCount(savedCount);
+            } else {
+                updateQuestionCount(10);
+            }
+
+            const formattedDate = getFormattedDate();
+            if(todayDateSpan) todayDateSpan.textContent = formattedDate;
+        }
+        
+        quizDataInput.addEventListener('input', () => {
+            textareaPlaceholder.style.display = quizDataInput.value ? 'none' : 'flex';
+        });
+
+        function showFormatErrorModal() { formatErrorModal.classList.add('visible'); }
+        formatModalOkBtn.addEventListener('click', () => formatErrorModal.classList.remove('visible'));
+
+        function setDynamicContainerHeight(containerSelector, topOffset = 56, bottomOffset = 0) {
+            const topControls = document.querySelector('.top-controls-area');
+            const footer = document.querySelector('.app-footer');
+            const container = document.querySelector(containerSelector);
+
+            if (!topControls || !footer || !container) return;
+
+            const topHeight = topControls.offsetHeight;
+            const footerHeight = footer.offsetHeight;
+            const availableHeight = window.innerHeight - topHeight - footerHeight - topOffset - bottomOffset;
+            
+            container.style.height = `${availableHeight}px`;
+        }
+
+        function setAllContainerHeights() {
+            setDynamicContainerHeight('.quiz-container', 56);
+            setDynamicContainerHeight('.settings-panel', 56);
+        }
+
+        window.addEventListener('beforeunload', (e) => { if (isQuizActive) { e.preventDefault(); e.returnValue = ''; } });
+        
+        // --- Keyboard Navigation ---
+        function handleKeyboardNav(e) {
+            if (!isQuizActive || isQuizPaused || !keyboardFunctionsToggle.checked) return;
+
+            const question = getCurrentQuestionData();
+            if (!question || question.isAnsweredCorrectly !== null) return; // Only for unanswered questions
+
+            const options = Array.from(currentQuestionDOM.querySelectorAll('.btn-option'));
+            let currentSelectedIndex = options.findIndex(opt => opt.classList.contains('keyboard-selected'));
+
+            switch (e.key) {
+                case 'w':
+                case 'ArrowUp':
+                    e.preventDefault();
+                    options.forEach(o => o.classList.remove('keyboard-selected'));
+                    let prevIndex = (currentSelectedIndex - 1 + options.length) % options.length;
+                    options[prevIndex].classList.add('keyboard-selected');
+                    break;
+                case 's':
+                case 'ArrowDown':
+                    e.preventDefault();
+                    options.forEach(o => o.classList.remove('keyboard-selected'));
+                    let nextIndex = (currentSelectedIndex + 1) % options.length;
+                    options[nextIndex].classList.add('keyboard-selected');
+                    break;
+                case 'a':
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    if (currentQuestionDisplayOrderIndex > 0) {
+                        navigateToQuestion(currentQuestionDisplayOrderIndex - 1, false, 'prev');
+                    }
+                    break;
+                case 'd':
+                case 'ArrowRight':
+                    e.preventDefault();
+                    if (currentQuestionDisplayOrderIndex < questionOrder.length - 1) {
+                         navigateToQuestion(currentQuestionDisplayOrderIndex + 1, false, 'next');
+                    }
+                    break;
+                case ' ':
+                case 'Enter':
+                    e.preventDefault();
+                    if (currentSelectedIndex > -1) {
+                        selectedOptionLetter = options[currentSelectedIndex].dataset.letter;
+                        handleSubmitAnswer();
+                    }
+                    break;
+            }
+        }
+        
+        // --- Init & Load ---
+
+        function loadPreferences() {
+            // Theme
+            const preferredTheme = localStorage.getItem('quizTheme');
+            if (preferredTheme === 'dark') setDarkMode();
+            else setLightMode();
+            
+            // Combine Palettes
+            combinePalettesToggle.checked = localStorage.getItem('combinePalettes') === 'true';
+            populatePaletteSelect();
+            
+            // Background Type
+            const preferredBackground = localStorage.getItem('backgroundType') || 'auto';
+            document.querySelector('#background-type-select .custom-select-value').textContent = preferredBackground.charAt(0).toUpperCase() + preferredBackground.slice(1);
+            applyBackgroundType(preferredBackground);
+
+            // MC Settings
+            keyboardFunctionsToggle.checked = localStorage.getItem('keyboardFunctions') === 'true';
+
+            const autoNextType = localStorage.getItem('autoNextType') || 'none';
+            document.querySelector('#auto-next-type-select .custom-select-value').textContent = autoNextType.charAt(0).toUpperCase() + autoNextType.slice(1);
+            updateAutoNextDurationState(autoNextType);
+            
+            autoNextDurationInput.value = localStorage.getItem('autoNextDuration') || '5';
+            
+            clickToSubmitToggle.checked = localStorage.getItem('clickToSubmit') === 'true';
+            doubleClickToSubmitToggle.checked = localStorage.getItem('doubleClickToSubmit') === 'true';
+            
+            updateHideSubmitButtonState();
+            hideSubmitButtonToggle.checked = localStorage.getItem('hideSubmitButton') === 'true';
+            applyHideSubmitButton();
+
+            randomiseQuestionOrderToggle.checked = localStorage.getItem('randomiseQuestionOrder') !== 'false'; // Default to true
+            randomiseAnswerOrderToggle.checked = localStorage.getItem('randomiseAnswerOrder') !== 'false'; // Default to true
+
+            // Set main RGB color for power saving mode dropdowns
+            setMainColorRGB();
+        }
+
+        // --- Settings Panel Specific Logic ---
+        function updateHideSubmitButtonState() {
+            const isDisabled = !clickToSubmitToggle.checked && !doubleClickToSubmitToggle.checked;
+            hideSubmitButtonItem.classList.toggle('disabled', isDisabled);
+            hideSubmitButtonToggle.disabled = isDisabled;
+            if (isDisabled) {
+                hideSubmitButtonToggle.checked = false;
+                localStorage.setItem('hideSubmitButton', 'false');
+            }
+            applyHideSubmitButton();
+        }
+
+        function applyHideSubmitButton() {
+            const shouldHide = hideSubmitButtonToggle.checked && (clickToSubmitToggle.checked || doubleClickToSubmitToggle.checked);
+            submitAnswerBtn.classList.toggle('hidden', shouldHide);
+        }
+
+        function updateAutoNextDurationState(type) {
+            const isDisabled = type === 'none';
+            autoNextDurationItem.classList.toggle('disabled', isDisabled);
+            autoNextDurationInput.disabled = isDisabled;
+        }
+
+        clickToSubmitToggle.addEventListener('change', (e) => {
+            localStorage.setItem('clickToSubmit', e.target.checked);
+            if(e.target.checked) {
+                doubleClickToSubmitToggle.checked = false;
+                localStorage.setItem('doubleClickToSubmit', 'false');
+                hideSubmitButtonToggle.checked = true;
+                localStorage.setItem('hideSubmitButton', 'true');
+            }
+            updateHideSubmitButtonState();
+        });
+        
+        doubleClickToSubmitToggle.addEventListener('change', (e) => {
+            localStorage.setItem('doubleClickToSubmit', e.target.checked);
+            if(e.target.checked) {
+                clickToSubmitToggle.checked = false;
+                localStorage.setItem('clickToSubmit', 'false');
+            }
+            updateHideSubmitButtonState();
+        });
+        
+        hideSubmitButtonToggle.addEventListener('change', (e) => {
+            localStorage.setItem('hideSubmitButton', e.target.checked);
+            applyHideSubmitButton();
+        });
+
+        autoNextDurationInput.addEventListener('change', (e) => {
+            let value = parseInt(e.target.value, 10);
+            if (isNaN(value) || value < 1) value = 1;
+            if (value > 60) value = 60;
+            e.target.value = value;
+            localStorage.setItem('autoNextDuration', value);
+        });
+
+        // Event Listeners for settings that need saving
+        combinePalettesToggle.addEventListener('change', e => {
+            localStorage.setItem('combinePalettes', e.target.checked);
+            populatePaletteSelect();
+        });
+        keyboardFunctionsToggle.addEventListener('change', e => localStorage.setItem('keyboardFunctions', e.target.checked));
+        randomiseQuestionOrderToggle.addEventListener('change', e => localStorage.setItem('randomiseQuestionOrder', e.target.checked));
+        randomiseAnswerOrderToggle.addEventListener('change', e => localStorage.setItem('randomiseAnswerOrder', e.target.checked));
+        
+        // Settings Modal Navigation
+        settingsBtn.addEventListener('click', () => settingsModal.classList.add('visible'));
+        closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('visible'));
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) settingsModal.classList.remove('visible');
+        });
+
+        settingsNavPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                const pageId = `settings-page-${pill.dataset.page}`;
+
+                settingsNavPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+
+                settingsPages.forEach(page => {
+                    if (page.id === pageId) {
+                        page.classList.remove('hidden', 'is-fading-out');
+                        page.classList.add('is-fading-in');
+                    } else {
+                        page.classList.add('hidden');
+                    }
+                });
+            });
+        });
+
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setupCustomSelect('custom-select-container', 'savedAiModel', (value) => updateQuestionCount(questionCountInput.value));
+            setupCustomSelect('background-type-select', 'backgroundType', (value) => setBackgroundType(value, true));
+            setupCustomSelect('palette-select', 'selectedPalette', (value) => {
+                currentBgPaletteName = value;
+                applyBackgroundPalette();
+            });
+            setupCustomSelect('auto-next-type-select', 'autoNextType', (value) => updateAutoNextDurationState(value));
+
+            loadPreferences(); 
+            loadPromptBuilderSettings();
+            
+            resizeSmudgeCanvas(); 
+            setAllContainerHeights(); 
+            checkInitialPowerState();
+
+            window.addEventListener('resize', () => {
+                resizeSmudgeCanvas();
+                setAllContainerHeights();
+            }); 
+            
+            document.addEventListener('keydown', handleKeyboardNav);
+        });
+    </script>
+</body>
+</html>
