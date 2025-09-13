@@ -12,7 +12,8 @@
     
     :root {
         /* Light Mode Defaults */
-        --main-color: #f3f4f6;
+        --main-color: rgb(240, 240, 240);
+        --main-contrast: rgba(220, 220, 220, 0.9);
         --secondary-color: rgb(110, 110, 110);
         --layout-background: rgba(240, 240, 240, 0.25);
         --main-content-bg: rgba(240, 240, 240, 0.5);
@@ -21,6 +22,8 @@
         --text-secondary: rgb(37, 37, 37);
         --layout-box-shadow: rgba(0, 0, 0, 0.1);
         --border-color: rgb(209, 213, 219);
+        --highlight-bg: rgb(31, 31, 31);
+        --highlight-text: rgb(240, 240, 240);
 
         /* UI Colors (shared between modes) */
         --ui-green-bg: rgba(7, 177, 124, 0.3);
@@ -46,6 +49,7 @@
 
     html.dark {
         --main-color: rgba(10, 10, 10);
+        --main-contrast: rgba(30, 30, 30, 0.9);
         --secondary-color: rgba(50, 50, 50);
         --layout-background: rgba(10,10,10,0.3);
         --main-content-bg: rgba(25,25,25,0.5);
@@ -54,11 +58,22 @@
         --text-secondary: rgba(200, 200, 200);
         --layout-box-shadow: rgba(0, 0, 0, 0.3);
         --border-color: rgba(75, 75, 75, 0.1);
+        --highlight-bg: rgb(240, 240, 240);
+        --highlight-text: rgb(10, 10, 10);
 
         --ui-main-bg: rgba(10, 10, 10, 0.35);
         --ui-main-fills: rgba(100, 100, 100, 0.5);
         --ui-main-bg-hover: rgba(50, 50, 50, 0.5);
         --ui-main-fills-hover: rgba(240, 240, 240, 0.8);
+    }
+    
+    ::selection {
+        background: var(--highlight-bg);
+        color: var(--highlight-text);
+    }
+    ::-moz-selection {
+        background: var(--highlight-bg);
+        color: var(--highlight-text);
     }
 
     body {
@@ -90,19 +105,20 @@
         filter: blur(20px);
     }
 
-
     #gradient-background {
-        background: conic-gradient(from 180deg at 50% 70%, var(--gradient-color-1), var(--gradient-color-2), var(--gradient-color-3), var(--gradient-color-4), var(--gradient-color-5), var(--main-color), var(--gradient-color-1));
-        animation: rotateGradient 120s linear infinite;
+        background: conic-gradient(from var(--start-angle, 180deg) at 50% 70%, var(--gradient-color-1), var(--gradient-color-2), var(--gradient-color-3), var(--gradient-color-4), var(--gradient-color-5), var(--main-color), var(--gradient-color-1));
+        animation: rotateGradient 120s linear infinite, fadeInBg 1s ease-out forwards;
         transform-origin: center;
-        opacity: 0.8;
     }
 
     @keyframes rotateGradient {
         from { transform: rotate(0deg) scale(2.5); }
         to { transform: rotate(360deg) scale(2.5); }
     }
-
+    @keyframes fadeInBg {
+        from { opacity: 0; }
+        to { opacity: 0.8; }
+    }
 
     #app {
        flex-grow: 1;
@@ -132,7 +148,7 @@
         margin: 1rem auto;
         border-radius: 1.5rem; 
         position: relative;
-        overflow-y: hidden;
+        overflow: hidden; /* Changed from overflow-y: hidden */
         display: flex;
         flex-direction: column;
     }
@@ -287,7 +303,7 @@
         font-size: 1.25rem;
         opacity: 0.6;
     }
-    #quiz-data-input:focus, #question-count-input:focus {
+    #quiz-data-input:focus, .number-input:focus, .settings-number-input:focus {
         outline: none;
         background-color: var(--ui-main-bg-hover);
         box-shadow: none;
@@ -459,9 +475,12 @@
         background-color: var(--ui-green-bg);
         color: var(--ui-green-fills);
     }
+    .result-option.incorrect-answer {
+        background-color: var(--ui-red-bg);
+        color: var(--ui-red-fills);
+    }
     .result-option.user-selected.incorrect-answer {
         border: 2px solid var(--ui-main-fills-hover);
-        background-color: var(--ui-red-bg);
     }
     .explanation-container {
         background-color: var(--secondary-content-bg);
@@ -471,6 +490,7 @@
 
     .result-option-time{
         width: max-content;
+        color: var(--text-secondary);
     }
 
     .result-option-question{
@@ -479,9 +499,11 @@
     
     .dropdown-arrow, .select-arrow svg {
         transition: transform 0.3s ease-in-out;
+        color: var(--text-secondary);
     }
     .dropdown-arrow.expanded, .select-arrow.expanded svg {
         transform: rotate(180deg);
+        color: var(--text-secondary);
     }
 
     #results-details-container {
@@ -560,6 +582,16 @@
         background-color: var(--ui-main-bg-hover);
         border-color: var(--ui-main-fills-hover);
         box-shadow: 0 0 1rem 0.2rem var(--ui-main-fills-hover);
+    }
+    .control-button.btn-green {
+        background-color: var(--ui-green-bg);
+        color: var(--ui-green-fills);
+        border-color: var(--ui-green-fills);
+    }
+    body:not(.power-saving-mode) .control-button.btn-green:hover {
+        background-color: var(--ui-green-bg-hover);
+        border-color: var(--ui-green-fills-hover);
+        box-shadow: 0 0 1rem 0.2rem var(--ui-green-fills);
     }
     .control-button svg {
         width: 1.5rem;
@@ -667,6 +699,7 @@
         display: flex;
         flex-direction: column;
         min-height: 0;
+        overflow: hidden; /* Added to prevent child animations from showing scrollbar */
     }
 
     #quiz-sticky-header {
@@ -737,12 +770,20 @@
         backdrop-filter: blur(5px);
     }
     .power-saving-mode .custom-select-options {
-        background-color: rgba(var(--main-color-rgb), 0.9);
+        background-color: var(--main-contrast);
     }
 
-    .power-saving-mode .settings-panel{
-        background-color: rgba(var(--main-color-rgb), 0.9);
+    .power-saving-mode .settings-panel,
+    .power-saving-mode .settings-section,
+    .power-saving-mode .modal-content
+     {
+        background-color: var(--main-contrast);
     }
+     body.power-saving-mode .info-tooltip .tooltip-text {
+        backdrop-filter: none;
+        background-color: var(--main-contrast);
+    }
+
 
     .custom-option {
         padding: 0.75rem;
@@ -760,25 +801,26 @@
     .custom-option:first-child { border-top-left-radius: 0.75rem;}
     .custom-option:last-child { border-bottom-left-radius: 0.75rem;}
     #palette-select .custom-option {
-        border-left: 5px solid;
+        border-left-width: 5px;
+        border-left-style: solid;
+        border-image-slice: 1;
     }
 
     .number-input-container {
         display: flex; 
         align-items: center; 
-        flex-grow: 1;
-        border: none;
         border-radius: 0.75rem;
         overflow: hidden;
         line-height: normal;
     }
     .number-input, .settings-number-input {
-        width: 2.5rem; 
+        width: 3rem; 
         padding: 0.35rem 0.1rem; 
         text-align: center;
         background-color: var(--ui-main-bg);
         color: var(--text-primary);
         border: none;
+        -moz-appearance: textfield;
     }
     .number-input::-webkit-outer-spin-button, 
     .number-input::-webkit-inner-spin-button,
@@ -881,13 +923,22 @@
         padding: 1rem 1.5rem;
         animation: fadeIn 0.3s ease-out;
     }
+    .settings-section {
+        background-color: var(--layout-background);
+        padding: 1rem;
+        border-radius: 1.55rem;
+        margin-top: 1.5rem;
+    }
+    .settings-page > .settings-section:first-child {
+        margin-top: 0;
+    }
 
     .settings-section-heading {
         text-align: center;
         font-size: 1.25rem;
         font-weight: 600;
         color: var(--text-primary);
-        margin: 1rem 0;
+        margin-bottom: 1rem;
     }
 
     .setting-item {
@@ -899,6 +950,10 @@
         align-items: center;
         margin-bottom: 0.75rem;
     }
+    .settings-section > .setting-item:last-child {
+        margin-bottom: 0;
+    }
+
 
     .setting-text-container {
         display: flex;
@@ -929,6 +984,7 @@
         transition: opacity 0.3s;
         font-size: 0.875rem;
         font-weight: 400;
+        backdrop-filter: blur(10px);
     }
     .info-tooltip:hover .tooltip-text {
         visibility: visible;
@@ -939,14 +995,30 @@
         width: 56px;
         height: 32px;
         background-color: var(--ui-main-bg);
+        border: 1px solid var(--ui-main-fills);
         border-radius: 9999px;
         position: relative;
         cursor: pointer;
         padding: 4px;
         display: flex;
         align-items: center;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
     }
+    .toggle-switch:hover {
+        background-color: var(--ui-main-bg-hover);
+        border-color: var(--ui-main-fills-hover);
+    }
+    
+    .settings-page-general .toggle-switch:has(input:checked) {
+        background-color: var(--ui-blue-bg);
+        border-color: var(--ui-blue-fills);
+    }
+    
+    .settings-page-multiple-choice .toggle-switch:has(input:checked) {
+        background-color: var(--ui-red-bg);
+        border-color: var(--ui-red-fills);
+    }
+
     .toggle-switch-circle {
         width: 24px;
         height: 24px;
@@ -955,7 +1027,7 @@
         border-radius: 50%;
         position: absolute;
         left: 4px;
-        transition: transform 0.3s ease;
+        transition: transform 0.3s ease, border-color 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -978,23 +1050,7 @@
     }
     .toggle-switch input:checked ~ .icon-off { opacity: 0; }
     .toggle-switch input:checked ~ .icon-on { opacity: 1; }
-
-    /* Theme Toggle Specifics */
-    #theme-toggle-setting.toggle-switch {
-        background-color: var(--ui-yellow-bg);
-    }
-    #theme-toggle-setting input:checked + .toggle-switch-circle {
-        border-color: var(--ui-blue-fills);
-    }
-     #theme-toggle-setting input:checked {
-        background-color: var(--ui-blue-bg);
-    }
     
-    /* Power Saving Toggle Specifics */
-    #power-saving-toggle.toggle-switch { background-color: var(--ui-blue-bg); }
-    #power-saving-toggle input:checked + .toggle-switch-circle { border-color: var(--ui-green-fills); }
-    #power-saving-toggle input:checked { background-color: var(--ui-green-bg); }
-
     .setting-item.disabled {
         opacity: 0.5;
         cursor: not-allowed;
@@ -1060,8 +1116,9 @@
             </button>
         </div>
         <div class="right-controls">
-            <button id="pause-quiz-btn-ext" class="external-quiz-action-btn btn btn-blue hidden">Pause</button>
-            <button id="submit-quiz-early-btn-ext" class="external-quiz-action-btn btn btn-red hidden">Submit Quiz</button>
+            <button id="pause-quiz-btn" class="control-button btn-green hidden" aria-label="Pause quiz">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-6-13.5v13.5" /></svg>
+            </button>
             
             <button id="redo-incorrect-btn-ext" class="external-quiz-action-btn btn btn-green hidden">Redo Incorrect</button>
             <button id="redo-quiz-btn-ext" class="external-quiz-action-btn btn btn-blue hidden">Retake Quiz</button>
@@ -1080,7 +1137,7 @@
                             <span>Select your AI Model:</span>
                             <div id="custom-select-container" class="relative">
                                 <button id="custom-select-trigger" class="btn btn-main custom-select-trigger">
-                                    <span id="custom-select-value">Choose an AI Model</span>
+                                    <span id="custom-select-value" class="custom-select-value">Choose an AI Model</span>
                                     <div class="select-arrow">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </div>
@@ -1090,9 +1147,9 @@
                                     <div class="custom-option" data-value="chatgpt-plus">ChatGPT Plus</div>
                                     <div class="custom-option" data-value="notebook-lm">Notebook LM</div>
                                     <div class="custom-option" data-value="gemini">Gemini</div>
-                                    <div class="custom-option disabled" data-value="claude">Claude</div>
-                                    <div class="custom-option disabled" data-value="deepseek">Deepseek</div>
-                                    <div class="custom-option disabled" data-value="llama">Llama</div>
+                                    <div class="custom-option" data-value="claude">Claude</div>
+                                    <div class="custom-option" data-value="deepseek">Deepseek</div>
+                                    <div class="custom-option" data-value="llm">LLM/Other</div>
                                 </div>
                                 <input type="hidden" id="ai-model-select-hidden">
                             </div>
@@ -1102,8 +1159,8 @@
                         <div class="prompt-builder-row">
                             <span>Enter number of questions:</span>
                             <div class="number-input-container">
-                                <input type="number" id="question-count-input" class="number-input" min="1" value="10">
                                 <button class="number-input-btn" id="q-count-minus-btn">-</button>
+                                <input type="number" id="question-count-input" class="number-input" min="1" value="10">
                                 <button class="number-input-btn" id="q-count-plus-btn">+</button>
                                 <button class="number-input-btn" id="q-count-max-btn">MAX</button>
                             </div>
@@ -1165,9 +1222,9 @@
     </div>
 
     <footer class="app-footer">
-        <p class="version-info">v1.5.0</p> 
+        <p class="version-info">v1.5.3 - Beta</p> 
         <p class="author-credits">Made by Pranay Bhana with Gemini</p> 
-        <p class="last-updated">Last Updated: 6th September 2025</p>
+        <p class="last-updated">Last Updated: 14th September 2025</p>
     </footer>
 
     <!-- Modals -->
@@ -1186,176 +1243,217 @@
             <div id="settings-content-container" class="scrollable-content flex-grow">
                 <!-- General Settings Page -->
                 <div id="settings-page-general" class="settings-page">
-                    <h3 class="settings-section-heading">Performance</h3>
-                    <div class="setting-item">
-                        <div class="setting-text-container">
-                           <span class="setting-text">Power Saving Mode</span>
-                           <div class="info-tooltip">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-                               <span class="tooltip-text">Sets background to none and removes other UI elements for better performance and battery life.</span>
-                           </div>
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Performance</h3>
+                        <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Power Saving Mode</span>
+                               <div class="info-tooltip">
+                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                   <span class="tooltip-text">Sets background to none and removes other UI elements for better performance and battery life.</span>
+                               </div>
+                            </div>
+                            <label id="power-saving-toggle" class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-switch-circle"></span>
+                                <svg class="toggle-switch-icon icon-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" /></svg>
+                                <svg class="toggle-switch-icon icon-on" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502" /></svg>
+                            </label>
                         </div>
-                        <label id="power-saving-toggle" class="toggle-switch">
-                            <input type="checkbox">
-                            <span class="toggle-switch-circle"></span>
-                            <svg class="toggle-switch-icon icon-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" /></svg>
-                            <svg class="toggle-switch-icon icon-on" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502" /></svg>
-                        </label>
                     </div>
 
-                    <h3 class="settings-section-heading">Background & Theme</h3>
-                    <div class="setting-item">
-                        <span class="setting-text">Theme</span>
-                         <label id="theme-toggle-setting" class="toggle-switch">
-                            <input type="checkbox"> <!-- Unchecked = Light, Checked = Dark -->
-                            <span class="toggle-switch-circle"></span>
-                            <svg class="toggle-switch-icon icon-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" /></svg>
-                            <svg class="toggle-switch-icon icon-on" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" /></svg>
-                        </label>
-                    </div>
-                     <div class="setting-item">
-                        <div class="setting-text-container">
-                           <span class="setting-text">Background Type</span>
-                           <div class="info-tooltip">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-                               <span class="tooltip-text">Particle - Heavy Resource, Gradient - Laptop Friendly, Auto - Based on Charging Status.</span>
-                           </div>
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Background & Theme</h3>
+                        <div class="setting-item">
+                            <span class="setting-text">Theme</span>
+                             <label id="theme-toggle-setting" class="toggle-switch">
+                                <input type="checkbox"> <!-- Unchecked = Light, Checked = Dark -->
+                                <span class="toggle-switch-circle"></span>
+                                <svg class="toggle-switch-icon icon-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" /></svg>
+                                <svg class="toggle-switch-icon icon-on" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" /></svg>
+                            </label>
                         </div>
-                        <div id="background-type-select" class="relative">
-                            <button class="btn btn-main custom-select-trigger" style="width: 10rem;">
-                                <span class="custom-select-value">Auto</span>
-                                <div class="select-arrow">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                         <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Background Type</span>
+                               <div class="info-tooltip">
+                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                   <span class="tooltip-text">Particle - Heavy Resource, Gradient - Laptop Friendly, Auto - Based on Charging Status.</span>
+                               </div>
+                            </div>
+                            <div id="background-type-select" class="relative">
+                                <button class="btn btn-main custom-select-trigger" style="width: 10rem;">
+                                    <span class="custom-select-value">Auto</span>
+                                    <div class="select-arrow">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </button>
+                                <div class="hidden custom-select-options">
+                                    <div class="custom-option" data-value="auto">Auto</div>
+                                    <div class="custom-option" data-value="particle">Particle</div>
+                                    <div class="custom-option" data-value="gradient">Gradient</div>
+                                    <div class="custom-option" data-value="none">None</div>
                                 </div>
-                            </button>
-                            <div class="hidden custom-select-options">
-                                <div class="custom-option" data-value="auto">Auto</div>
-                                <div class="custom-option" data-value="particle">Particle</div>
-                                <div class="custom-option" data-value="gradient">Gradient</div>
-                                <div class="custom-option" data-value="none">None</div>
                             </div>
                         </div>
                     </div>
 
-                    <h3 class="settings-section-heading">Color Palettes</h3>
-                    <div class="setting-item">
-                        <span class="setting-text">Combine Light & Dark Mode Palettes</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="combine-palettes-toggle">
-                            <span class="toggle-switch-circle"></span>
-                        </label>
-                    </div>
-                    <div class="setting-item">
-                       <span class="setting-text">Default Colour Palettes</span>
-                       <div id="palette-select" class="relative">
-                           <button class="btn btn-main custom-select-trigger" style="width: 10rem;">
-                               <span class="custom-select-value">All</span>
-                               <div class="select-arrow">
-                                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Color Palettes</h3>
+                        <div class="setting-item">
+                            <span class="setting-text">Combine Light & Dark Mode Palettes</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="combine-palettes-toggle">
+                                <span class="toggle-switch-circle"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                           <span class="setting-text" id="palette-select-label">Default Colour Palettes</span>
+                           <div id="palette-select" class="relative">
+                               <button class="btn btn-main custom-select-trigger" style="width: 10rem;">
+                                   <span class="custom-select-value">All</span>
+                                   <div class="select-arrow">
+                                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                   </div>
+                               </button>
+                               <div class="hidden custom-select-options">
+                                   <!-- Options will be populated by JS -->
                                </div>
-                           </button>
-                           <div class="hidden custom-select-options">
-                               <!-- Options will be populated by JS -->
                            </div>
                        </div>
-                   </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Medal Percentage Values</h3>
+                        <div class="setting-item">
+                            <span class="setting-text">Gold Medal Percentage</span>
+                            <div class="number-input-container">
+                                <button class="number-input-btn medal-btn" data-input="gold-medal-input" data-action="minus">-</button>
+                                <input type="number" id="gold-medal-input" class="settings-number-input" min="0" max="100" step="0.1" value="100">
+                                <button class="number-input-btn medal-btn" data-input="gold-medal-input" data-action="plus">+</button>
+                            </div>
+                        </div>
+                         <div class="setting-item">
+                            <span class="setting-text">Silver Medal Percentage</span>
+                            <div class="number-input-container">
+                                <button class="number-input-btn medal-btn" data-input="silver-medal-input" data-action="minus">-</button>
+                                <input type="number" id="silver-medal-input" class="settings-number-input" min="0" max="100" step="0.1" value="80">
+                                <button class="number-input-btn medal-btn" data-input="silver-medal-input" data-action="plus">+</button>
+                            </div>
+                        </div>
+                         <div class="setting-item">
+                            <span class="setting-text">Bronze Medal Percentage</span>
+                            <div class="number-input-container">
+                                <button class="number-input-btn medal-btn" data-input="bronze-medal-input" data-action="minus">-</button>
+                                <input type="number" id="bronze-medal-input" class="settings-number-input" min="0" max="100" step="0.1" value="65">
+                                <button class="number-input-btn medal-btn" data-input="bronze-medal-input" data-action="plus">+</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Multiple Choice Settings Page -->
                 <div id="settings-page-multiple-choice" class="settings-page hidden">
-                    <h3 class="settings-section-heading">Navigation</h3>
-                    <div class="setting-item">
-                        <div class="setting-text-container">
-                           <span class="setting-text">Keyboard Functions</span>
-                           <div class="info-tooltip">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-                               <span class="tooltip-text">W/S/↑/↓ to select. A/D/←/→ to navigate. Space/Enter to submit.</span>
-                           </div>
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Navigation</h3>
+                        <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Keyboard Functions</span>
+                               <div class="info-tooltip">
+                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                   <span class="tooltip-text">W/S/↑/↓ to select. A/D/←/→ to navigate. Space/Enter to submit/move to next question.</span>
+                               </div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="keyboard-functions-toggle">
+                                <span class="toggle-switch-circle"></span>
+                            </label>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="keyboard-functions-toggle">
-                            <span class="toggle-switch-circle"></span>
-                        </label>
-                    </div>
-                     <div class="setting-item">
-                        <div class="setting-text-container">
-                           <span class="setting-text">Auto Next Type</span>
-                           <div class="info-tooltip">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-                               <span class="tooltip-text">Automatically goes to next question based on question result.</span>
-                           </div>
-                        </div>
-                        <div id="auto-next-type-select" class="relative">
-                            <button class="btn btn-main custom-select-trigger" style="width: 10rem;">
-                                <span class="custom-select-value">None</span>
-                                <div class="select-arrow">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                         <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Auto Next Type</span>
+                               <div class="info-tooltip">
+                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                   <span class="tooltip-text">Automatically goes to next question based on question result.</span>
+                               </div>
+                            </div>
+                            <div id="auto-next-type-select" class="relative">
+                                <button class="btn btn-main custom-select-trigger" style="width: 10rem;">
+                                    <span class="custom-select-value">None</span>
+                                    <div class="select-arrow">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </button>
+                                <div class="hidden custom-select-options">
+                                   <div class="custom-option" data-value="none">None</div>
+                                   <div class="custom-option" data-value="correct">Correct</div>
+                                   <div class="custom-option" data-value="incorrect">Incorrect</div>
+                                   <div class="custom-option" data-value="all">All</div>
                                 </div>
-                            </button>
-                            <div class="hidden custom-select-options">
-                               <div class="custom-option" data-value="none">None</div>
-                               <div class="custom-option" data-value="correct">Correct</div>
-                               <div class="custom-option" data-value="incorrect">Incorrect</div>
-                               <div class="custom-option" data-value="all">All</div>
+                            </div>
+                        </div>
+                        <div id="auto-next-duration-item" class="setting-item">
+                            <span class="setting-text">Auto Next Duration (s)</span>
+                             <div class="number-input-container">
+                                <button class="number-input-btn auto-next-btn" data-action="minus">-</button>
+                                <input type="number" id="auto-next-duration-input" class="settings-number-input" min="1" max="60" value="5">
+                                <button class="number-input-btn auto-next-btn" data-action="plus">+</button>
                             </div>
                         </div>
                     </div>
-                    <div id="auto-next-duration-item" class="setting-item">
-                        <span class="setting-text">Auto Next Duration (s)</span>
-                        <div class="number-input-container">
-                            <input type="number" id="auto-next-duration-input" class="settings-number-input" min="1" max="60" value="5">
-                        </div>
-                    </div>
 
-                    <h3 class="settings-section-heading">Submission</h3>
-                     <div class="setting-item">
-                        <span class="setting-text">Click To Submit</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="click-to-submit-toggle">
-                            <span class="toggle-switch-circle"></span>
-                        </label>
-                    </div>
-                     <div class="setting-item">
-                        <span class="setting-text">Double Click To Submit</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="double-click-to-submit-toggle">
-                            <span class="toggle-switch-circle"></span>
-                        </label>
-                    </div>
-                     <div id="hide-submit-button-item" class="setting-item">
-                        <div class="setting-text-container">
-                           <span class="setting-text">Hide Submit Button</span>
-                           <div class="info-tooltip">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-                               <span class="tooltip-text">Hides Submit Button. Only available when Click/Double Click is enabled.</span>
-                           </div>
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Submission</h3>
+                         <div class="setting-item">
+                            <span class="setting-text">Click To Submit</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="click-to-submit-toggle">
+                                <span class="toggle-switch-circle"></span>
+                            </label>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="hide-submit-button-toggle">
-                            <span class="toggle-switch-circle"></span>
-                        </label>
-                    </div>
-
-                    <h3 class="settings-section-heading">Randomisation</h3>
-                     <div class="setting-item">
-                         <div class="setting-text-container">
-                            <span class="setting-text">Randomise Question Order</span>
-                            <div class="info-tooltip">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-                                <span class="tooltip-text">Randomizes the order of questions when you retake a quiz.</span>
+                         <div class="setting-item">
+                            <span class="setting-text">Double Click To Submit</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="double-click-to-submit-toggle">
+                                <span class="toggle-switch-circle"></span>
+                            </label>
+                        </div>
+                         <div id="hide-submit-button-item" class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Hide Submit Button</span>
+                               <div class="info-tooltip">
+                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                   <span class="tooltip-text">Hides Submit Button. Only available when Click/Double Click is enabled.</span>
+                               </div>
                             </div>
-                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="randomise-question-order-toggle">
-                            <span class="toggle-switch-circle"></span>
-                        </label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="hide-submit-button-toggle">
+                                <span class="toggle-switch-circle"></span>
+                            </label>
+                        </div>
                     </div>
-                     <div class="setting-item">
-                        <span class="setting-text">Randomise Answer Choice Order</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="randomise-answer-order-toggle">
-                            <span class="toggle-switch-circle"></span>
-                        </label>
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Randomisation</h3>
+                         <div class="setting-item">
+                             <div class="setting-text-container">
+                                <span class="setting-text">Randomise Question Order</span>
+                                <div class="info-tooltip">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                    <span class="tooltip-text">Randomizes the order of questions when you retake a quiz.</span>
+                                </div>
+                             </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="randomise-question-order-toggle">
+                                <span class="toggle-switch-circle"></span>
+                            </label>
+                        </div>
+                         <div class="setting-item">
+                            <span class="setting-text">Randomise Answer Choice Order</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="randomise-answer-order-toggle">
+                                <span class="toggle-switch-circle"></span>
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1422,8 +1520,7 @@
         const themeToggle = document.querySelector('#theme-toggle-setting input');
         
         const changePaletteBtn = document.getElementById('change-palette-btn');
-        const externalPauseBtn = document.getElementById('pause-quiz-btn-ext');
-        const externalSubmitEarlyBtn = document.getElementById('submit-quiz-early-btn-ext');
+        const pauseQuizBtn = document.getElementById('pause-quiz-btn');
 
         const inputScreen = document.getElementById('input-screen');
         const quizScreen = document.getElementById('quiz-screen');
@@ -1489,6 +1586,7 @@
         
         // Settings Panel Elements
         const combinePalettesToggle = document.getElementById('combine-palettes-toggle');
+        const paletteSelectLabel = document.getElementById('palette-select-label');
         const keyboardFunctionsToggle = document.getElementById('keyboard-functions-toggle');
         const autoNextDurationItem = document.getElementById('auto-next-duration-item');
         const autoNextDurationInput = document.getElementById('auto-next-duration-input');
@@ -1498,7 +1596,9 @@
         const hideSubmitButtonToggle = document.getElementById('hide-submit-button-toggle');
         const randomiseQuestionOrderToggle = document.getElementById('randomise-question-order-toggle');
         const randomiseAnswerOrderToggle = document.getElementById('randomise-answer-order-toggle');
-
+        const goldMedalInput = document.getElementById('gold-medal-input');
+        const silverMedalInput = document.getElementById('silver-medal-input');
+        const bronzeMedalInput = document.getElementById('bronze-medal-input');
 
         // Quiz State Variables
         let originalAllQuestionsData = []; 
@@ -1519,6 +1619,8 @@
         let copyTimeout = null;
         let questionCountInputTimeout = null;
         let lastClickTime = 0;
+        let currentPaletteForDisplay = '';
+
 
         // --- ANIMATED BACKGROUND LOGIC ---
         const smudgeBackgroundCanvas = document.getElementById('smudge-background-canvas');
@@ -1660,18 +1762,24 @@
         function applyBackgroundPalette() {
             const allPalettes = getAllPalettes();
             let chosenPalette;
+            let chosenPaletteName = currentBgPaletteName;
 
-            if (currentBgPaletteName === 'All') {
+            if (currentBgPaletteName === 'All' || !allPalettes[currentBgPaletteName]) {
                 const paletteKeys = Object.keys(allPalettes);
                 const randomKey = paletteKeys[Math.floor(Math.random() * paletteKeys.length)];
                 chosenPalette = allPalettes[randomKey];
+                chosenPaletteName = randomKey;
             } else {
                 chosenPalette = allPalettes[currentBgPaletteName];
             }
             
+            currentPaletteForDisplay = chosenPaletteName;
+            updatePaletteLabel();
+            
             if (!chosenPalette) { // Fallback
                 chosenPalette = backgroundPalettes.light.Sunrise;
             }
+
             smudgeEffectColors = [...chosenPalette];
             
             if (smudgeEffectColors.length >= 5) {
@@ -1683,6 +1791,16 @@
             }
 
             if(isParticleAnimationRunning) initSmudgeEffect();
+            
+            // This logic block handles the gradient background specifically
+            const bgType = localStorage.getItem('backgroundType') || 'auto';
+            if (!bodyElement.classList.contains('power-saving-mode') && (bgType === 'gradient' || (bgType === 'auto' && !isParticleAnimationRunning))) {
+                gradientBackgroundDiv.style.animation = 'none'; // Stop current animation
+                void gradientBackgroundDiv.offsetWidth; // Trigger a DOM reflow to apply the change
+                const randomAngle = Math.floor(Math.random() * 360);
+                gradientBackgroundDiv.style.setProperty('--start-angle', `${randomAngle}deg`);
+                gradientBackgroundDiv.style.animation = `rotateGradient 120s linear infinite, fadeInBg 1s ease-out forwards`; // Restart with new angle
+            }
         }
 
         async function setBackgroundType(type, fromUserAction = false) {
@@ -1740,9 +1858,7 @@
             // If 'none', both are hidden
         }
         
-        changePaletteBtn.addEventListener('click', () => { 
-            applyBackgroundPalette();
-        });
+        changePaletteBtn.addEventListener('click', applyBackgroundPalette);
         
         function setLightMode() {
             docHtml.classList.remove('dark');
@@ -1800,7 +1916,7 @@
                     const value = e.target.dataset.value;
                     const text = e.target.textContent;
                     
-                    valueSpan.textContent = text;
+                    if (valueSpan) valueSpan.textContent = text;
                     if (storageKey) localStorage.setItem(storageKey, value);
                     if (callback) callback(value);
 
@@ -1815,6 +1931,14 @@
              document.querySelectorAll('.select-arrow').forEach(a => a.classList.remove('expanded'));
         });
         
+        function updatePaletteLabel() {
+             if (currentBgPaletteName === 'All') {
+                paletteSelectLabel.textContent = `Default Colour Palettes - ${currentPaletteForDisplay || ''}`;
+            } else {
+                paletteSelectLabel.textContent = 'Default Colour Palettes';
+            }
+        }
+
         function populatePaletteSelect() {
             const container = document.querySelector('#palette-select .custom-select-options');
             const valueSpan = document.querySelector('#palette-select .custom-select-value');
@@ -1828,7 +1952,7 @@
                 option.textContent = name;
                 option.dataset.value = value;
                 if(colors && colors.length > 0) {
-                     option.style.borderImage = `linear-gradient(to right, ${colors.join(', ')}) 1`;
+                     option.style.borderImageSource = `linear-gradient(to right, ${colors.join(', ')})`;
                 }
                 container.appendChild(option);
             };
@@ -1860,6 +1984,7 @@
                 valueSpan.textContent = 'All';
                 localStorage.setItem('selectedPalette', 'All');
             }
+            updatePaletteLabel();
         }
 
 
@@ -1985,7 +2110,6 @@
         function handleRedoIncorrect() {
             let firstIncorrectDisplayIndex = -1;
             
-            // Before starting a new redo, reset the retaken flag for all questions
             currentQuizQuestions.forEach(q => q.wasRetaken = false);
 
             questionOrder.forEach((questionIndexInCurrent, displayIndex) => {
@@ -1994,7 +2118,7 @@
                     question.isAnsweredCorrectly = null;
                     question.userSelectedOptionLetter = null;
                     question.status = 'unanswered';
-                    question.wasRetaken = true; // Flag only the questions being retaken in this session
+                    question.wasRetaken = true;
                     
                     if (randomiseAnswerOrderToggle.checked) {
                         shuffleOptionsForQuestion(question);
@@ -2060,7 +2184,6 @@
             stopTimers(true); 
             clearTimeout(autoAdvanceTimeout);
 
-            // FIX: Reset the single question timer to prevent carry-over time from previous quiz.
             questionSpecificTimerStartMs = 0;
 
             isQuizActive = true;
@@ -2156,17 +2279,20 @@
             clearTimeout(autoAdvanceTimeout);
             const question = getCurrentQuestionData();
             if (!question) {
-                // If there are no more questions, go to results. This handles the end of the quiz.
                 if(isQuizActive) showResults(false); 
                 return;
             }
             selectedOptionLetter = null; 
             
-            externalPauseBtn.classList.remove('hidden');
-            externalSubmitEarlyBtn.classList.remove('hidden');
+            pauseQuizBtn.classList.remove('hidden');
+            
+            submitAnswerBtn.classList.remove('is-fading-in', 'is-fading-out');
+            applyHideSubmitButton();
+
+            const allAnswered = currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null);
 
             if (question.isAnsweredCorrectly !== null) {
-                submitAnswerBtn.textContent = currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null) ? "See Results" : "Next Question";
+                submitAnswerBtn.textContent = allAnswered ? "See Results" : "Next Question";
                 submitAnswerBtn.disabled = false;
             } else {
                 submitAnswerBtn.textContent = "Submit Answer";
@@ -2183,13 +2309,11 @@
                 questionContentContainer.className = '';
                 stickyQuestionText.className = 'whitespace-normal break-words text-lg leading-relaxed mb-2 max-w-full';
 
-
                 questionContentContainer.appendChild(newQuestionDOM);
                 currentQuestionDOM = newQuestionDOM;
 
                 stickyQuestionText.classList.add('is-fading-in-fast');
                 questionContentContainer.classList.add('is-fading-in');
-
 
                 const currentOptsContainer = currentQuestionDOM.querySelector(`[id$="-opts"]`);
                 const currentFeedbackContainer = currentQuestionDOM.querySelector(`[id$="-feedback"]`);
@@ -2204,6 +2328,7 @@
                         });
                     }
                     currentQuestionTimerDisplay.textContent = `Time: ${formatTime(question.timeTakenMs)}`;
+                    checkAndShowNextButton();
                 } else { 
                     questionSpecificTimerStartMs = Date.now();
                     startTimers();
@@ -2224,6 +2349,24 @@
             }
         }
         
+        function checkAndShowNextButton() {
+            const question = getCurrentQuestionData();
+            if (!question || question.isAnsweredCorrectly === null) return;
+
+            const autoNextType = localStorage.getItem('autoNextType') || 'none';
+            const shouldAutoNext = (autoNextType === 'all') ||
+                                   (autoNextType === 'correct' && question.isAnsweredCorrectly) ||
+                                   (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
+            
+            if (hideSubmitButtonToggle.checked && !shouldAutoNext) {
+                setTimeout(() => {
+                    submitAnswerBtn.classList.remove('hidden');
+                    submitAnswerBtn.classList.add('is-fading-in-fast');
+                }, 500);
+            }
+        }
+
+
         function handleSubmitAnswer() { 
             const question = getCurrentQuestionData();
             if (!question || question.isAnsweredCorrectly !== null || !selectedOptionLetter || isQuizPaused) return;
@@ -2254,16 +2397,17 @@
             }
 
             const allAnswered = currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null);
+            
             if (allAnswered) {
                 submitAnswerBtn.textContent = "See Results";
-                submitAnswerBtn.disabled = false;
-                externalPauseBtn.classList.add('hidden');
-                externalSubmitEarlyBtn.classList.add('hidden');
-                return;
+            } else {
+                 submitAnswerBtn.textContent = "Next Question"; 
             }
+            submitAnswerBtn.disabled = false;
 
-            submitAnswerBtn.textContent = "Next Question"; submitAnswerBtn.disabled = false;
-            
+
+            checkAndShowNextButton();
+
             const autoNextType = localStorage.getItem('autoNextType') || 'none';
             const autoNextDuration = (parseInt(localStorage.getItem('autoNextDuration'), 10) || 5) * 1000;
 
@@ -2272,7 +2416,15 @@
                                    (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
 
             if (shouldAutoNext) {
-                 autoAdvanceTimeout = setTimeout(() => { if (!isQuizPaused && isQuizActive) handleNextAction(); }, autoNextDuration);
+                 autoAdvanceTimeout = setTimeout(() => { 
+                    if (!isQuizPaused && isQuizActive) {
+                        handleNextAction();
+                    }
+                 }, autoNextDuration);
+            }
+            
+            if (allAnswered) {
+                pauseQuizBtn.classList.add('hidden');
             }
         }
 
@@ -2303,7 +2455,13 @@
             clearTimeout(autoAdvanceTimeout);
             const question = getCurrentQuestionData();
             if(question && question.isAnsweredCorrectly === null) { handleSubmitAnswer(); return; }
-            if (currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null)) { showResults(false); return; }
+
+            const allAnswered = currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null);
+            if (allAnswered) { 
+                showResults(false); 
+                return; 
+            }
+            
             let foundNext = false;
             let nextDisplayIdx = currentQuestionDisplayOrderIndex;
             for (let i = 1; i < currentQuizQuestions.length; i++) {
@@ -2435,7 +2593,7 @@
                  currentQuestionTimerDisplay.textContent = `Time: ${formatTime(currentQ.timeTakenMs || 0)}`;
             }
         }
-        externalPauseBtn.addEventListener('click', pauseQuiz);
+        pauseQuizBtn.addEventListener('click', pauseQuiz);
         resumeQuizBtn.addEventListener('click', resumeQuiz);
 
         function showConfirmationModal(title, message, onConfirm, confirmBtnClass = 'btn-red') {
@@ -2463,13 +2621,12 @@
             showResults(true); 
         }
         endQuizEarlyBtn.addEventListener('click', () => showConfirmationModal("End Quiz?", "Are you sure you want to end the quiz now? Your current progress will be shown.", endQuizPrematurelyAction, 'btn-red')); 
-        externalSubmitEarlyBtn.addEventListener('click', () => showConfirmationModal("Submit Quiz?", "Are you sure you want to submit the quiz now? You cannot answer more questions.", endQuizPrematurelyAction, 'btn-red')); 
-
+        
         function showResults(isPrematureEnd = false) {
             isQuizActive = false; stopTimers(true); isQuizPaused = true;
             quizScreen.classList.add('hidden');
             resultsScreen.classList.remove('hidden');
-            externalPauseBtn.classList.add('hidden'); externalSubmitEarlyBtn.classList.add('hidden');
+            pauseQuizBtn.classList.add('hidden');
             
             redoQuizBtnExt.classList.remove('hidden'); 
             newQuizBtnExt.classList.remove('hidden');
@@ -2491,15 +2648,19 @@
             scoreDetailsDisplay.textContent = `${correctAnswers} / ${totalQuestionsInSet} correct`;
             totalQuizTimeDisplay.textContent = formatTime(accumulatedTotalQuizTimeMs);
             
+            const goldPerc = parseFloat(localStorage.getItem('goldMedal') || '100');
+            const silverPerc = parseFloat(localStorage.getItem('silverMedal') || '80');
+            const bronzePerc = parseFloat(localStorage.getItem('bronzeMedal') || '65');
+
             scoreDisplayContainer.className = 'flex justify-between items-center p-4 rounded-lg transition-colors duration-500 mb-4';
             if (isPrematureEnd) {
                 scoreDisplayContainer.classList.add('default');
                 scoreMessageDisplay.textContent = `You answered ${answeredQuestionsCount} of ${totalQuestionsInSet} questions.`;
             } else {
                 const roundedPercentage = Math.round(percentage);
-                if (roundedPercentage === 100) { scoreDisplayContainer.classList.add('gold'); scoreMessageDisplay.textContent = "Excellent Work!"; } 
-                else if (roundedPercentage >= 80) { scoreDisplayContainer.classList.add('silver'); scoreMessageDisplay.textContent = "Almost There!"; } 
-                else if (roundedPercentage >= 65) { scoreDisplayContainer.classList.add('bronze'); scoreMessageDisplay.textContent = "Needs Work!"; } 
+                if (roundedPercentage >= goldPerc) { scoreDisplayContainer.classList.add('gold'); scoreMessageDisplay.textContent = "Excellent Work!"; } 
+                else if (roundedPercentage >= silverPerc) { scoreDisplayContainer.classList.add('silver'); scoreMessageDisplay.textContent = "Almost There!"; } 
+                else if (roundedPercentage >= bronzePerc) { scoreDisplayContainer.classList.add('bronze'); scoreMessageDisplay.textContent = "Needs Work!"; } 
                 else { scoreDisplayContainer.classList.add('default'); scoreMessageDisplay.textContent = "Keep Practicing!"; }
             }
 
@@ -2515,8 +2676,8 @@
                     <div class="flex justify-between items-center cursor-pointer">
                         <span class="font-semibold result-option-question">${displayNum}. ${question.questionText}</span>
                         <div class="flex items-center">
-                            <span class="text-xs text-gray-500 mr-2 result-option-time">Time: ${formatTime(question.timeTakenMs || 0)}</span>
-                            <svg class="dropdown-arrow w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <span class="text-xs mr-2 result-option-time">Time: ${formatTime(question.timeTakenMs || 0)}</span>
+                            <svg class="dropdown-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
                     </div>
                     <div class="result-options-container pl-4 ml-1"></div>`;
@@ -2526,10 +2687,15 @@
                         const optP = document.createElement('p');
                         optP.className = 'result-option text-sm';
                         optP.innerHTML = `${opt.letter}. ${opt.text}`;
-                        if (opt.isCorrectOption) optP.classList.add('correct-answer');
+                        
+                        if (opt.isCorrectOption) {
+                            optP.classList.add('correct-answer');
+                        } else {
+                            optP.classList.add('incorrect-answer');
+                        }
+                        
                         if (opt.letter === question.userSelectedOptionLetter) {
                             optP.classList.add('user-selected');
-                            if (!question.isAnsweredCorrectly && question.userSelectedOptionLetter !== null) optP.classList.add('incorrect-answer');
                         }
                         optionsDiv.appendChild(optP);
                     });
@@ -2575,7 +2741,6 @@
             if (!rawData.trim()) { showFormatErrorModal(); return; }
             originalAllQuestionsData = parseInput(rawData);
             if (originalAllQuestionsData.length === 0) { showFormatErrorModal(); return; }
-            // Initial quiz creation: question order is NOT randomized, answer order IS.
             initializeQuiz(originalAllQuestionsData, false, true, false); 
         });
 
@@ -2584,8 +2749,8 @@
         const commonNewQuizLogic = () => { 
             isQuizActive = false; hideExternalResultsButtons();
             resultsScreen.classList.add('hidden');
-            quizScreen.classList.add('hidden'); externalPauseBtn.classList.add('hidden');
-            externalSubmitEarlyBtn.classList.add('hidden'); inputScreen.classList.remove('hidden');
+            quizScreen.classList.add('hidden'); pauseQuizBtn.classList.add('hidden');
+            inputScreen.classList.remove('hidden');
             quizDataInput.value = ''; 
             textareaPlaceholder.style.display = 'flex';
             originalAllQuestionsData = []; currentQuizQuestions = [];
@@ -2607,26 +2772,26 @@
         });
        
         const aiModelData = {
-            'chatgpt': { max: 35, format: 'not-defined' },
-            'chatgpt-plus': { max: 100, format: 'not-defined' },
-            'notebook-lm': { max: 50, format: 'notebook-lm-format' },
-            'gemini': { max: 15, format: 'not-defined' },
-            'claude': { max: 5, format: 'not-defined' },
-            'deepseek': { max: 5, format: 'not-defined' },
-            'llama': { max: 5, format: 'not-defined' }
+            'chatgpt': { max: 25, format: 'long-format' },
+            'chatgpt-plus': { max: 50, format: 'long-format' },
+            'notebook-lm': { max: 50, format: 'short-format' },
+            'gemini': { max: 25, format: 'long-format' },
+            'claude': { max: 25, format: 'long-format' },
+            'deepseek': { max: 25, format: 'long-format' },
+            'llm': { max: 50, format: 'long-format' }
         };
 
         const promptFormats = {
-            'not-defined': 'Prompt not defined for this model.',
-            'notebook-lm-format': `
-Numbered Questions: Each question starts with 1., 2., etc.
-Lettered Options: Options for each question are A., B., C., D.
+            'short-format': `
+Each question starts with 1., 2., etc.
+Options for each question are A., B., C., D.
 No blank lines between questions and their options, or between options of the same question. Use a blank line to separate different questions.
-Explanation: Immediately after the correct answer's text, add [explanation] followed by the explanation. 
-Do not mention the source, rather explain why the correct answer is correct and do not just restate the correct answer.
+Immediately after the correct answer's text, add [explanation] followed by the explanation. 
+Do not mention the word “source” but you can mention the source name.
+Explain why the correct answer is correct rather than restating the correct answer.
 The correct answer should have ** around it and its explanation. This is a must. It should also be bolded.
 Example of Correct answer that has bold text and ** surround it: **B. This is correct [explanation] Because of this reason.**
-One Correct Answer: Only one correct answer per question.
+Only one correct answer per question.
 All options (correct and incorrect) must seem plausible.
 At least one wrong answer choice must be at least 3 characters longer than the correct answer choice.
 At least one wrong answer choice must be at least 3 characters shorter than the correct answer choice.
@@ -2641,9 +2806,31 @@ Example Question Formatting:
     C. Jupiter.
     D. Earth.
 `,
-            'chatgpt-format': `Please generate a series of multiple-choice questions. For each question, provide four options labeled A, B, C, and D. Indicate the correct answer clearly by bolding it and adding a brief explanation in brackets. Ensure there are no extra line breaks between a question and its options. Separate each question block with a single blank line. The difficulty should be varied, and the position of the correct answer should be randomized.`,
-            'chatgpt-plus-format': `Produce a set of high-quality multiple-choice questions. Each question must have four plausible options (A, B, C, D). The correct option must be bolded and followed by a detailed explanation within brackets, like so: **Correct Answer [explanation]**. Maintain a compact format with no blank lines within a question block, but use one blank line to separate each question from the next. The distribution of correct answers (A, B, C, D) should be uneven.`,
-            'gemini-format': `Create a multiple-choice quiz. Follow these rules strictly: - Start each question with a number (1., 2., ...). - Provide four options: A., B., C., D. - The correct answer MUST be enclosed in double asterisks (e.g., **B. Answer here**). - Immediately after the correct answer text, provide an explanation in the format [explanation]...[/explanation]. - Do not use blank lines between a question and its set of options.`
+            'long-format': `
+Each question starts with 1., 2., etc.
+Options for each question are A., B., C., D.
+No blank lines between questions and their options, or between options of the same question. Use a blank line to separate different questions.
+Immediately after the correct answer's text, add [explanation] followed by the explanation. 
+Do not mention the word “source” but you can mention the source name.
+Explain why the correct answer is correct rather than restating the correct answer.
+The correct answer should have ** around it and its explanation. This is a must. It should also be bolded.
+Example of Correct answer that has bold text and ** surround it: **B. This is correct [explanation] Because of this reason.**
+Only one correct answer per question.
+All options (correct and incorrect) must seem plausible.
+At least one wrong answer choice must be at least 3 characters longer than the correct answer choice.
+At least one wrong answer choice must be at least 3 characters shorter than the correct answer choice.
+The correct answers shouldn't be evenly distributed among A, B, C, D.
+No single answer letter (A, B, C, or D) can have less than 10% of the total correct answers.
+Example: 35% A, 10% B, 25% C, 30% D is valid.
+Do not include any other text before or after the questions and answers.
+Do not include any other markdown symbols such as # or horizontal lines etc. Only adhere to the supplied formatting in reference to the example question formatting below. 
+Example Question Formatting:
+1. Which planet is known as the Red Planet?
+    A. Venus.
+    B. **Mars. [explanation] Mars is often called the Red Planet due to its iron oxide-rich surface.**
+    C. Jupiter.
+    D. Earth. 
+`,
         };
 
         function updateQuestionCount(value) {
@@ -2751,7 +2938,34 @@ Example Question Formatting:
             if (!isQuizActive || isQuizPaused || !keyboardFunctionsToggle.checked) return;
 
             const question = getCurrentQuestionData();
-            if (!question || question.isAnsweredCorrectly !== null) return; // Only for unanswered questions
+            if (!question) return;
+            
+            const isAnswered = question.isAnsweredCorrectly !== null;
+
+            if (isAnswered) {
+                 switch (e.key) {
+                    case 'a':
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        if (currentQuestionDisplayOrderIndex > 0) {
+                            navigateToQuestion(currentQuestionDisplayOrderIndex - 1, false, 'prev');
+                        }
+                        break;
+                    case 'd':
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        if (currentQuestionDisplayOrderIndex < questionOrder.length - 1) {
+                             navigateToQuestion(currentQuestionDisplayOrderIndex + 1, false, 'next');
+                        }
+                        break;
+                    case ' ':
+                    case 'Enter':
+                        e.preventDefault();
+                        handleNextAction();
+                        break;
+                }
+                return;
+            }
 
             const options = Array.from(currentQuestionDOM.querySelectorAll('.btn-option'));
             let currentSelectedIndex = options.findIndex(opt => opt.classList.contains('keyboard-selected'));
@@ -2810,14 +3024,24 @@ Example Question Formatting:
             
             // Background Type
             const preferredBackground = localStorage.getItem('backgroundType') || 'auto';
-            document.querySelector('#background-type-select .custom-select-value').textContent = preferredBackground.charAt(0).toUpperCase() + preferredBackground.slice(1);
-            applyBackgroundType(preferredBackground);
+            const bgValueSpan = document.querySelector('#background-type-select .custom-select-value');
+            if (bgValueSpan) {
+                bgValueSpan.textContent = preferredBackground.charAt(0).toUpperCase() + preferredBackground.slice(1);
+            }
+            
+            // Medals
+            goldMedalInput.value = localStorage.getItem('goldMedal') || '100';
+            silverMedalInput.value = localStorage.getItem('silverMedal') || '80';
+            bronzeMedalInput.value = localStorage.getItem('bronzeMedal') || '65';
 
             // MC Settings
-            keyboardFunctionsToggle.checked = localStorage.getItem('keyboardFunctions') === 'true';
+            keyboardFunctionsToggle.checked = localStorage.getItem('keyboardFunctions') !== 'false';
 
             const autoNextType = localStorage.getItem('autoNextType') || 'none';
-            document.querySelector('#auto-next-type-select .custom-select-value').textContent = autoNextType.charAt(0).toUpperCase() + autoNextType.slice(1);
+            const autoNextValueSpan = document.querySelector('#auto-next-type-select .custom-select-value');
+            if(autoNextValueSpan) {
+                autoNextValueSpan.textContent = autoNextType.charAt(0).toUpperCase() + autoNextType.slice(1);
+            }
             updateAutoNextDurationState(autoNextType);
             
             autoNextDurationInput.value = localStorage.getItem('autoNextDuration') || '5';
@@ -2827,12 +3051,10 @@ Example Question Formatting:
             
             updateHideSubmitButtonState();
             hideSubmitButtonToggle.checked = localStorage.getItem('hideSubmitButton') === 'true';
-            applyHideSubmitButton();
+            
+            randomiseQuestionOrderToggle.checked = localStorage.getItem('randomiseQuestionOrder') !== 'false'; 
+            randomiseAnswerOrderToggle.checked = localStorage.getItem('randomiseAnswerOrder') !== 'false';
 
-            randomiseQuestionOrderToggle.checked = localStorage.getItem('randomiseQuestionOrder') !== 'false'; // Default to true
-            randomiseAnswerOrderToggle.checked = localStorage.getItem('randomiseAnswerOrder') !== 'false'; // Default to true
-
-            // Set main RGB color for power saving mode dropdowns
             setMainColorRGB();
         }
 
@@ -2849,7 +3071,10 @@ Example Question Formatting:
         }
 
         function applyHideSubmitButton() {
-            const shouldHide = hideSubmitButtonToggle.checked && (clickToSubmitToggle.checked || doubleClickToSubmitToggle.checked);
+            if (!isQuizActive) return;
+            const question = getCurrentQuestionData();
+            const isAnswered = question && question.isAnsweredCorrectly !== null;
+            const shouldHide = hideSubmitButtonToggle.checked && !isAnswered;
             submitAnswerBtn.classList.toggle('hidden', shouldHide);
         }
 
@@ -2884,6 +3109,14 @@ Example Question Formatting:
             applyHideSubmitButton();
         });
 
+        document.querySelector('.auto-next-btn[data-action="minus"]').addEventListener('click', () => {
+            autoNextDurationInput.value = Math.max(1, parseInt(autoNextDurationInput.value) - 1);
+            localStorage.setItem('autoNextDuration', autoNextDurationInput.value);
+        });
+        document.querySelector('.auto-next-btn[data-action="plus"]').addEventListener('click', () => {
+             autoNextDurationInput.value = Math.min(60, parseInt(autoNextDurationInput.value) + 1);
+             localStorage.setItem('autoNextDuration', autoNextDurationInput.value);
+        });
         autoNextDurationInput.addEventListener('change', (e) => {
             let value = parseInt(e.target.value, 10);
             if (isNaN(value) || value < 1) value = 1;
@@ -2892,7 +3125,53 @@ Example Question Formatting:
             localStorage.setItem('autoNextDuration', value);
         });
 
-        // Event Listeners for settings that need saving
+        function validateMedalPercentages(changedInput) {
+            let gold = parseFloat(goldMedalInput.value);
+            let silver = parseFloat(silverMedalInput.value);
+            let bronze = parseFloat(bronzeMedalInput.value);
+
+            if (changedInput === 'gold' && gold < silver) {
+                silverMedalInput.value = Math.max(0, gold - 0.1).toFixed(1);
+            }
+            if ((changedInput === 'gold' || changedInput === 'silver') && parseFloat(silverMedalInput.value) < bronze) {
+                bronzeMedalInput.value = Math.max(0, parseFloat(silverMedalInput.value) - 0.1).toFixed(1);
+            }
+            if (changedInput === 'bronze' && bronze > silver) {
+                 silverMedalInput.value = Math.min(100, bronze + 0.1).toFixed(1);
+            }
+            if ((changedInput === 'bronze' || changedInput === 'silver') && parseFloat(silverMedalInput.value) > gold) {
+                goldMedalInput.value = Math.min(100, parseFloat(silverMedalInput.value) + 0.1).toFixed(1);
+            }
+             
+            localStorage.setItem('goldMedal', goldMedalInput.value);
+            localStorage.setItem('silverMedal', silverMedalInput.value);
+            localStorage.setItem('bronzeMedal', bronzeMedalInput.value);
+        }
+
+        ['gold', 'silver', 'bronze'].forEach(medal => {
+            const input = document.getElementById(`${medal}-medal-input`);
+            input.addEventListener('change', () => {
+                let value = parseFloat(input.value);
+                 if (isNaN(value) || value < 0) value = 0;
+                 if (value > 100) value = 100;
+                 input.value = value.toFixed(1);
+                 validateMedalPercentages(medal);
+            });
+             document.querySelectorAll(`.medal-btn[data-input="${medal}-medal-input"]`).forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const action = btn.dataset.action;
+                    let currentValue = parseFloat(input.value);
+                    if (action === 'plus') {
+                        currentValue = Math.min(100, currentValue + 1);
+                    } else {
+                        currentValue = Math.max(0, currentValue - 1);
+                    }
+                    input.value = currentValue.toFixed(1);
+                    validateMedalPercentages(medal);
+                });
+            });
+        });
+
         combinePalettesToggle.addEventListener('change', e => {
             localStorage.setItem('combinePalettes', e.target.checked);
             populatePaletteSelect();
@@ -2901,7 +3180,6 @@ Example Question Formatting:
         randomiseQuestionOrderToggle.addEventListener('change', e => localStorage.setItem('randomiseQuestionOrder', e.target.checked));
         randomiseAnswerOrderToggle.addEventListener('change', e => localStorage.setItem('randomiseAnswerOrder', e.target.checked));
         
-        // Settings Modal Navigation
         settingsBtn.addEventListener('click', () => settingsModal.classList.add('visible'));
         closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('visible'));
         settingsModal.addEventListener('click', (e) => {
@@ -2911,10 +3189,8 @@ Example Question Formatting:
         settingsNavPills.forEach(pill => {
             pill.addEventListener('click', () => {
                 const pageId = `settings-page-${pill.dataset.page}`;
-
                 settingsNavPills.forEach(p => p.classList.remove('active'));
                 pill.classList.add('active');
-
                 settingsPages.forEach(page => {
                     if (page.id === pageId) {
                         page.classList.remove('hidden', 'is-fading-out');
@@ -2926,9 +3202,11 @@ Example Question Formatting:
             });
         });
 
-
         window.addEventListener('DOMContentLoaded', () => {
-            setupCustomSelect('custom-select-container', 'savedAiModel', (value) => updateQuestionCount(questionCountInput.value));
+            setupCustomSelect('custom-select-container', 'savedAiModel', (value) => {
+                hiddenSelectInput.value = value;
+                updateQuestionCount(questionCountInput.value);
+            });
             setupCustomSelect('background-type-select', 'backgroundType', (value) => setBackgroundType(value, true));
             setupCustomSelect('palette-select', 'selectedPalette', (value) => {
                 currentBgPaletteName = value;
@@ -2938,6 +3216,10 @@ Example Question Formatting:
 
             loadPreferences(); 
             loadPromptBuilderSettings();
+            
+            // This needs to run after preferences are loaded
+            const preferredBackground = localStorage.getItem('backgroundType') || 'auto';
+            applyBackgroundType(preferredBackground);
             
             resizeSmudgeCanvas(); 
             setAllContainerHeights(); 
@@ -2953,3 +3235,4 @@ Example Question Formatting:
     </script>
 </body>
 </html>
+
