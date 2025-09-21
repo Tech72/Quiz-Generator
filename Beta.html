@@ -13,16 +13,17 @@
     :root {
         /* Light Mode Defaults */
         --main-color: rgb(240, 240, 240);
-        --main-contrast: rgba(220, 220, 220, 0.9);
+        --main-contrast: rgba(230, 230, 230, 0.9);
         --secondary-color: rgb(110, 110, 110);
         --layout-background: rgba(240, 240, 240, 0.25);
         --main-content-bg: rgba(240, 240, 240, 0.5);
         --secondary-content-bg: rgba(229, 231, 235, 0.5);
-        --text-primary: rgb(31, 31, 31);
-        --text-secondary: rgb(37, 37, 37);
+        --text-primary: rgb(30, 30, 30);
+        --text-secondary: rgb(35, 35, 35);
+        --text-shadow: rgba(35, 35, 35, 0.6);
         --layout-box-shadow: rgba(0, 0, 0, 0.1);
         --border-color: rgb(209, 213, 219);
-        --highlight-bg: rgb(31, 31, 31);
+        --highlight-bg: rgb(30, 30, 30);
         --highlight-text: rgb(240, 240, 240);
 
         /* UI Colors (shared between modes) */
@@ -49,13 +50,14 @@
 
     html.dark {
         --main-color: rgba(10, 10, 10);
-        --main-contrast: rgba(30, 30, 30, 0.9);
+        --main-contrast: rgba(20, 20, 20, 0.9);
         --secondary-color: rgba(50, 50, 50);
         --layout-background: rgba(10,10,10,0.3);
         --main-content-bg: rgba(25,25,25,0.5);
         --secondary-content-bg: rgba(10, 10, 10, 0.6);
         --text-primary: rgba(240, 240, 240);
         --text-secondary: rgba(200, 200, 200);
+        --text-shadow: rgba(200, 200, 200, 0.4);
         --layout-box-shadow: rgba(0, 0, 0, 0.3);
         --border-color: rgba(75, 75, 75, 0.1);
         --highlight-bg: rgb(240, 240, 240);
@@ -148,7 +150,7 @@
         margin: 1rem auto;
         border-radius: 1.5rem; 
         position: relative;
-        overflow: hidden; /* Changed from overflow-y: hidden */
+        overflow: hidden;
         display: flex;
         flex-direction: column;
     }
@@ -284,7 +286,6 @@
     }
     #quiz-data-input {
         border-radius: 0.75rem;
-        border: 1px solid var(--border-color);
         padding: 0.75rem; 
         width: 100%;
         font-family: 'Figtree';
@@ -303,7 +304,7 @@
         font-size: 1.25rem;
         opacity: 0.6;
     }
-    #quiz-data-input:focus, .number-input:focus, .settings-number-input:focus {
+    #quiz-data-input:focus, .number-input:focus, .settings-number-input:focus, .blank-input:focus {
         outline: none;
         background-color: var(--ui-main-bg-hover);
         box-shadow: none;
@@ -699,7 +700,7 @@
         display: flex;
         flex-direction: column;
         min-height: 0;
-        overflow: hidden; /* Added to prevent child animations from showing scrollbar */
+        overflow: hidden; /* FIX: Prevents scrollbar on animation */
     }
 
     #quiz-sticky-header {
@@ -707,7 +708,7 @@
         top: 0;
         z-index: 10;
         background-color: var(--layout-background);
-        padding: 2rem 2rem 0 2rem;
+        padding: 1rem 2rem 0 2rem;
         flex-shrink: 0;
         transition: height 0.4s ease-in-out;
     }
@@ -725,6 +726,24 @@
         margin-top: auto;
         padding-top: 1rem;
     }
+     #quiz-bottom-buttons-container {
+        display: flex;
+        gap: 0.5rem;
+        align-items: stretch;
+    }
+    #submit-answer-btn {
+        flex-grow: 1;
+    }
+    #explanation-btn {
+        flex-shrink: 0;
+        width: 3rem;
+        padding: 0.5rem;
+    }
+     #explanation-btn svg {
+        width: 1.5rem;
+        height: 1.5rem;
+        margin: auto;
+     }
 
     #prompt-builder-container {
         border-radius: 0.75rem;
@@ -789,6 +808,7 @@
         padding: 0.75rem;
         cursor: pointer;
         transition: background-color 0.2s;
+        text-shadow: 0 0 1rem var(--text-shadow);
     }
     .custom-option:hover {
         background-color: var(--ui-main-bg-hover);
@@ -798,8 +818,7 @@
         cursor: not-allowed;
         background-color: transparent !important;
     }
-    .custom-option:first-child { border-top-left-radius: 0.75rem;}
-    .custom-option:last-child { border-bottom-left-radius: 0.75rem;}
+
     #palette-select .custom-option {
         border-left-width: 5px;
         border-left-style: solid;
@@ -819,7 +838,7 @@
         text-align: center;
         background-color: var(--ui-main-bg);
         color: var(--text-primary);
-        border: none;
+        transition: border-color 0.2s ease;
         -moz-appearance: textfield;
     }
     .number-input::-webkit-outer-spin-button, 
@@ -899,6 +918,7 @@
         display: flex;
         gap: 0.75rem;
         border-bottom: 1px solid var(--border-color);
+        justify-content: center;
     }
     .settings-pill {
         color: var(--text-primary);
@@ -916,6 +936,11 @@
     .settings-pill.active.multiple-choice {
         background-color: var(--ui-red-bg);
         border-color: var(--ui-red-fills);
+        color: var(--text-primary);
+    }
+    .settings-pill.active.fill-in-the-blank {
+        background-color: var(--ui-green-bg);
+        border-color: var(--ui-green-fills);
         color: var(--text-primary);
     }
     
@@ -985,6 +1010,7 @@
         font-size: 0.875rem;
         font-weight: 400;
         backdrop-filter: blur(10px);
+        text-shadow: 0 0 1rem var(--text-shadow);
     }
     .info-tooltip:hover .tooltip-text {
         visibility: visible;
@@ -992,10 +1018,10 @@
     }
     
     .toggle-switch {
-        width: 56px;
-        height: 32px;
+        width: 64px;
+        height: 36px;
         background-color: var(--ui-main-bg);
-        border: 1px solid var(--ui-main-fills);
+        border: 0.15rem solid var(--ui-main-fills);
         border-radius: 9999px;
         position: relative;
         cursor: pointer;
@@ -1013,17 +1039,34 @@
         background-color: var(--ui-blue-bg);
         border-color: var(--ui-blue-fills);
     }
+    .settings-page-general .toggle-switch:has(input:checked):hover {
+        background-color: var(--ui-blue-bg-hover);
+        border-color: var(--ui-blue-fills-hover);
+    }
     
     .settings-page-multiple-choice .toggle-switch:has(input:checked) {
         background-color: var(--ui-red-bg);
         border-color: var(--ui-red-fills);
+    }
+    .settings-page-multiple-choice .toggle-switch:has(input:checked):hover {
+        background-color: var(--ui-red-bg-hover);
+        border-color: var(--ui-red-fills-hover);
+    }
+
+    .settings-page-fill-in-the-blank .toggle-switch:has(input:checked) {
+        background-color: var(--ui-green-bg);
+        border-color: var(--ui-green-fills);
+    }
+    .settings-page-fill-in-the-blank .toggle-switch:has(input:checked):hover {
+        background-color: var(--ui-green-bg-hover);
+        border-color: var(--ui-green-fills-hover);
     }
 
     .toggle-switch-circle {
         width: 24px;
         height: 24px;
         background-color: white;
-        border: 1px solid var(--ui-main-fills);
+        border: 0.15rem solid var(--ui-main-fills);
         border-radius: 50%;
         position: absolute;
         left: 4px;
@@ -1033,7 +1076,7 @@
         justify-content: center;
     }
     .toggle-switch input:checked + .toggle-switch-circle {
-        transform: translateX(24px);
+        transform: translateX(28px);
     }
     .toggle-switch input { display: none; }
     .toggle-switch-icon {
@@ -1061,7 +1104,39 @@
     .setting-item.disabled .custom-select-trigger {
         cursor: not-allowed;
     }
+    .settings-page .custom-select-trigger {
+        padding: 0.5rem 0.75rem;
+    }
 
+    /* Fill in the Blank Specific Styles */
+    .fill-in-the-blank-question-text {
+        font-size: 1.125rem; /* 20px */
+        line-height: 1.75;
+    }
+    .blank-input {
+        background-color: var(--ui-main-bg);
+        border: 0.15rem solid var(--ui-main-fills);
+        color: var(--text-primary);
+        border-radius: 0.75rem;
+        padding: 0.15rem 0.5rem;
+        width: 200px;
+        text-align: center;
+        transition: all 0.2s ease;
+        display: inline-block;
+        vertical-align: baseline;
+        height: 1.75rem;
+    }
+    .blank-input.correct {
+        background-color: var(--ui-green-bg);
+        border-color: var(--ui-green-fills);
+    }
+    .blank-input.incorrect {
+        background-color: var(--ui-red-bg);
+        border-color: var(--ui-red-fills);
+    }
+    .result-option-question .blank-input {
+        margin: 0.1rem 0 0.1rem 0;
+    }
 
     .hidden {
         display: none !important;
@@ -1127,7 +1202,6 @@
     </div>
 
     <div id="app" class="quiz-container">
-        <!-- Input Screen -->
         <div id="input-screen" class="screen">
             <h1 class="text-3xl font-bold mb-4 text-center">Quiz Generator For AI Models</h1>
             <div id="prompt-builder-container">
@@ -1135,14 +1209,14 @@
                     <li>
                         <div class="prompt-builder-row">
                             <span>Select your AI Model:</span>
-                            <div id="custom-select-container" class="relative">
-                                <button id="custom-select-trigger" class="btn btn-main custom-select-trigger">
-                                    <span id="custom-select-value" class="custom-select-value">Choose an AI Model</span>
+                            <div id="ai-model-select" class="relative">
+                                <button class="btn btn-main custom-select-trigger">
+                                    <span class="custom-select-value">Choose an AI Model</span>
                                     <div class="select-arrow">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </div>
                                 </button>
-                                <div id="custom-select-options" class="hidden custom-select-options">
+                                <div class="hidden custom-select-options">
                                     <div class="custom-option" data-value="chatgpt">ChatGPT</div>
                                     <div class="custom-option" data-value="chatgpt-plus">ChatGPT Plus</div>
                                     <div class="custom-option" data-value="notebook-lm">Notebook LM</div>
@@ -1151,7 +1225,23 @@
                                     <div class="custom-option" data-value="deepseek">Deepseek</div>
                                     <div class="custom-option" data-value="llm">LLM/Other</div>
                                 </div>
-                                <input type="hidden" id="ai-model-select-hidden">
+                            </div>
+                        </div>
+                    </li>
+                     <li>
+                        <div class="prompt-builder-row">
+                            <span>Choose quiz type:</span>
+                            <div id="quiz-type-select" class="relative">
+                                <button class="btn btn-main custom-select-trigger">
+                                    <span class="custom-select-value">Multiple Choice</span>
+                                    <div class="select-arrow">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </button>
+                                <div class="hidden custom-select-options">
+                                    <div class="custom-option" data-value="multiple-choice">Multiple Choice</div>
+                                    <div class="custom-option" data-value="fill-in-the-blank">Fill in the Blank</div>
+                                </div>
                             </div>
                         </div>
                     </li>
@@ -1182,7 +1272,6 @@
             <button id="create-quiz-btn" class="btn btn-blue create-quiz-btn">Create Quiz</button>
         </div>
 
-        <!-- Quiz Screen -->
         <div id="quiz-screen" class="hidden screen">
             <div id="quiz-sticky-header">
                  <div class="flex justify-between items-center mb-2">
@@ -1194,7 +1283,12 @@
             <div id="quiz-scrollable-content" class="scrollable-content">
                 <div id="question-content-container"></div>
                 <div id="quiz-bottom-controls">
-                    <button id="submit-answer-btn" class="btn btn-blue w-full">Submit Answer</button>
+                    <div id="quiz-bottom-buttons-container">
+                        <button id="submit-answer-btn" class="btn btn-blue">Submit Answer</button>
+                        <button id="explanation-btn" class="btn btn-main hidden">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" /></svg>
+                        </button>
+                    </div>
                     <hr class="line-break-1">
                     <div id="timeline-nav-container" class="timeline-nav-container w-full max-w-full p-0">
                         <div id="timeline-nav-track" class="flex items-center p-2 min-w-min h-[60px]"></div>
@@ -1203,7 +1297,6 @@
             </div>
         </div>
         
-        <!-- Results Screen -->
         <div id="results-screen" class="hidden screen">
             <h2 id="results-title" class="text-3xl font-bold mb-4 text-center">Quiz Complete!</h2>
             <div id="score-display-container">
@@ -1222,12 +1315,11 @@
     </div>
 
     <footer class="app-footer">
-        <p class="version-info">v1.5.3 - Beta</p> 
+        <p class="version-info">v2.0.0 - Beta</p> 
         <p class="author-credits">Made by Pranay Bhana with Gemini</p> 
-        <p class="last-updated">Last Updated: 14th September 2025</p>
+        <p class="last-updated">Last Updated: 21st September 2025</p>
     </footer>
 
-    <!-- Modals -->
     <div id="settings-modal" class="modal-overlay">
          <div class="settings-panel">
             <div class="settings-sticky-header">
@@ -1239,9 +1331,9 @@
             <div class="settings-nav-pills">
                 <button class="btn settings-pill general active" data-page="general">General</button>
                 <button class="btn settings-pill multiple-choice" data-page="multiple-choice">Multiple Choice</button>
+                <button class="btn settings-pill fill-in-the-blank" data-page="fill-in-the-blank">Fill in the Blank</button>
             </div>
             <div id="settings-content-container" class="scrollable-content flex-grow">
-                <!-- General Settings Page -->
                 <div id="settings-page-general" class="settings-page">
                     <div class="settings-section">
                         <h3 class="settings-section-heading">Performance</h3>
@@ -1267,15 +1359,14 @@
                         <div class="setting-item">
                             <span class="setting-text">Theme</span>
                              <label id="theme-toggle-setting" class="toggle-switch">
-                                <input type="checkbox"> <!-- Unchecked = Light, Checked = Dark -->
-                                <span class="toggle-switch-circle"></span>
+                                <input type="checkbox"> <span class="toggle-switch-circle"></span>
                                 <svg class="toggle-switch-icon icon-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" /></svg>
                                 <svg class="toggle-switch-icon icon-on" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" /></svg>
                             </label>
                         </div>
                          <div class="setting-item">
                             <div class="setting-text-container">
-                               <span class="setting-text">Background Type</span>
+                               <span class="setting-text">Background Type<span id="auto-bg-type-display" class="ml-1 text-xs"></span></span>
                                <div class="info-tooltip">
                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
                                    <span class="tooltip-text">Particle - Heavy Resource, Gradient - Laptop Friendly, Auto - Based on Charging Status.</span>
@@ -1317,8 +1408,7 @@
                                    </div>
                                </button>
                                <div class="hidden custom-select-options">
-                                   <!-- Options will be populated by JS -->
-                               </div>
+                                   </div>
                            </div>
                        </div>
                     </div>
@@ -1329,7 +1419,7 @@
                             <span class="setting-text">Gold Medal Percentage</span>
                             <div class="number-input-container">
                                 <button class="number-input-btn medal-btn" data-input="gold-medal-input" data-action="minus">-</button>
-                                <input type="number" id="gold-medal-input" class="settings-number-input" min="0" max="100" step="0.1" value="100">
+                                <input type="number" id="gold-medal-input" class="settings-number-input" min="0" max="100" step="0.1" value="89.5">
                                 <button class="number-input-btn medal-btn" data-input="gold-medal-input" data-action="plus">+</button>
                             </div>
                         </div>
@@ -1337,7 +1427,7 @@
                             <span class="setting-text">Silver Medal Percentage</span>
                             <div class="number-input-container">
                                 <button class="number-input-btn medal-btn" data-input="silver-medal-input" data-action="minus">-</button>
-                                <input type="number" id="silver-medal-input" class="settings-number-input" min="0" max="100" step="0.1" value="80">
+                                <input type="number" id="silver-medal-input" class="settings-number-input" min="0" max="100" step="0.1" value="84.5">
                                 <button class="number-input-btn medal-btn" data-input="silver-medal-input" data-action="plus">+</button>
                             </div>
                         </div>
@@ -1345,14 +1435,13 @@
                             <span class="setting-text">Bronze Medal Percentage</span>
                             <div class="number-input-container">
                                 <button class="number-input-btn medal-btn" data-input="bronze-medal-input" data-action="minus">-</button>
-                                <input type="number" id="bronze-medal-input" class="settings-number-input" min="0" max="100" step="0.1" value="65">
+                                <input type="number" id="bronze-medal-input" class="settings-number-input" min="0" max="100" step="0.1" value="79.5">
                                 <button class="number-input-btn medal-btn" data-input="bronze-medal-input" data-action="plus">+</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Multiple Choice Settings Page -->
                 <div id="settings-page-multiple-choice" class="settings-page hidden">
                     <div class="settings-section">
                         <h3 class="settings-section-heading">Navigation</h3>
@@ -1456,6 +1545,77 @@
                         </div>
                     </div>
                 </div>
+
+                 <div id="settings-page-fill-in-the-blank" class="settings-page hidden">
+                     <div class="settings-section">
+                        <h3 class="settings-section-heading">Navigation</h3>
+                         <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Auto Next Type</span>
+                               <div class="info-tooltip">
+                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                   <span class="tooltip-text">Automatically goes to next question based on question result.</span>
+                               </div>
+                            </div>
+                            <div id="fitb-auto-next-type-select" class="relative">
+                                <button class="btn btn-main custom-select-trigger" style="width: 10rem;">
+                                    <span class="custom-select-value">None</span>
+                                    <div class="select-arrow">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </button>
+                                <div class="hidden custom-select-options">
+                                   <div class="custom-option" data-value="none">None</div>
+                                   <div class="custom-option" data-value="correct">Correct</div>
+                                   <div class="custom-option" data-value="incorrect">Incorrect</div>
+                                   <div class="custom-option" data-value="all">All</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="fitb-auto-next-duration-item" class="setting-item">
+                            <span class="setting-text">Auto Next Duration (s)</span>
+                             <div class="number-input-container">
+                                <button class="number-input-btn fitb-auto-next-btn" data-action="minus">-</button>
+                                <input type="number" id="fitb-auto-next-duration-input" class="settings-number-input" min="1" max="60" value="5">
+                                <button class="number-input-btn fitb-auto-next-btn" data-action="plus">+</button>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="settings-section">
+                        <h3 class="settings-section-heading">Content</h3>
+                        <div id="fitb-blanks-per-question-item" class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Max Blanks Per Question</span>
+                               <div class="info-tooltip">
+                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                   <span class="tooltip-text">Changes the prompt to request up to this many blanks per question.</span>
+                               </div>
+                            </div>
+                             <div class="number-input-container">
+                                <button class="number-input-btn blanks-per-q-btn" data-action="minus">-</button>
+                                <input type="number" id="blanks-per-q-input" class="settings-number-input" min="1" max="10" value="2">
+                                <button class="number-input-btn blanks-per-q-btn" data-action="plus">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Randomisation</h3>
+                         <div class="setting-item">
+                             <div class="setting-text-container">
+                                <span class="setting-text">Randomise Question Order</span>
+                                 <div class="info-tooltip">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                    <span class="tooltip-text">Randomizes the order of questions when you retake a quiz.</span>
+                                </div>
+                             </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="fitb-randomise-question-order-toggle">
+                                <span class="toggle-switch-circle"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -1493,11 +1653,12 @@
             <h3 id="format-modal-title" style="color: var(--ui-red-fills);">Incorrect Format!</h3>
             <p id="format-modal-message" class="text-left">Please check your prompt's format or try generating another answer from your AI model (ensure to refresh the AI model's page if you do this).</p>
             <p class="text-left font-semibold my-2">The correct format should look like this:</p>
-            <pre class="bg-secondary-content-bg p-2 rounded text-left text-sm whitespace-pre-wrap">1. Which planet is known as the Red Planet?
+            <pre id="format-example-mc" class="bg-secondary-content-bg p-2 rounded text-left text-sm whitespace-pre-wrap">1. Which planet is known as the Red Planet?
     A. Venus.
     B. **Mars. [explanation] Mars is often called the Red Planet due to its iron oxide-rich surface.**
     C. Jupiter.
     D. Earth.</pre>
+             <pre id="format-example-fitb" class="bg-secondary-content-bg p-2 rounded text-left text-sm whitespace-pre-wrap hidden">1. The capital of France is **Paris/paris**. [explanation] Paris is the capital and most populous city of France.</pre>
             <div class="modal-buttons mt-6">
                 <button id="format-modal-ok-btn" class="btn btn-green">I understand</button>
             </div>
@@ -1529,11 +1690,6 @@
         const resultsTitle = document.getElementById('results-title');
         const stickyQuestionText = document.getElementById('sticky-question-text');
 
-        const mainCustomSelectTrigger = document.getElementById('custom-select-trigger');
-        const mainCustomSelectValue = document.getElementById('custom-select-value');
-        const mainCustomSelectOptions = document.getElementById('custom-select-options');
-        const hiddenSelectInput = document.getElementById('ai-model-select-hidden');
-
         const questionCountInput = document.getElementById('question-count-input');
         const qCountMinusBtn = document.getElementById('q-count-minus-btn');
         const qCountPlusBtn = document.getElementById('q-count-plus-btn');
@@ -1551,6 +1707,7 @@
         let currentQuestionDOM = null; 
 
         const submitAnswerBtn = document.getElementById('submit-answer-btn');
+        const explanationBtn = document.getElementById('explanation-btn');
         
         const timelineNavContainer = document.getElementById('timeline-nav-container');
         const timelineNavTrack = document.getElementById('timeline-nav-track');
@@ -1579,14 +1736,22 @@
 
         const formatErrorModal = document.getElementById('format-error-modal');
         const formatModalOkBtn = document.getElementById('format-modal-ok-btn');
+        const formatExampleMC = document.getElementById('format-example-mc');
+        const formatExampleFITB = document.getElementById('format-example-fitb');
 
         const redoIncorrectBtnExt = document.getElementById('redo-incorrect-btn-ext');
         const redoQuizBtnExt = document.getElementById('redo-quiz-btn-ext');
         const newQuizBtnExt = document.getElementById('new-quiz-btn-ext');
         
-        // Settings Panel Elements
+        // Settings Panel Elements (General)
         const combinePalettesToggle = document.getElementById('combine-palettes-toggle');
         const paletteSelectLabel = document.getElementById('palette-select-label');
+        const autoBgTypeDisplay = document.getElementById('auto-bg-type-display');
+        const goldMedalInput = document.getElementById('gold-medal-input');
+        const silverMedalInput = document.getElementById('silver-medal-input');
+        const bronzeMedalInput = document.getElementById('bronze-medal-input');
+        
+        // Settings Panel Elements (Multiple Choice)
         const keyboardFunctionsToggle = document.getElementById('keyboard-functions-toggle');
         const autoNextDurationItem = document.getElementById('auto-next-duration-item');
         const autoNextDurationInput = document.getElementById('auto-next-duration-input');
@@ -1596,15 +1761,20 @@
         const hideSubmitButtonToggle = document.getElementById('hide-submit-button-toggle');
         const randomiseQuestionOrderToggle = document.getElementById('randomise-question-order-toggle');
         const randomiseAnswerOrderToggle = document.getElementById('randomise-answer-order-toggle');
-        const goldMedalInput = document.getElementById('gold-medal-input');
-        const silverMedalInput = document.getElementById('silver-medal-input');
-        const bronzeMedalInput = document.getElementById('bronze-medal-input');
+
+        // Settings Panel Elements (Fill in the Blank)
+        const fitbAutoNextDurationItem = document.getElementById('fitb-auto-next-duration-item');
+        const fitbAutoNextDurationInput = document.getElementById('fitb-auto-next-duration-input');
+        const blanksPerQInput = document.getElementById('blanks-per-q-input');
+        const fitbRandomiseQuestionOrderToggle = document.getElementById('fitb-randomise-question-order-toggle');
+
 
         // Quiz State Variables
         let originalAllQuestionsData = []; 
         let currentQuizQuestions = []; 
         let questionOrder = []; 
-        let currentQuestionDisplayOrderIndex = 0; 
+        let currentQuestionDisplayOrderIndex = 0;
+        let currentQuizType = 'multiple-choice';
         let currentTimerInterval = null;
         let questionSpecificTimerStartMs = 0; 
         let totalQuizTimerStartMs = 0; 
@@ -1774,7 +1944,7 @@
             }
             
             currentPaletteForDisplay = chosenPaletteName;
-            updatePaletteLabel();
+            updatePaletteLabel(); // FIX: Call this immediately
             
             if (!chosenPalette) { // Fallback
                 chosenPalette = backgroundPalettes.light.Sunrise;
@@ -1792,14 +1962,13 @@
 
             if(isParticleAnimationRunning) initSmudgeEffect();
             
-            // This logic block handles the gradient background specifically
             const bgType = localStorage.getItem('backgroundType') || 'auto';
             if (!bodyElement.classList.contains('power-saving-mode') && (bgType === 'gradient' || (bgType === 'auto' && !isParticleAnimationRunning))) {
-                gradientBackgroundDiv.style.animation = 'none'; // Stop current animation
-                void gradientBackgroundDiv.offsetWidth; // Trigger a DOM reflow to apply the change
+                gradientBackgroundDiv.style.animation = 'none'; 
+                void gradientBackgroundDiv.offsetWidth; 
                 const randomAngle = Math.floor(Math.random() * 360);
                 gradientBackgroundDiv.style.setProperty('--start-angle', `${randomAngle}deg`);
-                gradientBackgroundDiv.style.animation = `rotateGradient 120s linear infinite, fadeInBg 1s ease-out forwards`; // Restart with new angle
+                gradientBackgroundDiv.style.animation = `rotateGradient 120s linear infinite, fadeInBg 1s ease-out forwards`; 
             }
         }
 
@@ -1814,7 +1983,7 @@
                     },
                     'btn-red'
                 );
-                return; // Don't proceed until confirmed
+                return; 
             }
             localStorage.setItem('backgroundType', type);
             await applyBackgroundType(type);
@@ -1824,38 +1993,45 @@
              if (powerSavingToggle.checked) {
                 type = 'none';
             }
+            let resolvedType = type;
 
             if (type === 'auto') {
                 try {
                     const battery = await navigator.getBattery();
-                    if (battery.charging || !('level' in battery)) { // No battery API or charging
-                        type = 'particle';
+                    if (battery.charging || !('level' in battery)) { 
+                        resolvedType = 'particle';
                     } else if (battery.level < 0.15) {
-                        type = 'none';
+                        resolvedType = 'none';
                     } else {
-                        type = 'gradient';
+                        resolvedType = 'gradient';
                     }
                 } catch (e) {
-                    type = 'gradient'; // Fallback if battery API fails
+                    resolvedType = 'gradient'; // Fallback if battery API fails
                 }
             }
             
+            // FIX: Update the display for auto type
+            if (type === 'auto') {
+                autoBgTypeDisplay.textContent = `(${resolvedType.charAt(0).toUpperCase() + resolvedType.slice(1)})`;
+            } else {
+                 autoBgTypeDisplay.textContent = '';
+            }
+
             smudgeBackgroundCanvas.style.display = 'none';
             gradientBackgroundDiv.style.display = 'none';
             isParticleAnimationRunning = false;
             
-            if (type === 'particle') {
+            if (resolvedType === 'particle') {
                 smudgeBackgroundCanvas.style.display = 'block';
                 if (!isParticleAnimationRunning) {
                     isParticleAnimationRunning = true;
                     applyBackgroundPalette();
                     animateSmudgeBackground();
                 }
-            } else if (type === 'gradient') {
+            } else if (resolvedType === 'gradient') {
                 gradientBackgroundDiv.style.display = 'block';
                 applyBackgroundPalette();
             }
-            // If 'none', both are hidden
         }
         
         changePaletteBtn.addEventListener('click', applyBackgroundPalette);
@@ -1901,7 +2077,6 @@
             trigger.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const isHidden = optionsContainer.classList.contains('hidden');
-                 // Close all other dropdowns
                 document.querySelectorAll('.custom-select-options').forEach(opt => opt.classList.add('hidden'));
                 document.querySelectorAll('.select-arrow').forEach(a => a.classList.remove('expanded'));
                 
@@ -1933,7 +2108,7 @@
         
         function updatePaletteLabel() {
              if (currentBgPaletteName === 'All') {
-                paletteSelectLabel.textContent = `Default Colour Palettes - ${currentPaletteForDisplay || ''}`;
+                paletteSelectLabel.innerHTML = `Default Colour Palettes <span class="ml-1 text-xs">(${currentPaletteForDisplay || ''})</span>`;
             } else {
                 paletteSelectLabel.textContent = 'Default Colour Palettes';
             }
@@ -1944,7 +2119,7 @@
             const valueSpan = document.querySelector('#palette-select .custom-select-value');
             if (!container || !valueSpan) return;
 
-            container.innerHTML = ''; // Clear existing
+            container.innerHTML = ''; 
             
             const addOption = (name, value, colors) => {
                 const option = document.createElement('div');
@@ -1952,7 +2127,7 @@
                 option.textContent = name;
                 option.dataset.value = value;
                 if(colors && colors.length > 0) {
-                     option.style.borderImageSource = `linear-gradient(to right, ${colors.join(', ')})`;
+                     option.style.borderImageSource = `linear-gradient(to bottom, ${colors.join(', ')} 36px )`;
                 }
                 container.appendChild(option);
             };
@@ -2033,9 +2208,7 @@
                 opt.text.toLowerCase().includes('none of the above')
             );
 
-            if (hasNonShuffleableOption) {
-                return; // Don't shuffle if it contains a fixed option
-            }
+            if (hasNonShuffleableOption) return;
 
             for (let i = options.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -2063,14 +2236,13 @@
             return timeString.trim();
         }
 
-        function parseInput(text) {
+        function parseMCInput(text) {
             const lines = text.split('\n').filter(line => line.trim() !== '' || line === '');
             const questions = [];
             let currentQuestionBuilder = null;
             const questionRegex = /^(\d+)\.\s+(.*)/;
             const optionRegex = /^\s*([A-Z])\.\s+(.*)/;
             const explanationRegex = /\[explanation\](.*)/;
-            let questionNumber = 0;
 
             for (const line of lines) {
                 const trimmedLine = line.trim();
@@ -2081,10 +2253,9 @@
                     if (currentQuestionBuilder && currentQuestionBuilder.options.length > 0 && currentQuestionBuilder.options.some(opt => opt.isCorrectOption)) {
                         questions.push(currentQuestionBuilder);
                     }
-                    questionNumber = parseInt(questionMatch[1], 10);
                     currentQuestionBuilder = {
                         id: questions.length, questionText: questionMatch[2], options: [],
-                        originalOrder: questionNumber, explanation: ''
+                        originalOrder: parseInt(questionMatch[1], 10), explanation: ''
                     };
                 } else if (optionMatch && currentQuestionBuilder) {
                     let optionText = optionMatch[2];
@@ -2106,6 +2277,53 @@
             }
             return questions.map(q => ({ ...q, userSelectedOptionLetter: null, isAnsweredCorrectly: null, timeTakenMs: 0, status: 'unanswered', wasRetaken: false }));
         }
+
+        function parseFillInTheBlankInput(text) {
+            const lines = text.split('\n').filter(line => line.trim() !== '' || line === '');
+            const questions = [];
+            const questionRegex = /^(\d+)\.\s+(.*)/;
+            const blankRegex = /\*\*(.*?)\*\*/g;
+            const explanationRegex = /\[explanation\](.*)/;
+
+            for (const line of lines) {
+                const questionMatch = line.match(questionRegex);
+                if (questionMatch) {
+                    let fullText = questionMatch[2];
+                    let explanation = '';
+                    const explanationMatch = fullText.match(explanationRegex);
+                    if (explanationMatch) {
+                        explanation = explanationMatch[1].trim();
+                        fullText = fullText.replace(explanationRegex, '').trim();
+                    }
+
+                    const blanks = [];
+                    let match;
+                    while ((match = blankRegex.exec(fullText)) !== null) {
+                        blanks.push({
+                            answers: match[1].split('/').map(a => a.trim().toLowerCase()),
+                            userAnswer: ''
+                        });
+                    }
+                    
+                    const questionTextWithPlaceholders = fullText.replace(blankRegex, '____');
+
+                    if (blanks.length > 0) {
+                        questions.push({
+                            id: questions.length,
+                            questionText: questionTextWithPlaceholders,
+                            blanks: blanks,
+                            explanation: explanation,
+                            originalOrder: parseInt(questionMatch[1], 10),
+                            isAnsweredCorrectly: null,
+                            timeTakenMs: 0,
+                            status: 'unanswered',
+                            wasRetaken: false
+                        });
+                    }
+                }
+            }
+            return questions;
+        }
         
         function handleRedoIncorrect() {
             let firstIncorrectDisplayIndex = -1;
@@ -2116,17 +2334,15 @@
                 const question = currentQuizQuestions[questionIndexInCurrent];
                 if (question.isAnsweredCorrectly === false) {
                     question.isAnsweredCorrectly = null;
-                    question.userSelectedOptionLetter = null;
                     question.status = 'unanswered';
                     question.wasRetaken = true;
-                    
-                    if (randomiseAnswerOrderToggle.checked) {
-                        shuffleOptionsForQuestion(question);
+                    if (currentQuizType === 'multiple-choice') {
+                        question.userSelectedOptionLetter = null;
+                        if (randomiseAnswerOrderToggle.checked) shuffleOptionsForQuestion(question);
+                    } else if (currentQuizType === 'fill-in-the-blank') {
+                        question.blanks.forEach(b => b.userAnswer = '');
                     }
-
-                    if (firstIncorrectDisplayIndex === -1) {
-                        firstIncorrectDisplayIndex = displayIndex;
-                    }
+                    if (firstIncorrectDisplayIndex === -1) firstIncorrectDisplayIndex = displayIndex;
                 }
             });
             
@@ -2144,8 +2360,13 @@
 
         function handleRedoQuiz() {
             if (originalAllQuestionsData && Array.isArray(originalAllQuestionsData) && originalAllQuestionsData.length > 0) {
-                const shuffleQuestions = randomiseQuestionOrderToggle.checked;
-                const shuffleAnswers = randomiseAnswerOrderToggle.checked;
+                let shuffleQuestions;
+                if(currentQuizType === 'multiple-choice') {
+                    shuffleQuestions = randomiseQuestionOrderToggle.checked;
+                } else {
+                    shuffleQuestions = fitbRandomiseQuestionOrderToggle.checked;
+                }
+                const shuffleAnswers = (currentQuizType === 'multiple-choice') ? randomiseAnswerOrderToggle.checked : false;
                 initializeQuiz(originalAllQuestionsData, shuffleQuestions, shuffleAnswers, false);
             } else {
                 commonNewQuizLogic();
@@ -2196,13 +2417,15 @@
             }
             if (!isContinuation) { 
                 currentQuizQuestions.forEach(q => {
-                    q.userSelectedOptionLetter = null; 
                     q.isAnsweredCorrectly = null;
                     q.timeTakenMs = 0; 
                     q.status = 'unanswered';
                     q.wasRetaken = false;
-                    if (shuffleA) {
-                         shuffleOptionsForQuestion(q);
+                    if (currentQuizType === 'multiple-choice') {
+                        q.userSelectedOptionLetter = null;
+                        if (shuffleA) shuffleOptionsForQuestion(q);
+                    } else {
+                        if (q.blanks) q.blanks.forEach(b => b.userAnswer = '');
                     }
                 });
                 accumulatedTotalQuizTimeMs = 0;
@@ -2227,14 +2450,13 @@
             return currentQuizQuestions[questionIndexInCurrentArray]; 
         }
         
-        function buildQuestionDOM(question) {
+        function buildMCQuestionDOM(question) {
             const questionDiv = document.createElement('div');
             questionDiv.className = 'question-instance min-w-full flex-shrink-0 box-border max-w-full';
             const uniqueIdPrefix = `q-${question.id}-inst-${Date.now() % 10000}`;
             questionDiv.innerHTML = `
                 <div id="${uniqueIdPrefix}-opts" class="space-y-3 max-w-full"></div>
-                <div id="${uniqueIdPrefix}-feedback" class="mt-4 min-h-[50px]"></div>
-            `;
+                <div id="${uniqueIdPrefix}-feedback" class="mt-4 min-h-[50px]"></div>`;
             const optsContainer = questionDiv.querySelector(`#${uniqueIdPrefix}-opts`);
             question.options.forEach(option => {
                 const button = document.createElement('button');
@@ -2244,7 +2466,6 @@
                 
                 button.addEventListener('click', () => {
                     if (question.isAnsweredCorrectly !== null || isQuizPaused) return; 
-                    
                     const now = new Date().getTime();
                     const timeSinceLastClick = now - lastClickTime;
                     
@@ -2267,6 +2488,23 @@
             return questionDiv;
         }
 
+        function buildFillInTheBlankQuestionDOM(question) {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-instance min-w-full flex-shrink-0 box-border max-w-full';
+            const uniqueIdPrefix = `q-${question.id}-inst-${Date.now() % 10000}`;
+            let questionHTML = question.questionText;
+            let blankIndex = 0;
+            questionHTML = questionHTML.replace(/____/g, () => {
+                const value = question.blanks[blankIndex].userAnswer || '';
+                return `<input type="text" class="blank-input" data-blank-index="${blankIndex++}" value="${value}">`;
+            });
+            
+            questionDiv.innerHTML = `
+                <div class="fill-in-the-blank-question-text">${questionHTML}</div>
+                <div id="${uniqueIdPrefix}-feedback" class="mt-4 min-h-[50px]"></div>`;
+            return questionDiv;
+        }
+
         function selectOption(buttonEl, letter) {
             const optsContainer = buttonEl.parentElement;
             optsContainer.querySelectorAll('.btn-option').forEach(btn => btn.classList.remove('user-selected-option'));
@@ -2283,27 +2521,42 @@
                 return;
             }
             selectedOptionLetter = null; 
-            
             pauseQuizBtn.classList.remove('hidden');
-            
             submitAnswerBtn.classList.remove('is-fading-in', 'is-fading-out');
-            applyHideSubmitButton();
+
+            // Reset explanation button for Fill-in-the-Blank
+            explanationBtn.classList.add('hidden');
+            if (currentQuizType === 'fill-in-the-blank') {
+                 explanationBtn.classList.remove('hidden', 'btn-green', 'force-correct-active');
+                 explanationBtn.classList.add('btn-main');
+                 explanationBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" /></svg>`;
+            }
+
+            if(currentQuizType === 'multiple-choice') applyHideSubmitButton();
+            else submitAnswerBtn.classList.remove('hidden');
+
 
             const allAnswered = currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null);
-
             if (question.isAnsweredCorrectly !== null) {
                 submitAnswerBtn.textContent = allAnswered ? "See Results" : "Next Question";
                 submitAnswerBtn.disabled = false;
             } else {
                 submitAnswerBtn.textContent = "Submit Answer";
-                submitAnswerBtn.disabled = true;
+                submitAnswerBtn.disabled = currentQuizType === 'multiple-choice';
             }
             
             quizScreenTitle.textContent = `Question ${currentQuestionDisplayOrderIndex + 1}`;
             
             const updateContent = () => {
-                stickyQuestionText.innerHTML = question.questionText;
-                const newQuestionDOM = buildQuestionDOM(question);
+                let newQuestionDOM;
+                stickyQuestionText.innerHTML = '';
+                
+                if (currentQuizType === 'multiple-choice') {
+                    stickyQuestionText.innerHTML = question.questionText;
+                    newQuestionDOM = buildMCQuestionDOM(question);
+                } else { // fill-in-the-blank
+                    newQuestionDOM = buildFillInTheBlankQuestionDOM(question);
+                }
                 
                 questionContentContainer.innerHTML = '';
                 questionContentContainer.className = '';
@@ -2315,18 +2568,24 @@
                 stickyQuestionText.classList.add('is-fading-in-fast');
                 questionContentContainer.classList.add('is-fading-in');
 
-                const currentOptsContainer = currentQuestionDOM.querySelector(`[id$="-opts"]`);
                 const currentFeedbackContainer = currentQuestionDOM.querySelector(`[id$="-feedback"]`);
                 if (question.isAnsweredCorrectly !== null) { 
-                    showAnswerFeedbackDOM(question, currentFeedbackContainer, currentOptsContainer);
-                    if (currentOptsContainer) { 
-                        currentOptsContainer.querySelectorAll('.btn-option').forEach(btn => {
-                            btn.disabled = true; 
-                            if (btn.dataset.letter === question.userSelectedOptionLetter) btn.classList.add(question.isAnsweredCorrectly ? 'correct' : 'incorrect');
-                            const optData = question.options.find(o => o.letter === btn.dataset.letter);
-                            if (optData && optData.isCorrectOption) btn.classList.add('correct'); 
-                        });
+                    showAnswerFeedbackDOM(question, currentFeedbackContainer);
+                    if (currentQuizType === 'multiple-choice') {
+                        const currentOptsContainer = currentQuestionDOM.querySelector(`[id$="-opts"]`);
+                        if (currentOptsContainer) { 
+                            currentOptsContainer.querySelectorAll('.btn-option').forEach(btn => {
+                                btn.disabled = true; 
+                                if (btn.dataset.letter === question.userSelectedOptionLetter) btn.classList.add(question.isAnsweredCorrectly ? 'correct' : 'incorrect');
+                                const optData = question.options.find(o => o.letter === btn.dataset.letter);
+                                if (optData && optData.isCorrectOption) btn.classList.add('correct'); 
+                            });
+                        }
+                    } else if (currentQuizType === 'fill-in-the-blank') {
+                        styleFillInTheBlankInputs(question.isAnsweredCorrectly);
+                        explanationBtn.classList.remove('hidden');
                     }
+
                     currentQuestionTimerDisplay.textContent = `Time: ${formatTime(question.timeTakenMs)}`;
                     checkAndShowNextButton();
                 } else { 
@@ -2352,13 +2611,14 @@
         function checkAndShowNextButton() {
             const question = getCurrentQuestionData();
             if (!question || question.isAnsweredCorrectly === null) return;
-
-            const autoNextType = localStorage.getItem('autoNextType') || 'none';
+            
+            const storageKeyPrefix = currentQuizType === 'multiple-choice' ? '' : 'fitb';
+            const autoNextType = localStorage.getItem(`${storageKeyPrefix}AutoNextType`) || 'none';
             const shouldAutoNext = (autoNextType === 'all') ||
                                    (autoNextType === 'correct' && question.isAnsweredCorrectly) ||
                                    (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
             
-            if (hideSubmitButtonToggle.checked && !shouldAutoNext) {
+            if (currentQuizType === 'multiple-choice' && hideSubmitButtonToggle.checked && !shouldAutoNext) {
                 setTimeout(() => {
                     submitAnswerBtn.classList.remove('hidden');
                     submitAnswerBtn.classList.add('is-fading-in-fast');
@@ -2366,25 +2626,59 @@
             }
         }
 
-
-        function handleSubmitAnswer() { 
+        function handleSubmitAnswer() {
             const question = getCurrentQuestionData();
-            if (!question || question.isAnsweredCorrectly !== null || !selectedOptionLetter || isQuizPaused) return;
-
-            stopTimers(false); 
+            if (!question || question.isAnsweredCorrectly !== null || isQuizPaused) return;
+            if (currentQuizType === 'multiple-choice' && !selectedOptionLetter) return;
+            
+            stopTimers(false);
             const timeElapsed = Date.now() - questionSpecificTimerStartMs;
             question.timeTakenMs = (question.timeTakenMs || 0) + timeElapsed;
+
+            if (currentQuizType === 'multiple-choice') {
+                handleSubmitMCAnswer(question);
+            } else if (currentQuizType === 'fill-in-the-blank') {
+                handleSubmitFITBAnswer(question);
+            }
+
+            question.status = question.isAnsweredCorrectly ? 'answered-correct' : 'answered-incorrect';
+            const currentFeedbackDOM = currentQuestionDOM ? currentQuestionDOM.querySelector(`[id$="-feedback"]`) : null;
+            if (currentFeedbackDOM) {
+                showAnswerFeedbackDOM(question, currentFeedbackDOM);
+                updateTimelineNav();
+            }
+
+            const allAnswered = currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null);
+            submitAnswerBtn.textContent = allAnswered ? "See Results" : "Next Question";
+            submitAnswerBtn.disabled = false;
+
+            checkAndShowNextButton();
             
+            const storageKeyPrefix = currentQuizType === 'multiple-choice' ? '' : 'fitb';
+            const autoNextType = localStorage.getItem(`${storageKeyPrefix}AutoNextType`) || 'none';
+            const autoNextDuration = (parseInt(localStorage.getItem(`${storageKeyPrefix}AutoNextDuration`), 10) || 5) * 1000;
+
+            const shouldAutoNext = (autoNextType === 'all') ||
+                                   (autoNextType === 'correct' && question.isAnsweredCorrectly) ||
+                                   (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
+
+            if (shouldAutoNext) {
+                 autoAdvanceTimeout = setTimeout(() => { 
+                    if (!isQuizPaused && isQuizActive) handleNextAction();
+                 }, autoNextDuration);
+            }
+            if (allAnswered) {
+                pauseQuizBtn.classList.add('hidden');
+            }
+        }
+
+        function handleSubmitMCAnswer(question) {
             question.userSelectedOptionLetter = selectedOptionLetter;
             const correctOption = question.options.find(opt => opt.isCorrectOption);
             question.isAnsweredCorrectly = (selectedOptionLetter === correctOption.letter);
-            question.status = question.isAnsweredCorrectly ? 'answered-correct' : 'answered-incorrect';
-            
-            const currentFeedbackDOM = currentQuestionDOM ? currentQuestionDOM.querySelector(`[id$="-feedback"]`) : null;
+
             const currentOptsDOM = currentQuestionDOM ? currentQuestionDOM.querySelector(`[id$="-opts"]`) : null;
-            if (currentFeedbackDOM && currentOptsDOM) { 
-                showAnswerFeedbackDOM(question, currentFeedbackDOM, currentOptsDOM);
-                updateTimelineNav();
+            if (currentOptsDOM) {
                 currentOptsDOM.querySelectorAll('.btn-option').forEach(btn => {
                     btn.disabled = true;
                     if (btn.dataset.letter === selectedOptionLetter) {
@@ -2395,41 +2689,49 @@
                     }
                 });
             }
-
-            const allAnswered = currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null);
-            
-            if (allAnswered) {
-                submitAnswerBtn.textContent = "See Results";
-            } else {
-                 submitAnswerBtn.textContent = "Next Question"; 
-            }
-            submitAnswerBtn.disabled = false;
-
-
-            checkAndShowNextButton();
-
-            const autoNextType = localStorage.getItem('autoNextType') || 'none';
-            const autoNextDuration = (parseInt(localStorage.getItem('autoNextDuration'), 10) || 5) * 1000;
-
-            const shouldAutoNext = (autoNextType === 'all') ||
-                                   (autoNextType === 'correct' && question.isAnsweredCorrectly) ||
-                                   (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
-
-            if (shouldAutoNext) {
-                 autoAdvanceTimeout = setTimeout(() => { 
-                    if (!isQuizPaused && isQuizActive) {
-                        handleNextAction();
-                    }
-                 }, autoNextDuration);
-            }
-            
-            if (allAnswered) {
-                pauseQuizBtn.classList.add('hidden');
-            }
         }
 
-        function showAnswerFeedbackDOM(question, feedbackEl, optionsEl) {
-            if (!feedbackEl || !optionsEl) return;
+        function handleSubmitFITBAnswer(question) {
+            const inputs = currentQuestionDOM.querySelectorAll('.blank-input');
+            let allCorrect = true;
+            inputs.forEach(input => {
+                const blankIndex = parseInt(input.dataset.blankIndex, 10);
+                const userAnswer = input.value.trim().toLowerCase();
+                const correctAnswers = question.blanks[blankIndex].answers;
+                question.blanks[blankIndex].userAnswer = input.value; // Store original case
+
+                if (correctAnswers.includes(userAnswer)) {
+                    input.classList.add('correct');
+                } else {
+                    input.classList.add('incorrect');
+                    allCorrect = false;
+                }
+                input.disabled = true;
+            });
+            question.isAnsweredCorrectly = allCorrect;
+        }
+
+        function styleFillInTheBlankInputs(isQuestionCorrect) {
+            const inputs = currentQuestionDOM.querySelectorAll('.blank-input');
+            inputs.forEach(input => {
+                 input.disabled = true;
+                 const blankIndex = parseInt(input.dataset.blankIndex, 10);
+                 const question = getCurrentQuestionData();
+                 const userAnswer = (question.blanks[blankIndex].userAnswer || "").trim().toLowerCase();
+                 const correctAnswers = question.blanks[blankIndex].answers;
+
+                 if (correctAnswers.includes(userAnswer)) {
+                    input.classList.add('correct');
+                 } else {
+                    input.classList.add('incorrect');
+                    if(!input.value) input.placeholder = correctAnswers[0];
+                 }
+            });
+        }
+
+
+        function showAnswerFeedbackDOM(question, feedbackEl) {
+            if (!feedbackEl) return;
             let feedbackMsg = '';
             
             if (question.explanation) {
@@ -2443,8 +2745,12 @@
                  if (question.isAnsweredCorrectly) {
                     feedbackMsg = `<div class="feedback-message feedback-correct"><strong>Correct!</strong> Well done.</div>`;
                 } else {
-                    const correctOpt = question.options.find(opt => opt.isCorrectOption);
-                    feedbackMsg = `<div class="feedback-message feedback-incorrect"><strong>Incorrect.</strong> The correct answer was: <strong>${correctOpt.letter}. ${correctOpt.text}</strong></div>`;
+                    let incorrectMsg = "<strong>Incorrect.</strong>";
+                    if(currentQuizType === 'multiple-choice') {
+                        const correctOpt = question.options.find(opt => opt.isCorrectOption);
+                        incorrectMsg += ` The correct answer was: <strong>${correctOpt.letter}. ${correctOpt.text}</strong>`;
+                    }
+                    feedbackMsg = `<div class="feedback-message feedback-incorrect">${incorrectMsg}</div>`;
                 }
             }
 
@@ -2627,6 +2933,7 @@
             quizScreen.classList.add('hidden');
             resultsScreen.classList.remove('hidden');
             pauseQuizBtn.classList.add('hidden');
+            explanationBtn.classList.add('hidden');
             
             redoQuizBtnExt.classList.remove('hidden'); 
             newQuizBtnExt.classList.remove('hidden');
@@ -2648,9 +2955,9 @@
             scoreDetailsDisplay.textContent = `${correctAnswers} / ${totalQuestionsInSet} correct`;
             totalQuizTimeDisplay.textContent = formatTime(accumulatedTotalQuizTimeMs);
             
-            const goldPerc = parseFloat(localStorage.getItem('goldMedal') || '100');
-            const silverPerc = parseFloat(localStorage.getItem('silverMedal') || '80');
-            const bronzePerc = parseFloat(localStorage.getItem('bronzeMedal') || '65');
+            const goldPerc = parseFloat(localStorage.getItem('goldMedal') || '89.5');
+            const silverPerc = parseFloat(localStorage.getItem('silverMedal') || '84.5');
+            const bronzePerc = parseFloat(localStorage.getItem('bronzeMedal') || '79.5');
 
             scoreDisplayContainer.className = 'flex justify-between items-center p-4 rounded-lg transition-colors duration-500 mb-4';
             if (isPrematureEnd) {
@@ -2669,58 +2976,16 @@
             const retakenQuestions = originalAllQuestionsData.filter(q => q.wasRetaken).sort((a, b) => a.originalOrder - b.originalOrder);
             const otherQuestions = originalAllQuestionsData.filter(q => !q.wasRetaken).sort((a, b) => a.originalOrder - b.originalOrder);
             
-            const buildResultItemDOM = (question, displayNum) => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = `result-question-item ${question.isAnsweredCorrectly === true ? 'correct' : question.isAnsweredCorrectly === false ? 'incorrect' : 'unanswered'}`;
-                itemDiv.innerHTML = `
-                    <div class="flex justify-between items-center cursor-pointer">
-                        <span class="font-semibold result-option-question">${displayNum}. ${question.questionText}</span>
-                        <div class="flex items-center">
-                            <span class="text-xs mr-2 result-option-time">Time: ${formatTime(question.timeTakenMs || 0)}</span>
-                            <svg class="dropdown-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
-                    </div>
-                    <div class="result-options-container pl-4 ml-1"></div>`;
-                const optionsDiv = itemDiv.querySelector('.result-options-container');
-                if (question.options && question.options.length > 0) {
-                    question.options.forEach(opt => {
-                        const optP = document.createElement('p');
-                        optP.className = 'result-option text-sm';
-                        optP.innerHTML = `${opt.letter}. ${opt.text}`;
-                        
-                        if (opt.isCorrectOption) {
-                            optP.classList.add('correct-answer');
-                        } else {
-                            optP.classList.add('incorrect-answer');
-                        }
-                        
-                        if (opt.letter === question.userSelectedOptionLetter) {
-                            optP.classList.add('user-selected');
-                        }
-                        optionsDiv.appendChild(optP);
-                    });
-                    if (question.explanation) {
-                        const explanationDiv = document.createElement('div');
-                        explanationDiv.className = 'explanation-container mt-3';
-                        explanationDiv.innerHTML = `<p class="font-semibold text-sm">Explanation:</p><p class="text-sm">${question.explanation}</p>`;
-                        optionsDiv.appendChild(explanationDiv);
-                    }
-                }
-                itemDiv.querySelector('.cursor-pointer').addEventListener('click', (e) => {
-                    optionsDiv.classList.toggle('expanded');
-                    e.currentTarget.querySelector('.dropdown-arrow').classList.toggle('expanded');
-                });
-                return itemDiv;
-            };
+            const buildResultItem = (q, num) => (currentQuizType === 'multiple-choice') ? buildMCResultItemDOM(q, num) : buildFITBResultItemDOM(q, num);
 
             if (retakenQuestions.length > 0) {
-                retakenQuestions.forEach(q => resultsDetailsContainer.appendChild(buildResultItemDOM(q, q.originalOrder)));
+                retakenQuestions.forEach(q => resultsDetailsContainer.appendChild(buildResultItem(q, q.originalOrder)));
                 const separator = document.createElement('hr');
                 separator.className = 'my-6 border-t-2 rounded-full';
                 separator.style.borderColor = 'var(--border-color)';
                 resultsDetailsContainer.appendChild(separator);
             }
-            otherQuestions.forEach(q => resultsDetailsContainer.appendChild(buildResultItemDOM(q, q.originalOrder)));
+            otherQuestions.forEach(q => resultsDetailsContainer.appendChild(buildResultItem(q, q.originalOrder)));
 
             const incorrectForRedoButton = originalAllQuestionsData.filter(q => q.isAnsweredCorrectly === false);
             if (incorrectForRedoButton.length > 0) {
@@ -2729,6 +2994,86 @@
                 redoIncorrectBtnExt.classList.add('hidden');
             }
         }
+
+        function buildMCResultItemDOM(question, displayNum) {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = `result-question-item ${question.isAnsweredCorrectly === true ? 'correct' : question.isAnsweredCorrectly === false ? 'incorrect' : 'unanswered'}`;
+            itemDiv.innerHTML = `
+                <div class="flex justify-between items-center cursor-pointer">
+                    <span class="font-semibold result-option-question">${displayNum}. ${question.questionText}</span>
+                    <div class="flex items-center">
+                        <span class="text-xs mr-2 result-option-time">Time: ${formatTime(question.timeTakenMs || 0)}</span>
+                        <svg class="dropdown-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div class="result-options-container pl-4 ml-1"></div>`;
+            const optionsDiv = itemDiv.querySelector('.result-options-container');
+            if (question.options && question.options.length > 0) {
+                question.options.forEach(opt => {
+                    const optP = document.createElement('p');
+                    optP.className = 'result-option text-sm';
+                    optP.innerHTML = `${opt.letter}. ${opt.text}`;
+                    
+                    if (opt.isCorrectOption) optP.classList.add('correct-answer');
+                    else optP.classList.add('incorrect-answer');
+                    
+                    if (opt.letter === question.userSelectedOptionLetter) optP.classList.add('user-selected');
+                    optionsDiv.appendChild(optP);
+                });
+                if (question.explanation) {
+                    const explanationDiv = document.createElement('div');
+                    explanationDiv.className = 'explanation-container mt-3';
+                    explanationDiv.innerHTML = `<p class="font-semibold text-sm">Explanation:</p><p class="text-sm">${question.explanation}</p>`;
+                    optionsDiv.appendChild(explanationDiv);
+                }
+            }
+            itemDiv.querySelector('.cursor-pointer').addEventListener('click', (e) => {
+                optionsDiv.classList.toggle('expanded');
+                e.currentTarget.querySelector('.dropdown-arrow').classList.toggle('expanded');
+            });
+            return itemDiv;
+        }
+
+        function buildFITBResultItemDOM(question, displayNum) {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = `result-question-item ${question.isAnsweredCorrectly === true ? 'correct' : question.isAnsweredCorrectly === false ? 'incorrect' : 'unanswered'}`;
+            
+            let questionHTML = question.questionText;
+            let blankIndex = 0;
+            questionHTML = questionHTML.replace(/____/g, () => {
+                const blank = question.blanks[blankIndex];
+                const userAnswer = (blank.userAnswer || "").trim().toLowerCase();
+                const isCorrect = blank.answers.includes(userAnswer);
+                const colorClass = isCorrect ? 'correct' : 'incorrect';
+                const value = blank.userAnswer || (question.isAnsweredCorrectly === null ? '' : blank.answers[0]);
+                blankIndex++;
+                return `<input type="text" class="blank-input ${colorClass}" value="${value}" disabled>`;
+            });
+
+            itemDiv.innerHTML = `
+                <div class="flex justify-between items-center cursor-pointer">
+                    <div class="font-semibold result-option-question">${displayNum}. ${questionHTML}</div>
+                    <div class="flex items-center">
+                        <span class="text-xs mr-2 result-option-time">Time: ${formatTime(question.timeTakenMs || 0)}</span>
+                        ${question.explanation ? '<svg class="dropdown-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>' : ''}
+                    </div>
+                </div>
+                <div class="result-options-container pl-4 ml-1"></div>`;
+
+            if (question.explanation) {
+                const optionsDiv = itemDiv.querySelector('.result-options-container');
+                const explanationDiv = document.createElement('div');
+                explanationDiv.className = 'explanation-container';
+                explanationDiv.innerHTML = `<p class="font-semibold text-sm">Explanation:</p><p class="text-sm">${question.explanation}</p>`;
+                optionsDiv.appendChild(explanationDiv);
+                itemDiv.querySelector('.cursor-pointer').addEventListener('click', (e) => {
+                    optionsDiv.classList.toggle('expanded');
+                    e.currentTarget.querySelector('.dropdown-arrow').classList.toggle('expanded');
+                });
+            }
+            return itemDiv;
+        }
+
 
         function hideExternalResultsButtons() {
             redoIncorrectBtnExt.classList.add('hidden');
@@ -2739,9 +3084,16 @@
         createQuizBtn.addEventListener('click', () => {
             const rawData = quizDataInput.value;
             if (!rawData.trim()) { showFormatErrorModal(); return; }
-            originalAllQuestionsData = parseInput(rawData);
+            
+            const parser = currentQuizType === 'multiple-choice' ? parseMCInput : parseFillInTheBlankInput;
+            originalAllQuestionsData = parser(rawData);
+
             if (originalAllQuestionsData.length === 0) { showFormatErrorModal(); return; }
-            initializeQuiz(originalAllQuestionsData, false, true, false); 
+
+            const shuffleQ = currentQuizType === 'multiple-choice' ? randomiseQuestionOrderToggle.checked : fitbRandomiseQuestionOrderToggle.checked;
+            const shuffleA = currentQuizType === 'multiple-choice' ? randomiseAnswerOrderToggle.checked : false;
+
+            initializeQuiz(originalAllQuestionsData, shuffleQ, shuffleA, false); 
         });
 
         submitAnswerBtn.addEventListener('click', handleNextAction);
@@ -2750,6 +3102,7 @@
             isQuizActive = false; hideExternalResultsButtons();
             resultsScreen.classList.add('hidden');
             quizScreen.classList.add('hidden'); pauseQuizBtn.classList.add('hidden');
+            explanationBtn.classList.add('hidden');
             inputScreen.classList.remove('hidden');
             quizDataInput.value = ''; 
             textareaPlaceholder.style.display = 'flex';
@@ -2772,17 +3125,17 @@
         });
        
         const aiModelData = {
-            'chatgpt': { max: 25, format: 'long-format' },
-            'chatgpt-plus': { max: 50, format: 'long-format' },
-            'notebook-lm': { max: 50, format: 'short-format' },
-            'gemini': { max: 25, format: 'long-format' },
-            'claude': { max: 25, format: 'long-format' },
-            'deepseek': { max: 25, format: 'long-format' },
-            'llm': { max: 50, format: 'long-format' }
+            'chatgpt': { max: 25 },
+            'chatgpt-plus': { max: 50 },
+            'notebook-lm': { max: 50 },
+            'gemini': { max: 25 },
+            'claude': { max: 25 },
+            'deepseek': { max: 25 },
+            'llm': { max: 50 }
         };
 
         const promptFormats = {
-            'short-format': `
+            'multiple-choice': `
 Each question starts with 1., 2., etc.
 Options for each question are A., B., C., D.
 No blank lines between questions and their options, or between options of the same question. Use a blank line to separate different questions.
@@ -2790,15 +3143,13 @@ Immediately after the correct answer's text, add [explanation] followed by the e
 Do not mention the word “source” but you can mention the source name.
 Explain why the correct answer is correct rather than restating the correct answer.
 The correct answer should have ** around it and its explanation. This is a must. It should also be bolded.
-Example of Correct answer that has bold text and ** surround it: **B. This is correct [explanation] Because of this reason.**
-Only one correct answer per question.
-All options (correct and incorrect) must seem plausible.
+Example of Correct answer: **B. This is correct [explanation] Because of this reason.**
+Only one correct answer per question. All options (correct and incorrect) must seem plausible.
 At least one wrong answer choice must be at least 3 characters longer than the correct answer choice.
 At least one wrong answer choice must be at least 3 characters shorter than the correct answer choice.
 The correct answers shouldn't be evenly distributed among A, B, C, D.
 No single answer letter (A, B, C, or D) can have less than 10% of the total correct answers.
-Example: 35% A, 10% B, 25% C, 30% D is valid.
-Do not include any other text before or after the questions and answers.
+Do not include any other text, markdown symbols, or formatting before or after the questions and answers.
 Example Question Formatting:
 1. Which planet is known as the Red Planet?
     A. Venus.
@@ -2806,36 +3157,22 @@ Example Question Formatting:
     C. Jupiter.
     D. Earth.
 `,
-            'long-format': `
+            'fill-in-the-blank': () => `
 Each question starts with 1., 2., etc.
-Options for each question are A., B., C., D.
-No blank lines between questions and their options, or between options of the same question. Use a blank line to separate different questions.
-Immediately after the correct answer's text, add [explanation] followed by the explanation. 
-Do not mention the word “source” but you can mention the source name.
-Explain why the correct answer is correct rather than restating the correct answer.
-The correct answer should have ** around it and its explanation. This is a must. It should also be bolded.
-Example of Correct answer that has bold text and ** surround it: **B. This is correct [explanation] Because of this reason.**
-Only one correct answer per question.
-All options (correct and incorrect) must seem plausible.
-At least one wrong answer choice must be at least 3 characters longer than the correct answer choice.
-At least one wrong answer choice must be at least 3 characters shorter than the correct answer choice.
-The correct answers shouldn't be evenly distributed among A, B, C, D.
-No single answer letter (A, B, C, or D) can have less than 10% of the total correct answers.
-Example: 35% A, 10% B, 25% C, 30% D is valid.
-Do not include any other text before or after the questions and answers.
-Do not include any other markdown symbols such as # or horizontal lines etc. Only adhere to the supplied formatting in reference to the example question formatting below. 
+There can be up to ${blanksPerQInput.value} blanks per question. Each blank's correct answer(s) must be enclosed in **.
+For a blank, you can provide multiple acceptable spellings or answers by separating them with a forward slash "/", for example: **color/colour**.
+Immediately after the full question, add [explanation] followed by a justification for the answer(s). Do not simply restate the question.
+Do not include any other text, markdown symbols, or formatting before or after the questions.
 Example Question Formatting:
-1. Which planet is known as the Red Planet?
-    A. Venus.
-    B. **Mars. [explanation] Mars is often called the Red Planet due to its iron oxide-rich surface.**
-    C. Jupiter.
-    D. Earth. 
-`,
+1. The color of a carrot is **Orange**. [explanation] Carrots are orange due to the pigment beta-carotene.
+2. The latest series of AM5 motherboards is the **800** series. The highest tier is the **X870E/X870-E** chipset. [explanation] The 800 series is the newest for AM5, with X870E being the top-tier chipset for enthusiasts.
+`
         };
 
         function updateQuestionCount(value) {
-            const selectedModel = hiddenSelectInput.value;
-            const maxQuestions = (selectedModel && aiModelData[selectedModel]?.max) || 100;
+            const selectedModel = document.querySelector('#ai-model-select .custom-select-value').textContent;
+            const modelKey = selectedModel.toLowerCase().replace(/\s/g, '-');
+            const maxQuestions = (modelKey && aiModelData[modelKey]?.max) || 100;
             let numValue = parseInt(value, 10);
             if (isNaN(numValue) || numValue < 1) numValue = 1;
             else if (numValue > maxQuestions) numValue = maxQuestions;
@@ -2846,10 +3183,11 @@ Example Question Formatting:
         questionCountInput.addEventListener('change', (e) => updateQuestionCount(e.target.value));
         qCountMinusBtn.addEventListener('click', () => updateQuestionCount(parseInt(questionCountInput.value, 10) - 1));
         qCountPlusBtn.addEventListener('click', () => updateQuestionCount(parseInt(questionCountInput.value, 10) + 1));
-        qCountMaxBtn.addEventListener('click', () => { const selectedModel = hiddenSelectInput.value; if (selectedModel && aiModelData[selectedModel]) updateQuestionCount(aiModelData[selectedModel].max); });
+        qCountMaxBtn.addEventListener('click', () => { const modelKey = (localStorage.getItem('savedAiModel') || ''); if (modelKey && aiModelData[modelKey]) updateQuestionCount(aiModelData[modelKey].max); });
         
         copyFormatBtn.addEventListener('click', () => {
-            const model = hiddenSelectInput.value; const qCount = questionCountInput.value;
+            const model = localStorage.getItem('savedAiModel'); 
+            const qCount = questionCountInput.value;
             if (!model || !qCount || qCount < 1) {
                 clearTimeout(copyTimeout);
                 copyFormatBtn.textContent = 'Select Model & Question Amount First!';
@@ -2857,8 +3195,12 @@ Example Question Formatting:
                 copyTimeout = setTimeout(() => { copyFormatBtn.textContent = 'Required Prompt. Click to Copy'; copyFormatBtn.classList.remove('btn-red'); copyFormatBtn.classList.add('btn-main'); }, 3000);
                 return;
             }
-            const formatId = aiModelData[model].format; const formatText = promptFormats[formatId];
-            const fullPrompt = `Create a ${qCount} question multiple choice quiz. You must follow the required formatting presented below and should never deviate from it for any reason.\n\n${formatText}`;
+            const quizType = localStorage.getItem('savedQuizType') || 'multiple-choice';
+            const formatProvider = promptFormats[quizType];
+            const formatText = typeof formatProvider === 'function' ? formatProvider() : formatProvider;
+            const quizTypeText = quizType.replace(/-/g, ' ');
+            
+            const fullPrompt = `Create a ${qCount} question ${quizTypeText} quiz. You must follow the required formatting presented below and should never deviate from it for any reason.\n\n${formatText}`;
             navigator.clipboard.writeText(fullPrompt).then(() => {
                 clearTimeout(copyTimeout); copyFormatBtn.textContent = 'Copied! Paste into your AI Model.';
                 copyFormatBtn.classList.remove('btn-main', 'btn-red'); copyFormatBtn.classList.add('btn-green');
@@ -2885,15 +3227,16 @@ Example Question Formatting:
 
         function loadPromptBuilderSettings() {
             const savedModel = localStorage.getItem('savedAiModel');
+            const savedQuizType = localStorage.getItem('savedQuizType') || 'multiple-choice';
             const savedCount = localStorage.getItem('savedQuestionCount');
             
             if (savedModel) {
-                 const option = document.querySelector(`#custom-select-options .custom-option[data-value="${savedModel}"]`);
-                 if (option) {
-                    hiddenSelectInput.value = savedModel;
-                    mainCustomSelectValue.textContent = option.textContent;
-                 }
+                 const option = document.querySelector(`#ai-model-select .custom-select-options .custom-option[data-value="${savedModel}"]`);
+                 if (option) document.querySelector('#ai-model-select .custom-select-value').textContent = option.textContent;
             }
+            const quizTypeOption = document.querySelector(`#quiz-type-select .custom-select-options .custom-option[data-value="${savedQuizType}"]`);
+            if(quizTypeOption) document.querySelector('#quiz-type-select .custom-select-value').textContent = quizTypeOption.textContent;
+
             if(savedCount) { 
                 questionCountInput.value = savedCount; 
                 updateQuestionCount(savedCount);
@@ -2909,7 +3252,11 @@ Example Question Formatting:
             textareaPlaceholder.style.display = quizDataInput.value ? 'none' : 'flex';
         });
 
-        function showFormatErrorModal() { formatErrorModal.classList.add('visible'); }
+        function showFormatErrorModal() {
+             formatExampleMC.classList.toggle('hidden', currentQuizType !== 'multiple-choice');
+             formatExampleFITB.classList.toggle('hidden', currentQuizType !== 'fill-in-the-blank');
+             formatErrorModal.classList.add('visible');
+        }
         formatModalOkBtn.addEventListener('click', () => formatErrorModal.classList.remove('visible'));
 
         function setDynamicContainerHeight(containerSelector, topOffset = 56, bottomOffset = 0) {
@@ -2935,7 +3282,7 @@ Example Question Formatting:
         
         // --- Keyboard Navigation ---
         function handleKeyboardNav(e) {
-            if (!isQuizActive || isQuizPaused || !keyboardFunctionsToggle.checked) return;
+            if (!isQuizActive || isQuizPaused || !keyboardFunctionsToggle.checked || currentQuizType !== 'multiple-choice') return;
 
             const question = getCurrentQuestionData();
             if (!question) return;
@@ -2944,25 +3291,9 @@ Example Question Formatting:
 
             if (isAnswered) {
                  switch (e.key) {
-                    case 'a':
-                    case 'ArrowLeft':
-                        e.preventDefault();
-                        if (currentQuestionDisplayOrderIndex > 0) {
-                            navigateToQuestion(currentQuestionDisplayOrderIndex - 1, false, 'prev');
-                        }
-                        break;
-                    case 'd':
-                    case 'ArrowRight':
-                        e.preventDefault();
-                        if (currentQuestionDisplayOrderIndex < questionOrder.length - 1) {
-                             navigateToQuestion(currentQuestionDisplayOrderIndex + 1, false, 'next');
-                        }
-                        break;
-                    case ' ':
-                    case 'Enter':
-                        e.preventDefault();
-                        handleNextAction();
-                        break;
+                    case 'a': case 'ArrowLeft': e.preventDefault(); if (currentQuestionDisplayOrderIndex > 0) navigateToQuestion(currentQuestionDisplayOrderIndex - 1, false, 'prev'); break;
+                    case 'd': case 'ArrowRight': e.preventDefault(); if (currentQuestionDisplayOrderIndex < questionOrder.length - 1) navigateToQuestion(currentQuestionDisplayOrderIndex + 1, false, 'next'); break;
+                    case ' ': case 'Enter': e.preventDefault(); handleNextAction(); break;
                 }
                 return;
             }
@@ -2971,42 +3302,11 @@ Example Question Formatting:
             let currentSelectedIndex = options.findIndex(opt => opt.classList.contains('keyboard-selected'));
 
             switch (e.key) {
-                case 'w':
-                case 'ArrowUp':
-                    e.preventDefault();
-                    options.forEach(o => o.classList.remove('keyboard-selected'));
-                    let prevIndex = (currentSelectedIndex - 1 + options.length) % options.length;
-                    options[prevIndex].classList.add('keyboard-selected');
-                    break;
-                case 's':
-                case 'ArrowDown':
-                    e.preventDefault();
-                    options.forEach(o => o.classList.remove('keyboard-selected'));
-                    let nextIndex = (currentSelectedIndex + 1) % options.length;
-                    options[nextIndex].classList.add('keyboard-selected');
-                    break;
-                case 'a':
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    if (currentQuestionDisplayOrderIndex > 0) {
-                        navigateToQuestion(currentQuestionDisplayOrderIndex - 1, false, 'prev');
-                    }
-                    break;
-                case 'd':
-                case 'ArrowRight':
-                    e.preventDefault();
-                    if (currentQuestionDisplayOrderIndex < questionOrder.length - 1) {
-                         navigateToQuestion(currentQuestionDisplayOrderIndex + 1, false, 'next');
-                    }
-                    break;
-                case ' ':
-                case 'Enter':
-                    e.preventDefault();
-                    if (currentSelectedIndex > -1) {
-                        selectedOptionLetter = options[currentSelectedIndex].dataset.letter;
-                        handleSubmitAnswer();
-                    }
-                    break;
+                case 'w': case 'ArrowUp': e.preventDefault(); options.forEach(o => o.classList.remove('keyboard-selected')); let prevIndex = (currentSelectedIndex - 1 + options.length) % options.length; options[prevIndex].classList.add('keyboard-selected'); break;
+                case 's': case 'ArrowDown': e.preventDefault(); options.forEach(o => o.classList.remove('keyboard-selected')); let nextIndex = (currentSelectedIndex + 1) % options.length; options[nextIndex].classList.add('keyboard-selected'); break;
+                case 'a': case 'ArrowLeft': e.preventDefault(); if (currentQuestionDisplayOrderIndex > 0) navigateToQuestion(currentQuestionDisplayOrderIndex - 1, false, 'prev'); break;
+                case 'd': case 'ArrowRight': e.preventDefault(); if (currentQuestionDisplayOrderIndex < questionOrder.length - 1) navigateToQuestion(currentQuestionDisplayOrderIndex + 1, false, 'next'); break;
+                case ' ': case 'Enter': e.preventDefault(); if (currentSelectedIndex > -1) { selectedOptionLetter = options[currentSelectedIndex].dataset.letter; handleSubmitAnswer(); } break;
             }
         }
         
@@ -3018,42 +3318,39 @@ Example Question Formatting:
             if (preferredTheme === 'dark') setDarkMode();
             else setLightMode();
             
-            // Combine Palettes
             combinePalettesToggle.checked = localStorage.getItem('combinePalettes') === 'true';
             populatePaletteSelect();
             
-            // Background Type
             const preferredBackground = localStorage.getItem('backgroundType') || 'auto';
             const bgValueSpan = document.querySelector('#background-type-select .custom-select-value');
-            if (bgValueSpan) {
-                bgValueSpan.textContent = preferredBackground.charAt(0).toUpperCase() + preferredBackground.slice(1);
-            }
+            if (bgValueSpan) bgValueSpan.textContent = preferredBackground.charAt(0).toUpperCase() + preferredBackground.slice(1);
             
-            // Medals
-            goldMedalInput.value = localStorage.getItem('goldMedal') || '100';
-            silverMedalInput.value = localStorage.getItem('silverMedal') || '80';
-            bronzeMedalInput.value = localStorage.getItem('bronzeMedal') || '65';
+            goldMedalInput.value = localStorage.getItem('goldMedal') || '89.5';
+            silverMedalInput.value = localStorage.getItem('silverMedal') || '84.5';
+            bronzeMedalInput.value = localStorage.getItem('bronzeMedal') || '79.5';
 
             // MC Settings
             keyboardFunctionsToggle.checked = localStorage.getItem('keyboardFunctions') !== 'false';
-
             const autoNextType = localStorage.getItem('autoNextType') || 'none';
             const autoNextValueSpan = document.querySelector('#auto-next-type-select .custom-select-value');
-            if(autoNextValueSpan) {
-                autoNextValueSpan.textContent = autoNextType.charAt(0).toUpperCase() + autoNextType.slice(1);
-            }
-            updateAutoNextDurationState(autoNextType);
-            
+            if(autoNextValueSpan) autoNextValueSpan.textContent = autoNextType.charAt(0).toUpperCase() + autoNextType.slice(1);
+            updateAutoNextDurationState('mc', autoNextType);
             autoNextDurationInput.value = localStorage.getItem('autoNextDuration') || '5';
-            
             clickToSubmitToggle.checked = localStorage.getItem('clickToSubmit') === 'true';
             doubleClickToSubmitToggle.checked = localStorage.getItem('doubleClickToSubmit') === 'true';
-            
             updateHideSubmitButtonState();
             hideSubmitButtonToggle.checked = localStorage.getItem('hideSubmitButton') === 'true';
-            
             randomiseQuestionOrderToggle.checked = localStorage.getItem('randomiseQuestionOrder') !== 'false'; 
             randomiseAnswerOrderToggle.checked = localStorage.getItem('randomiseAnswerOrder') !== 'false';
+
+            // FITB Settings
+            const fitbAutoNextType = localStorage.getItem('fitbAutoNextType') || 'none';
+            const fitbAutoNextValueSpan = document.querySelector('#fitb-auto-next-type-select .custom-select-value');
+            if(fitbAutoNextValueSpan) fitbAutoNextValueSpan.textContent = fitbAutoNextType.charAt(0).toUpperCase() + fitbAutoNextType.slice(1);
+            updateAutoNextDurationState('fitb', fitbAutoNextType);
+            fitbAutoNextDurationInput.value = localStorage.getItem('fitbAutoNextDuration') || '5';
+            blanksPerQInput.value = localStorage.getItem('fitbBlanksPerQuestion') || '2';
+            fitbRandomiseQuestionOrderToggle.checked = localStorage.getItem('fitbRandomiseQuestionOrder') !== 'false'; 
 
             setMainColorRGB();
         }
@@ -3071,17 +3368,19 @@ Example Question Formatting:
         }
 
         function applyHideSubmitButton() {
-            if (!isQuizActive) return;
+            if (!isQuizActive || currentQuizType !== 'multiple-choice') return;
             const question = getCurrentQuestionData();
             const isAnswered = question && question.isAnsweredCorrectly !== null;
             const shouldHide = hideSubmitButtonToggle.checked && !isAnswered;
             submitAnswerBtn.classList.toggle('hidden', shouldHide);
         }
 
-        function updateAutoNextDurationState(type) {
+        function updateAutoNextDurationState(quizPrefix, type) {
+            const item = quizPrefix === 'mc' ? autoNextDurationItem : fitbAutoNextDurationItem;
+            const input = quizPrefix === 'mc' ? autoNextDurationInput : fitbAutoNextDurationInput;
             const isDisabled = type === 'none';
-            autoNextDurationItem.classList.toggle('disabled', isDisabled);
-            autoNextDurationInput.disabled = isDisabled;
+            item.classList.toggle('disabled', isDisabled);
+            input.disabled = isDisabled;
         }
 
         clickToSubmitToggle.addEventListener('change', (e) => {
@@ -3109,39 +3408,37 @@ Example Question Formatting:
             applyHideSubmitButton();
         });
 
-        document.querySelector('.auto-next-btn[data-action="minus"]').addEventListener('click', () => {
-            autoNextDurationInput.value = Math.max(1, parseInt(autoNextDurationInput.value) - 1);
-            localStorage.setItem('autoNextDuration', autoNextDurationInput.value);
-        });
-        document.querySelector('.auto-next-btn[data-action="plus"]').addEventListener('click', () => {
-             autoNextDurationInput.value = Math.min(60, parseInt(autoNextDurationInput.value) + 1);
-             localStorage.setItem('autoNextDuration', autoNextDurationInput.value);
-        });
-        autoNextDurationInput.addEventListener('change', (e) => {
-            let value = parseInt(e.target.value, 10);
-            if (isNaN(value) || value < 1) value = 1;
-            if (value > 60) value = 60;
-            e.target.value = value;
-            localStorage.setItem('autoNextDuration', value);
-        });
+        function setupNumberInput(prefix, storageKey, min, max, inputEl) {
+             document.querySelector(`.${prefix}-btn[data-action="minus"]`).addEventListener('click', () => {
+                inputEl.value = Math.max(min, parseInt(inputEl.value) - 1);
+                localStorage.setItem(storageKey, inputEl.value);
+            });
+            document.querySelector(`.${prefix}-btn[data-action="plus"]`).addEventListener('click', () => {
+                inputEl.value = Math.min(max, parseInt(inputEl.value) + 1);
+                localStorage.setItem(storageKey, inputEl.value);
+            });
+            inputEl.addEventListener('change', (e) => {
+                let value = parseInt(e.target.value, 10);
+                if (isNaN(value) || value < min) value = min;
+                if (value > max) value = max;
+                e.target.value = value;
+                localStorage.setItem(storageKey, value);
+            });
+        }
+        setupNumberInput('auto-next', 'autoNextDuration', 1, 60, autoNextDurationInput);
+        setupNumberInput('fitb-auto-next', 'fitbAutoNextDuration', 1, 60, fitbAutoNextDurationInput);
+        setupNumberInput('blanks-per-q', 'fitbBlanksPerQuestion', 1, 10, blanksPerQInput);
+
 
         function validateMedalPercentages(changedInput) {
             let gold = parseFloat(goldMedalInput.value);
             let silver = parseFloat(silverMedalInput.value);
             let bronze = parseFloat(bronzeMedalInput.value);
 
-            if (changedInput === 'gold' && gold < silver) {
-                silverMedalInput.value = Math.max(0, gold - 0.1).toFixed(1);
-            }
-            if ((changedInput === 'gold' || changedInput === 'silver') && parseFloat(silverMedalInput.value) < bronze) {
-                bronzeMedalInput.value = Math.max(0, parseFloat(silverMedalInput.value) - 0.1).toFixed(1);
-            }
-            if (changedInput === 'bronze' && bronze > silver) {
-                 silverMedalInput.value = Math.min(100, bronze + 0.1).toFixed(1);
-            }
-            if ((changedInput === 'bronze' || changedInput === 'silver') && parseFloat(silverMedalInput.value) > gold) {
-                goldMedalInput.value = Math.min(100, parseFloat(silverMedalInput.value) + 0.1).toFixed(1);
-            }
+            if (changedInput === 'gold' && gold < silver) silverMedalInput.value = Math.max(0, gold - 0.1).toFixed(1);
+            if ((changedInput === 'gold' || changedInput === 'silver') && parseFloat(silverMedalInput.value) < bronze) bronzeMedalInput.value = Math.max(0, parseFloat(silverMedalInput.value) - 0.1).toFixed(1);
+            if (changedInput === 'bronze' && bronze > silver) silverMedalInput.value = Math.min(100, bronze + 0.1).toFixed(1);
+            if ((changedInput === 'bronze' || changedInput === 'silver') && parseFloat(silverMedalInput.value) > gold) goldMedalInput.value = Math.min(100, parseFloat(silverMedalInput.value) + 0.1).toFixed(1);
              
             localStorage.setItem('goldMedal', goldMedalInput.value);
             localStorage.setItem('silverMedal', silverMedalInput.value);
@@ -3161,30 +3458,23 @@ Example Question Formatting:
                 btn.addEventListener('click', () => {
                     const action = btn.dataset.action;
                     let currentValue = parseFloat(input.value);
-                    if (action === 'plus') {
-                        currentValue = Math.min(100, currentValue + 1);
-                    } else {
-                        currentValue = Math.max(0, currentValue - 1);
-                    }
+                    if (action === 'plus') currentValue = Math.min(100, currentValue + 1);
+                    else currentValue = Math.max(0, currentValue - 1);
                     input.value = currentValue.toFixed(1);
                     validateMedalPercentages(medal);
                 });
             });
         });
 
-        combinePalettesToggle.addEventListener('change', e => {
-            localStorage.setItem('combinePalettes', e.target.checked);
-            populatePaletteSelect();
-        });
+        combinePalettesToggle.addEventListener('change', e => { localStorage.setItem('combinePalettes', e.target.checked); populatePaletteSelect(); });
         keyboardFunctionsToggle.addEventListener('change', e => localStorage.setItem('keyboardFunctions', e.target.checked));
         randomiseQuestionOrderToggle.addEventListener('change', e => localStorage.setItem('randomiseQuestionOrder', e.target.checked));
         randomiseAnswerOrderToggle.addEventListener('change', e => localStorage.setItem('randomiseAnswerOrder', e.target.checked));
+        fitbRandomiseQuestionOrderToggle.addEventListener('change', e => localStorage.setItem('fitbRandomiseQuestionOrder', e.target.checked));
         
         settingsBtn.addEventListener('click', () => settingsModal.classList.add('visible'));
         closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('visible'));
-        settingsModal.addEventListener('click', (e) => {
-            if (e.target === settingsModal) settingsModal.classList.remove('visible');
-        });
+        settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) settingsModal.classList.remove('visible'); });
 
         settingsNavPills.forEach(pill => {
             pill.addEventListener('click', () => {
@@ -3201,23 +3491,50 @@ Example Question Formatting:
                 });
             });
         });
+        
+        explanationBtn.addEventListener('click', () => {
+            const question = getCurrentQuestionData();
+            if (!question) return;
+
+            if (explanationBtn.classList.contains('force-correct-active')) {
+                // Force Correct Logic
+                question.isAnsweredCorrectly = true;
+                question.status = 'answered-correct';
+                if (question.timeTakenMs === 0) { // If not already answered
+                    stopTimers(false);
+                    const timeElapsed = Date.now() - questionSpecificTimerStartMs;
+                    question.timeTakenMs = (question.timeTakenMs || 0) + timeElapsed;
+                }
+                const feedbackEl = currentQuestionDOM.querySelector(`[id$="-feedback"]`);
+                showAnswerFeedbackDOM(question, feedbackEl);
+                styleFillInTheBlankInputs(true);
+                updateTimelineNav();
+                handleNextAction();
+            } else {
+                // Show Explanation Logic
+                const feedbackEl = currentQuestionDOM.querySelector(`[id$="-feedback"]`);
+                showAnswerFeedbackDOM({ ...question, isAnsweredCorrectly: true }, feedbackEl); // Show "correct" version
+                explanationBtn.classList.remove('btn-main');
+                explanationBtn.classList.add('btn-green', 'force-correct-active');
+                explanationBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>`;
+            }
+        });
+
 
         window.addEventListener('DOMContentLoaded', () => {
-            setupCustomSelect('custom-select-container', 'savedAiModel', (value) => {
-                hiddenSelectInput.value = value;
-                updateQuestionCount(questionCountInput.value);
-            });
+            setupCustomSelect('ai-model-select', 'savedAiModel', (value) => updateQuestionCount(questionCountInput.value));
+            setupCustomSelect('quiz-type-select', 'savedQuizType', (value) => currentQuizType = value);
             setupCustomSelect('background-type-select', 'backgroundType', (value) => setBackgroundType(value, true));
-            setupCustomSelect('palette-select', 'selectedPalette', (value) => {
-                currentBgPaletteName = value;
-                applyBackgroundPalette();
-            });
-            setupCustomSelect('auto-next-type-select', 'autoNextType', (value) => updateAutoNextDurationState(value));
+            setupCustomSelect('palette-select', 'selectedPalette', (value) => { currentBgPaletteName = value; applyBackgroundPalette(); });
+            setupCustomSelect('auto-next-type-select', 'autoNextType', (value) => updateAutoNextDurationState('mc', value));
+            setupCustomSelect('fitb-auto-next-type-select', 'fitbAutoNextType', (value) => updateAutoNextDurationState('fitb', value));
+
 
             loadPreferences(); 
             loadPromptBuilderSettings();
             
-            // This needs to run after preferences are loaded
+            currentQuizType = localStorage.getItem('savedQuizType') || 'multiple-choice';
+
             const preferredBackground = localStorage.getItem('backgroundType') || 'auto';
             applyBackgroundType(preferredBackground);
             
@@ -3225,14 +3542,9 @@ Example Question Formatting:
             setAllContainerHeights(); 
             checkInitialPowerState();
 
-            window.addEventListener('resize', () => {
-                resizeSmudgeCanvas();
-                setAllContainerHeights();
-            }); 
-            
+            window.addEventListener('resize', () => { resizeSmudgeCanvas(); setAllContainerHeights(); }); 
             document.addEventListener('keydown', handleKeyboardNav);
         });
     </script>
 </body>
 </html>
-
