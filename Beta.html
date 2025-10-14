@@ -270,6 +270,11 @@
         color: var(--text-primary);
         border-color: var(--ui-red-fills);
     }
+    .feedback-neutral {
+    background-color: var(--secondary-content-bg);
+    color: var(--text-primary);
+    border-color: var(--ui-main-fills);
+    }
     
     #input-screen {
         display: flex;
@@ -1134,8 +1139,10 @@
         background-color: var(--ui-red-bg);
         border-color: var(--ui-red-fills);
     }
-    .result-option-question .blank-input {
-        margin: 0.1rem 0 0.1rem 0;
+
+    .result-option-question .blank-input,
+    .fill-in-the-blank-question-text .blank-input {
+    margin: 0.1rem 0 0.1rem 0;
     }
 
     .hidden {
@@ -1315,9 +1322,9 @@
     </div>
 
     <footer class="app-footer">
-        <p class="version-info">v2.0.1 - Beta</p> 
+        <p class="version-info">v2.0.3 - Beta</p> 
         <p class="author-credits">Made by Pranay Bhana with Gemini</p> 
-        <p class="last-updated">Last Updated: 24th September 2025</p>
+        <p class="last-updated">Last Updated: 15th October 2025</p>
     </footer>
 
     <div id="settings-modal" class="modal-overlay">
@@ -1438,6 +1445,19 @@
                                 <input type="number" id="bronze-medal-input" class="settings-number-input" min="0" max="100" step="0.1" value="79.5">
                                 <button class="number-input-btn medal-btn" data-input="bronze-medal-input" data-action="plus">+</button>
                             </div>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Application Data</h3>
+                        <div class="setting-item">
+                            <div class="setting-text-container">
+                            <span class="setting-text">Reset All Settings</span>
+                            <div class="info-tooltip">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                <span class="tooltip-text">Resets all general, multiple choice, and fill-in-the-blank settings to their default values. This action cannot be undone.</span>
+                            </div>
+                            </div>
+                            <button id="reset-settings-btn" class="btn btn-red">Reset Settings</button>
                         </div>
                     </div>
                 </div>
@@ -1750,6 +1770,7 @@
         const goldMedalInput = document.getElementById('gold-medal-input');
         const silverMedalInput = document.getElementById('silver-medal-input');
         const bronzeMedalInput = document.getElementById('bronze-medal-input');
+        const resetSettingsBtn = document.getElementById('reset-settings-btn');
         
         // Settings Panel Elements (Multiple Choice)
         const keyboardFunctionsToggle = document.getElementById('keyboard-functions-toggle');
@@ -2530,6 +2551,7 @@
                  explanationBtn.classList.remove('hidden', 'btn-green', 'force-correct-active');
                  explanationBtn.classList.add('btn-main');
                  explanationBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" /></svg>`;
+                 explanationBtn.classList.remove('force-correct-active');
             }
 
             if(currentQuizType === 'multiple-choice') applyHideSubmitButton();
@@ -2611,18 +2633,23 @@
         function checkAndShowNextButton() {
             const question = getCurrentQuestionData();
             if (!question || question.isAnsweredCorrectly === null) return;
-            
+
+            // After a question is answered, the submit button should always be visible as "Next Question"
+            // unless auto-next is about to fire.
+            submitAnswerBtn.classList.remove('hidden');
+
             const storageKeyPrefix = currentQuizType === 'multiple-choice' ? 'auto' : 'fitbAuto';
             const autoNextType = localStorage.getItem(`${storageKeyPrefix}NextType`) || 'none';
             const shouldAutoNext = (autoNextType === 'all') ||
-                                   (autoNextType === 'correct' && question.isAnsweredCorrectly) ||
-                                   (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
-            
-            if (currentQuizType === 'multiple-choice' && hideSubmitButtonToggle.checked && !shouldAutoNext) {
+                                (autoNextType === 'correct' && question.isAnsweredCorrectly) ||
+                                (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
+
+            // If the button was hidden, fade it in.
+            if (hideSubmitButtonToggle.checked && !shouldAutoNext) {
+                // A short delay helps the UI feel less abrupt if the user answers quickly.
                 setTimeout(() => {
-                    submitAnswerBtn.classList.remove('hidden');
                     submitAnswerBtn.classList.add('is-fading-in-fast');
-                }, 500);
+                }, 100); 
             }
         }
 
@@ -2660,13 +2687,13 @@
             const autoNextDuration = (parseInt(localStorage.getItem(`${storageKeyPrefix}NextDuration`), 10) || 5) * 1000;
 
             const shouldAutoNext = (autoNextType === 'all') ||
-                                   (autoNextType === 'correct' && question.isAnsweredCorrectly) ||
-                                   (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
+                                (autoNextType === 'correct' && question.isAnsweredCorrectly) ||
+                                (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
 
             if (shouldAutoNext) {
-                 autoAdvanceTimeout = setTimeout(() => { 
+                autoAdvanceTimeout = setTimeout(() => { 
                     if (!isQuizPaused && isQuizActive) handleNextAction();
-                 }, autoNextDuration);
+                }, autoNextDuration);
             }
             if (allAnswered) {
                 pauseQuizBtn.classList.add('hidden');
@@ -2712,35 +2739,87 @@
             question.isAnsweredCorrectly = allCorrect;
         }
 
-        function styleFillInTheBlankInputs(isQuestionCorrect) {
-            const inputs = currentQuestionDOM.querySelectorAll('.blank-input');
-            inputs.forEach(input => {
-                 input.disabled = true;
-                 const blankIndex = parseInt(input.dataset.blankIndex, 10);
-                 const question = getCurrentQuestionData();
-                 const userAnswer = (question.blanks[blankIndex].userAnswer || "").trim().toLowerCase();
-                 const correctAnswers = question.blanks[blankIndex].answers;
+        function showAnswerFeedbackDOM(question, feedbackEl, isNeutral = false) {
+            if (!feedbackEl) return;
+            let feedbackMsg = '';
+            let correctedAnswerDisplay = '';
 
-                 if (correctAnswers.includes(userAnswer)) {
-                    input.classList.add('correct');
-                 } else {
-                    input.classList.add('incorrect');
-                    if(!input.value) input.placeholder = correctAnswers[0];
-                 }
-            });
+            const feedbackClass = isNeutral
+                ? 'feedback-neutral'
+                : question.isAnsweredCorrectly ? 'feedback-correct' : 'feedback-incorrect';
+
+            if (currentQuizType === 'fill-in-the-blank' && !question.isAnsweredCorrectly && !isNeutral) {
+                let correctedQuestionHTML = question.questionText;
+                let blankIndex = 0;
+                correctedQuestionHTML = correctedQuestionHTML.replace(/____/g, () => {
+                    const correctAnswer = question.blanks[blankIndex]?.answers[0] || '???';
+                    blankIndex++;
+                    return `<input type="text" class="blank-input correct" value="${correctAnswer}" disabled>`;
+                });
+                correctedAnswerDisplay = `
+                    <div class="mt-2 mb-3">
+                        <p class="font-semibold mb-1">Correct Answer:</p>
+                        <div class="fill-in-the-blank-question-text">${correctedQuestionHTML}</div>
+                    </div>
+                `;
+            }
+
+            if (question.explanation) {
+                const explanationHtml = `<div class="explanation-text" style="margin: 0; padding: 0;">${question.explanation}</div>`;
+                if (isNeutral) {
+                    feedbackMsg = `<div class="feedback-message ${feedbackClass}"><strong>Explanation:</strong><br>${explanationHtml}</div>`;
+                } else if (question.isAnsweredCorrectly) {
+                    feedbackMsg = `<div class="feedback-message ${feedbackClass}"><strong>Correct! Here’s why:</strong><br>${explanationHtml}</div>`;
+                } else {
+                    feedbackMsg = `<div class="feedback-message ${feedbackClass}"><strong>Incorrect.</strong>${correctedAnswerDisplay}<strong>Here’s why:</strong><br>${explanationHtml}</div>`;
+                }
+            } else {
+                if (isNeutral) {
+                    feedbackMsg = `<div class="feedback-message ${feedbackClass}">No explanation available for this question.</div>`;
+                } else if (question.isAnsweredCorrectly) {
+                    feedbackMsg = `<div class="feedback-message ${feedbackClass}"><strong>Correct!</strong> Well done.</div>`;
+                } else {
+                    let incorrectMsg = "<strong>Incorrect.</strong>";
+                    if(currentQuizType === 'multiple-choice') {
+                        const correctOpt = question.options.find(opt => opt.isCorrectOption);
+                        incorrectMsg += ` The correct answer was: <strong>${correctOpt.letter}. ${correctOpt.text}</strong>`;
+                    } else {
+                        incorrectMsg += correctedAnswerDisplay;
+                    }
+                    feedbackMsg = `<div class="feedback-message ${feedbackClass}">${incorrectMsg}</div>`;
+                }
+            }
+            feedbackEl.innerHTML = feedbackMsg;
         }
 
 
         function showAnswerFeedbackDOM(question, feedbackEl) {
             if (!feedbackEl) return;
             let feedbackMsg = '';
-            
+            let correctedAnswerDisplay = '';
+
+            if (currentQuizType === 'fill-in-the-blank' && !question.isAnsweredCorrectly) {
+                let correctedQuestionHTML = question.questionText;
+                let blankIndex = 0;
+                correctedQuestionHTML = correctedQuestionHTML.replace(/____/g, () => {
+                    const correctAnswer = question.blanks[blankIndex]?.answers[0] || '???';
+                    blankIndex++;
+                    return `<input type="text" class="blank-input correct" value="${correctAnswer}" disabled>`;
+                });
+                correctedAnswerDisplay = `
+                    <div class="mt-2 mb-3">
+                        <p class="font-semibold mb-1">Correct Answer:</p>
+                        <div class="fill-in-the-blank-question-text">${correctedQuestionHTML}</div>
+                    </div>
+                `;
+            }
+
             if (question.explanation) {
                 const explanationHtml = `<div class="explanation-text" style="margin: 0; padding: 0;">${question.explanation}</div>`;
                 if (question.isAnsweredCorrectly) {
                     feedbackMsg = `<div class="feedback-message feedback-correct"><strong>Correct! Here’s why:</strong><br>${explanationHtml}</div>`;
                 } else {
-                    feedbackMsg = `<div class="feedback-message feedback-incorrect"><strong>Incorrect. Here’s why:</strong><br>${explanationHtml}</div>`;
+                    feedbackMsg = `<div class="feedback-message feedback-incorrect"><strong>Incorrect.</strong>${correctedAnswerDisplay}<strong>Here’s why:</strong><br>${explanationHtml}</div>`;
                 }
             } else {
                  if (question.isAnsweredCorrectly) {
@@ -2750,11 +2829,12 @@
                     if(currentQuizType === 'multiple-choice') {
                         const correctOpt = question.options.find(opt => opt.isCorrectOption);
                         incorrectMsg += ` The correct answer was: <strong>${correctOpt.letter}. ${correctOpt.text}</strong>`;
+                    } else {
+                        incorrectMsg += correctedAnswerDisplay;
                     }
                     feedbackMsg = `<div class="feedback-message feedback-incorrect">${incorrectMsg}</div>`;
                 }
             }
-
             feedbackEl.innerHTML = feedbackMsg;
         }
 
@@ -3497,24 +3577,38 @@ Example Question Formatting:
             const question = getCurrentQuestionData();
             if (!question) return;
 
+            const feedbackEl = currentQuestionDOM.querySelector(`[id$="-feedback"]`);
+            const wasAnswered = question.isAnsweredCorrectly !== null;
+
             if (explanationBtn.classList.contains('force-correct-active')) {
-                // Force Correct Logic
+                // This is the "Mark as Correct" action.
                 question.isAnsweredCorrectly = true;
                 question.status = 'answered-correct';
-                if (question.timeTakenMs === 0) { // If not already answered
+
+                if (!wasAnswered) { // Overriding an unanswered question
                     stopTimers(false);
                     const timeElapsed = Date.now() - questionSpecificTimerStartMs;
                     question.timeTakenMs = (question.timeTakenMs || 0) + timeElapsed;
+                    showAnswerFeedbackDOM(question, feedbackEl);
+                    styleFillInTheBlankInputs(true);
+                    updateTimelineNav();
+                    handleNextAction();
+                } else { // Overriding an incorrect answer
+                    showAnswerFeedbackDOM(question, feedbackEl);
+                    styleFillInTheBlankInputs(true);
+                    updateTimelineNav();
                 }
-                const feedbackEl = currentQuestionDOM.querySelector(`[id$="-feedback"]`);
-                showAnswerFeedbackDOM(question, feedbackEl);
-                styleFillInTheBlankInputs(true);
-                updateTimelineNav();
-                handleNextAction();
+                
+                // Revert button state after action
+                explanationBtn.classList.remove('force-correct-active', 'btn-green');
+                explanationBtn.classList.add('btn-main');
+                explanationBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" /></svg>`;
+
             } else {
-                // Show Explanation Logic
-                const feedbackEl = currentQuestionDOM.querySelector(`[id$="-feedback"]`);
-                showAnswerFeedbackDOM({ ...question, isAnsweredCorrectly: true }, feedbackEl); // Show "correct" version
+                // This is the "Show Explanation" action (first click).
+                showAnswerFeedbackDOM(question, feedbackEl, !wasAnswered); // isNeutral = true if it wasn't answered
+
+                // Prime the button to become the "Mark as Correct" button on the next click.
                 explanationBtn.classList.remove('btn-main');
                 explanationBtn.classList.add('btn-green', 'force-correct-active');
                 explanationBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>`;
@@ -3545,6 +3639,38 @@ Example Question Formatting:
 
             window.addEventListener('resize', () => { resizeSmudgeCanvas(); setAllContainerHeights(); }); 
             document.addEventListener('keydown', handleKeyboardNav);
+            resetSettingsBtn.addEventListener('click', () => {
+                showConfirmationModal(
+                    "Reset All Settings?",
+                    "This will restore all settings to their default values. This action cannot be undone.",
+                    () => {
+                        const settingKeys = [
+                            'quizTheme', 'combinePalettes', 'backgroundType', 'selectedPalette', 
+                            'goldMedal', 'silverMedal', 'bronzeMedal', 
+                            'keyboardFunctions', 'autoNextType', 'autoNextDuration', 
+                            'clickToSubmit', 'doubleClickToSubmit', 'hideSubmitButton', 
+                            'randomiseQuestionOrder', 'randomiseAnswerOrder',
+                            'fitbAutoNextType', 'fitbAutoNextDuration', 'fitbBlanksPerQuestion', 
+                            'fitbRandomiseQuestionOrder'
+                        ];
+                        
+                        settingKeys.forEach(key => localStorage.removeItem(key));
+
+                        // Reload settings UI from scratch (which will now use defaults)
+                        loadPreferences();
+                        
+                        // Re-apply any visual settings that don't auto-update
+                        const preferredBackground = localStorage.getItem('backgroundType') || 'auto';
+                        applyBackgroundType(preferredBackground);
+                        if (powerSavingToggle.checked) {
+                            applyPowerSavingMode(true);
+                        } else {
+                            applyPowerSavingMode(false);
+                        }
+                    },
+                    'btn-red'
+                );
+            });
         });
     </script>
 </body>
