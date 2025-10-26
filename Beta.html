@@ -224,12 +224,33 @@
         overflow-wrap: break-word;
         word-break: break-word;
     }
-    .btn-option:disabled {
+    .btn-option:disabled, .btn:disabled {
         cursor: not-allowed;
+        opacity: 0.6;
     }
 
+    body:not(.power-saving-mode) .btn:disabled:hover,
     body:not(.power-saving-mode) .btn-option:disabled:hover {
         box-shadow: none;
+        transform: translateY(0); /* Prevent active press */
+    }
+    
+    /* Reset hover effects for disabled buttons */
+    body:not(.power-saving-mode) .btn-main:disabled:hover {
+        background-color: var(--ui-main-bg);
+        border-color: var(--ui-main-fills);
+    }
+    body:not(.power-saving-mode) .btn-blue:disabled:hover {
+        background-color: var(--ui-blue-bg);
+        border-color: var(--ui-blue-fills);
+    }
+    body:not(.power-saving-mode) .btn-green:disabled:hover {
+        background-color: var(--ui-green-bg);
+        border-color: var(--ui-green-fills);
+    }
+    body:not(.power-saving-mode) .btn-red:disabled:hover {
+        background-color: var(--ui-red-bg);
+        border-color: var(--ui-red-fills);
     }
 
     .btn-option.correct {
@@ -1322,9 +1343,9 @@
     </div>
 
     <footer class="app-footer">
-        <p class="version-info">v2.0.3 - Beta</p> 
+        <p class="version-info">v2.0.4 - Beta</p> 
         <p class="author-credits">Made by Pranay Bhana with Gemini</p> 
-        <p class="last-updated">Last Updated: 15th October 2025</p>
+        <p class="last-updated">Last Updated: 26th October 2025</p>
     </footer>
 
     <div id="settings-modal" class="modal-overlay">
@@ -1678,7 +1699,7 @@
     B. **Mars. [explanation] Mars is often called the Red Planet due to its iron oxide-rich surface.**
     C. Jupiter.
     D. Earth.</pre>
-             <pre id="format-example-fitb" class="bg-secondary-content-bg p-2 rounded text-left text-sm whitespace-pre-wrap hidden">1. The capital of France is **Paris/paris**. [explanation] Paris is the capital and most populous city of France.</pre>
+             <pre id="format-example-fitb" class="bg-secondary-content-bg p-2 rounded text-left text-sm whitespace-pre-wrap hidden">1. The capital of France is **Paris/paris**. [explanation] Paris is the capital and most populous city of France. [hint] It's known as the "City of Light".</pre>
             <div class="modal-buttons mt-6">
                 <button id="format-modal-ok-btn" class="btn btn-green">I understand</button>
             </div>
@@ -2304,17 +2325,27 @@
             const questions = [];
             const questionRegex = /^(\d+)\.\s+(.*)/;
             const blankRegex = /\*\*(.*?)\*\*/g;
-            const explanationRegex = /\[explanation\](.*)/;
+            // Updated Regex to find explanation, stopping at [hint] or end of line
+            const explanationRegex = /\[explanation\](.*?)(?=\s*\[hint\]|$)/;
+            const hintRegex = /\[hint\](.*)/;
 
             for (const line of lines) {
                 const questionMatch = line.match(questionRegex);
                 if (questionMatch) {
                     let fullText = questionMatch[2];
                     let explanation = '';
+                    let hint = ''; // New
+
                     const explanationMatch = fullText.match(explanationRegex);
                     if (explanationMatch) {
                         explanation = explanationMatch[1].trim();
                         fullText = fullText.replace(explanationRegex, '').trim();
+                    }
+
+                    const hintMatch = fullText.match(hintRegex); // New
+                    if (hintMatch) { // New
+                        hint = hintMatch[1].trim(); // New
+                        fullText = fullText.replace(hintRegex, '').trim(); // New
                     }
 
                     const blanks = [];
@@ -2334,6 +2365,8 @@
                             questionText: questionTextWithPlaceholders,
                             blanks: blanks,
                             explanation: explanation,
+                            hint: hint, // New
+                            hintShown: false, // New
                             originalOrder: parseInt(questionMatch[1], 10),
                             isAnsweredCorrectly: null,
                             timeTakenMs: 0,
@@ -2362,6 +2395,7 @@
                         if (randomiseAnswerOrderToggle.checked) shuffleOptionsForQuestion(question);
                     } else if (currentQuizType === 'fill-in-the-blank') {
                         question.blanks.forEach(b => b.userAnswer = '');
+                        question.hintShown = false; // Reset hint
                     }
                     if (firstIncorrectDisplayIndex === -1) firstIncorrectDisplayIndex = displayIndex;
                 }
@@ -2447,6 +2481,7 @@
                         if (shuffleA) shuffleOptionsForQuestion(q);
                     } else {
                         if (q.blanks) q.blanks.forEach(b => b.userAnswer = '');
+                        q.hintShown = false; // Reset hint
                     }
                 });
                 accumulatedTotalQuizTimeMs = 0;
@@ -2545,13 +2580,19 @@
             pauseQuizBtn.classList.remove('hidden');
             submitAnswerBtn.classList.remove('is-fading-in', 'is-fading-out');
 
-            // Reset explanation button for Fill-in-the-Blank
+            // Reset explanation button (Hint button)
             explanationBtn.classList.add('hidden');
             if (currentQuizType === 'fill-in-the-blank') {
                  explanationBtn.classList.remove('hidden', 'btn-green', 'force-correct-active');
                  explanationBtn.classList.add('btn-main');
                  explanationBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" /></svg>`;
-                 explanationBtn.classList.remove('force-correct-active');
+                 
+                 // Enable/disable hint button based on state
+                 if (question.hintShown) {
+                     explanationBtn.disabled = true;
+                 } else {
+                     explanationBtn.disabled = false;
+                 }
             }
 
             if(currentQuizType === 'multiple-choice') applyHideSubmitButton();
@@ -2603,13 +2644,39 @@
                                 if (optData && optData.isCorrectOption) btn.classList.add('correct'); 
                             });
                         }
+                        // --- MODIFICATION START ---
+                        // Show (disabled) explanation button if explanation exists
+                        if (question.explanation) {
+                            explanationBtn.classList.remove('hidden');
+                            explanationBtn.disabled = true; 
+                        }
+                        // --- MODIFICATION END ---
                     } else if (currentQuizType === 'fill-in-the-blank') {
                         styleFillInTheBlankInputs(question.isAnsweredCorrectly);
-                        explanationBtn.classList.remove('hidden');
+                        
+                        explanationBtn.classList.remove('hidden'); // Show the button
+                        explanationBtn.classList.remove('btn-main');
+                        explanationBtn.classList.add('btn-green');
+                        explanationBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`;
+
+                        if (question.isAnsweredCorrectly === true) {
+                            // Question is correct (either originally or forced)
+                            explanationBtn.disabled = true;
+                        } else {
+                            // Question is incorrect, show "Force Correct"
+                            explanationBtn.disabled = false;
+                            explanationBtn.classList.remove('force-correct-active');
+                        }
                     }
 
                     currentQuestionTimerDisplay.textContent = `Time: ${formatTime(question.timeTakenMs)}`;
                     checkAndShowNextButton();
+                } else if (currentQuizType === 'fill-in-the-blank' && question.hintShown) {
+                    // Re-display hint if user navigates away and comes back
+                    showAnswerFeedbackDOM(question, currentFeedbackContainer, true); // true for isNeutral
+                    explanationBtn.disabled = true; // Ensure button stays disabled
+                    questionSpecificTimerStartMs = Date.now();
+                    startTimers();
                 } else { 
                     questionSpecificTimerStartMs = Date.now();
                     startTimers();
@@ -2630,6 +2697,20 @@
             }
         }
         
+        function styleFillInTheBlankInputs(isCorrect) {
+             const inputs = currentQuestionDOM.querySelectorAll('.blank-input');
+             if (isCorrect) {
+                 inputs.forEach(input => {
+                     input.classList.remove('incorrect');
+                     input.classList.add('correct');
+                     input.disabled = true;
+                 });
+             } else {
+                // Feedback handles styling for incorrect
+                 inputs.forEach(input => input.disabled = true);
+             }
+        }
+        
         function checkAndShowNextButton() {
             const question = getCurrentQuestionData();
             if (!question || question.isAnsweredCorrectly === null) return;
@@ -2645,7 +2726,7 @@
                                 (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
 
             // If the button was hidden, fade it in.
-            if (hideSubmitButtonToggle.checked && !shouldAutoNext) {
+            if (currentQuizType === 'multiple-choice' && hideSubmitButtonToggle.checked && !shouldAutoNext) {
                 // A short delay helps the UI feel less abrupt if the user answers quickly.
                 setTimeout(() => {
                     submitAnswerBtn.classList.add('is-fading-in-fast');
@@ -2666,7 +2747,17 @@
                 handleSubmitMCAnswer(question);
             } else if (currentQuizType === 'fill-in-the-blank') {
                 handleSubmitFITBAnswer(question);
-                explanationBtn.classList.remove('hidden'); // Show explanation button immediately
+                
+                explanationBtn.classList.remove('hidden'); // Always show
+                explanationBtn.classList.remove('btn-main', 'force-correct-active');
+                explanationBtn.classList.add('btn-green'); 
+                explanationBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`;
+
+                if (question.isAnsweredCorrectly === false) {
+                    explanationBtn.disabled = false; // Enable "Force Correct"
+                } else {
+                    explanationBtn.disabled = true; // Disable (it's already correct)
+                }
             }
 
             question.status = question.isAnsweredCorrectly ? 'answered-correct' : 'answered-incorrect';
@@ -2741,102 +2832,98 @@
 
         function showAnswerFeedbackDOM(question, feedbackEl, isNeutral = false) {
             if (!feedbackEl) return;
-            let feedbackMsg = '';
-            let correctedAnswerDisplay = '';
 
-            const feedbackClass = isNeutral
-                ? 'feedback-neutral'
-                : question.isAnsweredCorrectly ? 'feedback-correct' : 'feedback-incorrect';
+            // Neutral state (Hint) for FITB
+            if (isNeutral && currentQuizType === 'fill-in-the-blank') {
+                const hintText = question.hint ? question.hint : 'No hint available for this question.';
+                feedbackEl.innerHTML = `<div class="feedback-message feedback-neutral"><strong>Hint:</strong><br>${hintText}</div>`;
+                return;
+            }
 
-            if (currentQuizType === 'fill-in-the-blank' && !question.isAnsweredCorrectly && !isNeutral) {
+            // --- Multiple Choice Logic ---
+            if (currentQuizType === 'multiple-choice') {
+                let feedbackMsg = '';
+                const feedbackClass = question.isAnsweredCorrectly ? 'feedback-correct' : 'feedback-incorrect';
+                if (question.explanation) {
+                    const explanationHtml = `<div class="explanation-text" style="margin: 0; padding: 0;">${question.explanation}</div>`;
+                    if (question.isAnsweredCorrectly) {
+                        feedbackMsg = `<div class="feedback-message ${feedbackClass}"><strong>Correct! Here’s why:</strong><br>${explanationHtml}</div>`;
+                    } else {
+                        const correctOpt = question.options.find(opt => opt.isCorrectOption);
+                        const incorrectMsg = `<strong>Incorrect.</strong> The correct answer was: <strong>${correctOpt.letter}. ${correctOpt.text}</strong>`;
+                        feedbackMsg = `<div class="feedback-message ${feedbackClass}">${incorrectMsg}<br><br><strong>Here’s why:</strong><br>${explanationHtml}</div>`;
+                    }
+                } else {
+                    if (question.isAnsweredCorrectly) {
+                        feedbackMsg = `<div class="feedback-message ${feedbackClass}"><strong>Correct!</strong> Well done.</div>`;
+                    } else {
+                        const correctOpt = question.options.find(opt => opt.isCorrectOption);
+                        const incorrectMsg = `<strong>Incorrect.</strong> The correct answer was: <strong>${correctOpt.letter}. ${correctOpt.text}</strong>`;
+                        feedbackMsg = `<div class="feedback-message ${feedbackClass}">${incorrectMsg}</div>`;
+                    }
+                }
+                feedbackEl.innerHTML = feedbackMsg;
+                return;
+            }
+
+            // --- Fill-in-the-Blank Logic (Answered) ---
+            if (currentQuizType === 'fill-in-the-blank') {
+                const feedbackClass = question.isAnsweredCorrectly ? 'feedback-correct' : 'feedback-incorrect';
+                
+                // 1. "Correct/Incorrect – The correct answer(s) are:"
+                let title = question.isAnsweredCorrectly 
+                    ? '<strong>Correct!</strong>' 
+                    : '<strong>Incorrect.</strong> The correct answer(s) are:';
+                
+                // 2. "Fill in the blank question text" (with bold answers)
                 let correctedQuestionHTML = question.questionText;
                 let blankIndex = 0;
                 correctedQuestionHTML = correctedQuestionHTML.replace(/____/g, () => {
-                    const correctAnswer = question.blanks[blankIndex]?.answers[0] || '???';
+                    const correctAnswers = question.blanks[blankIndex]?.answers.join('/');
                     blankIndex++;
-                    return `<input type="text" class="blank-input correct" value="${correctAnswer}" disabled>`;
+                    return `<strong class="mx-1">${correctAnswers || '???'}</strong>`;
                 });
-                correctedAnswerDisplay = `
-                    <div class="mt-2 mb-3">
-                        <p class="font-semibold mb-1">Correct Answer:</p>
-                        <div class="fill-in-the-blank-question-text">${correctedQuestionHTML}</div>
+                const questionTextHTML = `<div class="fill-in-the-blank-question-text" style="margin-top: 0.5rem; line-height: 1.5;">${correctedQuestionHTML}</div>`;
+
+                let explanationHTML = '';
+                if (question.explanation) {
+                    // 3. "Here’s Why:"
+                    // 4. "Explanation"
+                    explanationHTML = `
+                        <p class="font-semibold" style="margin-top: 0.75rem;">Here’s Why:</p>
+                        <div class="explanation-text" style="margin: 0; padding: 0;">${question.explanation}</div>
+                    `;
+                }
+
+                let hintHTML = '';
+                if (question.hint) {
+                    // 5. "Available Hint:"
+                    // 6. "Hint"
+                    hintHTML = `
+                        <p class="font-semibold" style="margin-top: 0.75rem;">Available Hint:</p>
+                        <div class="hint-text" style="margin: 0; padding: 0;">${question.hint}</div>
+                    `;
+                }
+
+                // Combine all parts
+                feedbackEl.innerHTML = `
+                    <div class="feedback-message ${feedbackClass}">
+                        ${title}
+                        ${questionTextHTML}
+                        ${explanationHTML}
+                        ${hintHTML}
                     </div>
                 `;
-            }
-
-            if (question.explanation) {
-                const explanationHtml = `<div class="explanation-text" style="margin: 0; padding: 0;">${question.explanation}</div>`;
-                if (isNeutral) {
-                    feedbackMsg = `<div class="feedback-message ${feedbackClass}"><strong>Explanation:</strong><br>${explanationHtml}</div>`;
-                } else if (question.isAnsweredCorrectly) {
-                    feedbackMsg = `<div class="feedback-message ${feedbackClass}"><strong>Correct! Here’s why:</strong><br>${explanationHtml}</div>`;
-                } else {
-                    feedbackMsg = `<div class="feedback-message ${feedbackClass}"><strong>Incorrect.</strong>${correctedAnswerDisplay}<strong>Here’s why:</strong><br>${explanationHtml}</div>`;
-                }
-            } else {
-                if (isNeutral) {
-                    feedbackMsg = `<div class="feedback-message ${feedbackClass}">No explanation available for this question.</div>`;
-                } else if (question.isAnsweredCorrectly) {
-                    feedbackMsg = `<div class="feedback-message ${feedbackClass}"><strong>Correct!</strong> Well done.</div>`;
-                } else {
-                    let incorrectMsg = "<strong>Incorrect.</strong>";
-                    if(currentQuizType === 'multiple-choice') {
-                        const correctOpt = question.options.find(opt => opt.isCorrectOption);
-                        incorrectMsg += ` The correct answer was: <strong>${correctOpt.letter}. ${correctOpt.text}</strong>`;
-                    } else {
-                        incorrectMsg += correctedAnswerDisplay;
-                    }
-                    feedbackMsg = `<div class="feedback-message ${feedbackClass}">${incorrectMsg}</div>`;
+                
+                // Also set the feedback box color if hint was shown
+                const feedbackBox = feedbackEl.querySelector('.feedback-message');
+                if (feedbackBox) {
+                    feedbackBox.classList.remove('feedback-neutral');
+                    feedbackBox.classList.add(feedbackClass);
                 }
             }
-            feedbackEl.innerHTML = feedbackMsg;
         }
 
-
-        function showAnswerFeedbackDOM(question, feedbackEl) {
-            if (!feedbackEl) return;
-            let feedbackMsg = '';
-            let correctedAnswerDisplay = '';
-
-            if (currentQuizType === 'fill-in-the-blank' && !question.isAnsweredCorrectly) {
-                let correctedQuestionHTML = question.questionText;
-                let blankIndex = 0;
-                correctedQuestionHTML = correctedQuestionHTML.replace(/____/g, () => {
-                    const correctAnswer = question.blanks[blankIndex]?.answers[0] || '???';
-                    blankIndex++;
-                    return `<input type="text" class="blank-input correct" value="${correctAnswer}" disabled>`;
-                });
-                correctedAnswerDisplay = `
-                    <div class="mt-2 mb-3">
-                        <p class="font-semibold mb-1">Correct Answer:</p>
-                        <div class="fill-in-the-blank-question-text">${correctedQuestionHTML}</div>
-                    </div>
-                `;
-            }
-
-            if (question.explanation) {
-                const explanationHtml = `<div class="explanation-text" style="margin: 0; padding: 0;">${question.explanation}</div>`;
-                if (question.isAnsweredCorrectly) {
-                    feedbackMsg = `<div class="feedback-message feedback-correct"><strong>Correct! Here’s why:</strong><br>${explanationHtml}</div>`;
-                } else {
-                    feedbackMsg = `<div class="feedback-message feedback-incorrect"><strong>Incorrect.</strong>${correctedAnswerDisplay}<strong>Here’s why:</strong><br>${explanationHtml}</div>`;
-                }
-            } else {
-                 if (question.isAnsweredCorrectly) {
-                    feedbackMsg = `<div class="feedback-message feedback-correct"><strong>Correct!</strong> Well done.</div>`;
-                } else {
-                    let incorrectMsg = "<strong>Incorrect.</strong>";
-                    if(currentQuizType === 'multiple-choice') {
-                        const correctOpt = question.options.find(opt => opt.isCorrectOption);
-                        incorrectMsg += ` The correct answer was: <strong>${correctOpt.letter}. ${correctOpt.text}</strong>`;
-                    } else {
-                        incorrectMsg += correctedAnswerDisplay;
-                    }
-                    feedbackMsg = `<div class="feedback-message feedback-incorrect">${incorrectMsg}</div>`;
-                }
-            }
-            feedbackEl.innerHTML = feedbackMsg;
-        }
 
         function handleNextAction() { 
             clearTimeout(autoAdvanceTimeout);
@@ -2888,6 +2975,7 @@
             }
             stopTimers(false);
             currentQuestionDisplayOrderIndex = displayOrderIndex;
+            updateTimelineNav(); // <-- FIX: Update timeline circle immediately
             displayQuestion(isInitial, direction); 
         }
 
@@ -3136,17 +3224,52 @@
                     <div class="font-semibold result-option-question">${displayNum}. ${questionHTML}</div>
                     <div class="flex items-center">
                         <span class="text-xs mr-2 result-option-time">Time: ${formatTime(question.timeTakenMs || 0)}</span>
-                        ${question.explanation ? '<svg class="dropdown-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>' : ''}
+                        ${question.explanation || question.hint ? '<svg class="dropdown-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>' : ''}
                     </div>
                 </div>
                 <div class="result-options-container pl-4 ml-1"></div>`;
 
+            const optionsDiv = itemDiv.querySelector('.result-options-container');
+            let hasContent = false;
+
+            // --- MODIFICATION START ---
+            // Add "Correct Answer(s)" section if the user got it wrong
+            if (question.isAnsweredCorrectly === false) {
+                let correctedQuestionHTML = question.questionText;
+                let blankIndex = 0;
+                correctedQuestionHTML = correctedQuestionHTML.replace(/____/g, () => {
+                    const correctAnswers = question.blanks[blankIndex]?.answers.join('/');
+                    blankIndex++;
+                    return `<strong class="mx-1">${correctAnswers || '???'}</strong>`;
+                });
+
+                const answersDiv = document.createElement('div');
+                answersDiv.className = 'explanation-container'; // Use same styling
+                answersDiv.innerHTML = `<p class="font-semibold text-sm">Correct Answer(s):</p><p class="text-sm fill-in-the-blank-question-text" style="line-height: 1.5;">${correctedQuestionHTML}</p>`;
+                optionsDiv.appendChild(answersDiv);
+                hasContent = true;
+            }
+            // --- MODIFICATION END ---
+            
             if (question.explanation) {
-                const optionsDiv = itemDiv.querySelector('.result-options-container');
                 const explanationDiv = document.createElement('div');
-                explanationDiv.className = 'explanation-container';
+                // Fix: Add margin-top if content already exists
+                explanationDiv.className = 'explanation-container' + (hasContent ? ' mt-3' : '');
                 explanationDiv.innerHTML = `<p class="font-semibold text-sm">Explanation:</p><p class="text-sm">${question.explanation}</p>`;
                 optionsDiv.appendChild(explanationDiv);
+                hasContent = true;
+            }
+
+            if (question.hint) {
+                 const hintDiv = document.createElement('div');
+                // Fix: Add margin-top if content already exists
+                hintDiv.className = 'explanation-container' + (hasContent ? ' mt-3' : '');
+                hintDiv.innerHTML = `<p class="font-semibold text-sm">Hint:</p><p class="text-sm">${question.hint}</p>`;
+                optionsDiv.appendChild(hintDiv);
+                hasContent = true;
+            }
+
+            if (hasContent) {
                 itemDiv.querySelector('.cursor-pointer').addEventListener('click', (e) => {
                     optionsDiv.classList.toggle('expanded');
                     e.currentTarget.querySelector('.dropdown-arrow').classList.toggle('expanded');
@@ -3231,6 +3354,7 @@ At least one wrong answer choice must be at least 3 characters shorter than the 
 The correct answers shouldn't be evenly distributed among A, B, C, D.
 No single answer letter (A, B, C, or D) can have less than 10% of the total correct answers.
 Do not include any other text, markdown symbols, or formatting before or after the questions and answers.
+Do not include any system information such as 3 characters longer/shorer.
 Example Question Formatting:
 1. Which planet is known as the Red Planet?
     A. Venus.
@@ -3241,12 +3365,15 @@ Example Question Formatting:
             'fill-in-the-blank': () => `
 Each question starts with 1., 2., etc.
 There can be up to ${blanksPerQInput.value} blanks per question. Each blank's correct answer(s) must be enclosed in **.
-For a blank, you can provide multiple acceptable spellings or answers by separating them with a forward slash "/", for example: **color/colour**.
-Immediately after the full question, add [explanation] followed by a justification for the answer(s). Do not simply restate the question.
+For each blank, you can provide multiple acceptable spellings or answers by separating them with a forward slash "/" within the blank, for example: **color/colour**.
+Immediately after the full question, add [explanation] followed by a justification for the answer(s).
+After the explanation, you must add [hint] followed by a hint for the question.
+Make sure the explanation and hint adresses all blanks in the question. They can be more than one sentence long.
 Do not include any other text, markdown symbols, or formatting before or after the questions.
+Make each blank answer only have one or two words with no blanks allowed next to each other.
 Example Question Formatting:
-1. The color of a carrot is **Orange**. [explanation] Carrots are orange due to the pigment beta-carotene.
-2. The latest series of AM5 motherboards is the **800** series. The highest tier is the **X870E/X870-E** chipset. [explanation] The 800 series is the newest for AM5, with X870E being the top-tier chipset for enthusiasts.
+1. The color of a carrot is **Orange**. [explanation] Carrots are orange due to the pigment beta-carotene. [hint] It's a color and a fruit.
+2. The latest series of AM5 motherboards is the **800** series. The highest tier is the **X870E/X870-E** chipset. [explanation] The 800 series is the newest for the AM5 platform. The X870E chipset is the top-tier chipset for enthusiasts. [hint] The series starts with an 8 and the chipset has an X in it.
 `
         };
 
@@ -3575,43 +3702,44 @@ Example Question Formatting:
         
         explanationBtn.addEventListener('click', () => {
             const question = getCurrentQuestionData();
-            if (!question) return;
-
-            const feedbackEl = currentQuestionDOM.querySelector(`[id$="-feedback"]`);
-            const wasAnswered = question.isAnsweredCorrectly !== null;
-
-            if (explanationBtn.classList.contains('force-correct-active')) {
-                // This is the "Mark as Correct" action.
+            if (!question || currentQuizType !== 'fill-in-the-blank') return;
+    
+            // Case 1: Question is unanswered and hint not shown -> Show Hint
+            if (question.isAnsweredCorrectly === null && !question.hintShown) {
+                const feedbackEl = currentQuestionDOM.querySelector(`[id$="-feedback"]`);
+                if (!feedbackEl) return;
+    
+                // Show hint
+                showAnswerFeedbackDOM(question, feedbackEl, true); // true for isNeutral
+    
+                // Update state
+                question.hintShown = true;
+                explanationBtn.disabled = true;
+            }
+            // Case 2: Question is answered and incorrect -> Force Correct
+            else if (question.isAnsweredCorrectly === false) {
                 question.isAnsweredCorrectly = true;
                 question.status = 'answered-correct';
-
-                if (!wasAnswered) { // Overriding an unanswered question
-                    stopTimers(false);
-                    const timeElapsed = Date.now() - questionSpecificTimerStartMs;
-                    question.timeTakenMs = (question.timeTakenMs || 0) + timeElapsed;
-                    showAnswerFeedbackDOM(question, feedbackEl);
-                    styleFillInTheBlankInputs(true);
-                    updateTimelineNav();
-                    handleNextAction();
-                } else { // Overriding an incorrect answer
-                    showAnswerFeedbackDOM(question, feedbackEl);
-                    styleFillInTheBlankInputs(true);
-                    updateTimelineNav();
+    
+                // 1. Update the button itself (make it active/disabled)
+                explanationBtn.classList.add('force-correct-active'); 
+                explanationBtn.disabled = true;
+    
+                // 2. Update the feedback box
+                const feedbackEl = currentQuestionDOM.querySelector(`[id$="-feedback"]`);
+                if (feedbackEl) {
+                    showAnswerFeedbackDOM(question, feedbackEl); // Re-render feedback as correct
                 }
-                
-                // Revert button state after action
-                explanationBtn.classList.remove('force-correct-active', 'btn-green');
-                explanationBtn.classList.add('btn-main');
-                explanationBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" /></svg>`;
-
-            } else {
-                // This is the "Show Explanation" action (first click).
-                showAnswerFeedbackDOM(question, feedbackEl, !wasAnswered); // isNeutral = true if it wasn't answered
-
-                // Prime the button to become the "Mark as Correct" button on the next click.
-                explanationBtn.classList.remove('btn-main');
-                explanationBtn.classList.add('btn-green', 'force-correct-active');
-                explanationBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>`;
+    
+                // 3. Update the input fields
+                const inputs = currentQuestionDOM.querySelectorAll('.blank-input');
+                inputs.forEach(input => {
+                    input.classList.remove('incorrect');
+                    input.classList.add('correct');
+                });
+    
+                // 4. Update the timeline
+                updateTimelineNav();
             }
         });
 
