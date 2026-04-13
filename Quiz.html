@@ -1345,7 +1345,7 @@
     </div>
 
     <footer class="app-footer">
-        <p class="version-info">v2.0.5</p> 
+        <p class="version-info">v2.0.6</p> 
         <p class="author-credits">Made by Pranay Bhana with Gemini</p> 
         <p class="last-updated">Last Updated: 13th April 2026</p>
     </footer>
@@ -3342,29 +3342,13 @@
 
         const promptFormats = {
             'multiple-choice': `
-Each question starts with 1., 2., etc.
-Options for each question are A., B., C., D.
-No blank lines between questions and their options, or between options of the same question. Use a blank line to separate different questions.
-Immediately after the correct answer's text, add [explanation] followed by the explanation. 
-Do not mention the word “source” but you can mention the source name.
-Explain why the correct answer is correct rather than restating the correct answer.
-The correct answer should have ** around it and its explanation. This is a must. It should also be bolded.
-Example of Correct answer: B. **This is correct [explanation] Because of this reason.**
-Only one correct answer per question. All options (correct and incorrect) must seem plausible.
-At least one wrong answer choice must be at least 3 characters longer than the correct answer choice.
-At least one wrong answer choice must be at least 3 characters shorter than the correct answer choice.
-The correct answers shouldn't be evenly distributed among A, B, C, D.
-No single answer letter (A, B, C, or D) can have less than 10% of the total correct answers.
-Do not include any other text, markdown symbols, or formatting before or after the questions and answers.
-Do not include any system information such as 3 characters longer/shorer.
-Make sure the questions is difficult and the answers could definitely be debated.
-The explaination must be in depth and give definitive reasons why the correct answer is correct. 
-Example Question Formatting:
-1. Which planet is known as the Red Planet?
-    A. Venus.
-    B. **Mars. [explanation] Mars is often called the Red Planet due to its iron oxide-rich surface.**
-    C. Jupiter.
-    D. Earth.
+Generate multiple-choice questions starting each with 1., 2., and so on, using options labeled A., B., C., D. while ensuring no blank lines exist between questions and their options, or between options of the same question, using a single blank line only to separate distinct questions. Every question must be high-level and difficult with four fully formed, highly plausible, and debatable options; you are strictly forbidden from using single-word answers, fragments, or lazy distractors. Only one correct answer is permitted per question and it must be formatted by wrapping the entire answer text and its explanation in double asterisks, including the bracketed explanation label immediately after the answer text. The explanation must be in-depth and provide definitive reasons why the correct answer is correct rather than just restating it, and while you may mention the names of reference materials, you must never use the word "source." You must ensure that at least one wrong answer choice is at least 3 characters longer than the correct choice and at least one wrong answer choice is at least 3 characters shorter than the correct choice, though even the shorter choice must remain a plausible multi-word phrase. Correct answers should not be perfectly evenly distributed among A, B, C, and D, yet no single letter can represent less than 10% of the total correct answers. Do not include any introductory or concluding text, markdown code blocks, or mentions of these internal length constraints in your response.
+
+1. Which of the following best describes the physical mechanism behind the "GZK cutoff" in high-energy astrophysics?
+A. The spontaneous decay of ultra-high-energy protons into neutrinos over vast cosmological distances.
+B. **Interaction with the cosmic microwave background. [explanation] As ultra-high-energy cosmic rays travel through space, they collide with photons from the cosmic microwave background, resulting in energy loss through pion production and limiting their travel distance.**
+C. The deflection of charged particles by the intergalactic magnetic field which prevents them from reaching Earth.
+D. Synchrotron radiation losses occurring within the active galactic nucleus.
 `,
             'fill-in-the-blank': () => `
 Each question starts with 1., 2., etc.
