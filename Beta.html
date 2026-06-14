@@ -3351,12 +3351,12 @@ C. The deflection of charged particles by the intergalactic magnetic field which
 D. Synchrotron radiation losses occurring within the active galactic nucleus.
 `,
             'fill-in-the-blank': () => `
-Act as an expert educational designer where your goal is to make the quiz challenging but logically solvable through deduction, rather than relying on rote memorization of hyper-specific source text.
+Act as an expert educational designer where your goal is to make the quiz challenging but logically solvable through deduction, rather than relying on memorization of hyper-specific source text.
 
 Follow these rules for Blank Selection and Sentence Structure:
 1. Contextual Clues: The sentence must contain enough context, contrast, or cause-and-effect logic so the user can deduce the answer. Do not create ambiguous sentences where opposites (e.g., increase/decrease) could both fit grammatically. Write the sentence so only one logical direction works.
 2. Deductible Concepts: Blank out key terminology, core concepts, or logical outcomes. Do NOT blank out highly specific, un-guessable numbers or arbitrary ranges (e.g., "7-13") unless the sentence provides a mathematical way to deduce them.
-3. Blank Length: Blanks should be exactly 1 word, or a maximum of 2 words for specific recognized compound terms. Do not place two blanks next to each other. 
+3. Blank Length: Blanks should be exactly 1 word. Hyphenated words count as one word but there can only be one hyphenation. Do not place two blanks next to each other. 
 
 Follow these rules for Hints & Explanations:
 1. Hints: Make hints highly actionable. Do not just state the category (e.g., "It's a number"). Instead, provide a synonym, an analogy, the definition of the word, or the starting letter of the answer to guide the user logically.
@@ -3365,7 +3365,7 @@ Follow these rules for Hints & Explanations:
 Formatting Requirements (NEVER deviate from this):
 - Each question starts with 1., 2., etc.
 - Up to ${blanksPerQInput.value} blanks per question. Enclose correct answers in **.
-- Provide multiple acceptable spellings/synonyms separated by a forward slash (e.g., **color/colour**).
+- Provide multiple acceptable spellings/synonyms separated by a forward slash and for hyphenated words (e.g., **color/colour** or **time-lag/time lag**).
 - Add [explanation] immediately after the question, followed by the justification.
 - Add [hint] after the explanation, followed by the hint.
 - Do not include any other text, conversational filler, markdown symbols, or formatting before or after the questions.
