@@ -1205,6 +1205,100 @@
         flex-basis: auto;
     } }
 
+    /* --- Beta Popup Styles --- */
+    .beta-popup {
+        position: fixed;
+        bottom: 3.5rem; /* Sits just above the footer */
+        right: 1.5rem;
+        background-color: var(--layout-background);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 4px 10px var(--layout-box-shadow);
+        z-index: 1500;
+        transform: translateY(20px);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    body:not(.power-saving-mode) .beta-popup {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+
+    .beta-popup.show {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .beta-content {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .beta-badge {
+        background-color: var(--ui-blue-bg);
+        color: var(--ui-blue-fills);
+        font-weight: 700;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.5rem;
+        text-transform: uppercase;
+        border: 1px solid var(--ui-blue-fills);
+    }
+
+    .beta-content p {
+        color: var(--text-primary);
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.85rem;
+        border-radius: 0.5rem;
+    }
+
+    .close-beta-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s, color 0.2s;
+    }
+
+    .close-beta-btn:hover {
+        background-color: var(--ui-main-bg-hover);
+        color: var(--text-primary);
+    }
+
+    .close-beta-btn svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+    
+    @media (max-width: 600px) {
+        .beta-popup {
+            bottom: auto;
+            top: 5rem; /* Show at top on mobile so it doesn't overlap controls */
+            right: 1rem;
+            left: 1rem;
+            justify-content: space-between;
+        }
+    }
+
 </style>
 </head>
 <body>
@@ -1344,10 +1438,21 @@
         </div>
     </div>
 
+    <div id="beta-popup" class="beta-popup">
+        <div class="beta-content">
+            <span class="beta-badge">Beta</span>
+            <p>Try out the new beta version!</p>
+            <a href="https://tech72.github.io/Quiz-Generator/Beta.html" class="btn btn-blue btn-sm" style="text-decoration: none;">Check it out</a>
+        </div>
+        <button id="close-beta-btn" class="close-beta-btn" aria-label="Close beta notification">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+    </div>
+
     <footer class="app-footer">
-        <p class="version-info">v2.0.6</p> 
-        <p class="author-credits">Made by Pranay Bhana with Gemini</p> 
-        <p class="last-updated">Last Updated: 13th April 2026</p>
+        <p class="version-info">v2.0.7</p> 
+        <p class="author-credits">Made by Tech72 Bhana with Gemini</p> 
+        <p class="last-updated">Last Updated: 14th June 2026</p>
     </footer>
 
     <div id="settings-modal" class="modal-overlay">
@@ -3786,6 +3891,22 @@ Example Question Formatting:
                     },
                     'btn-red'
                 );
+            });
+
+            // --- Beta Popup Logic ---
+            const betaPopup = document.getElementById('beta-popup');
+            const closeBetaBtn = document.getElementById('close-beta-btn');
+
+            // Show the popup shortly after the page loads (e.g., 1.5 seconds)
+            setTimeout(() => {
+                if (betaPopup) {
+                    betaPopup.classList.add('show');
+                }
+            }, 1500);
+
+            // Hide when dismissed
+            closeBetaBtn.addEventListener('click', () => {
+                betaPopup.classList.remove('show');
             });
         });
     </script>
