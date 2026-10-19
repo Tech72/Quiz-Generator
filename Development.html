@@ -2377,7 +2377,7 @@
                         <div class="setting-item">
                             <div class="setting-text-container">
                                <span class="setting-text">Render LaTeX Maths</span>
-                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">Renders \\(...\\) and $$...$$ as formatted maths. Needs an internet connection the first time; turn off to show the raw source instead.</span></div>
+                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">Renders \(...\) and $$...$$ as formatted maths. Needs an internet connection the first time; turn off to show the raw source instead.</span></div>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="latex-toggle">
@@ -2643,8 +2643,8 @@
         const ANSWER_PATTERN_GLOBAL = /@@(.*?)@@/g;
 
         // Single source of truth for what the footer shows.
-        const APP_VERSION = 'v3.0.0 - Beta';
-        const BUILD_DATE = '15th September 2026';
+        const APP_VERSION = 'v3.0.1 - Beta';
+        const BUILD_DATE = '27th September 2026';
 
         // DOM Elements
         const docHtml = document.documentElement;
@@ -2760,8 +2760,6 @@
         let currentQuizType = 'multiple-choice';
         let currentTimerInterval = null;
         let questionSpecificTimerStartMs = 0; 
-        let totalQuizTimerStartMs = 0; 
-        let accumulatedTotalQuizTimeMs = 0; 
         let selectedOptionLetter = null;
         let isQuizPaused = false;
         let isQuizActive = false;
@@ -3753,7 +3751,6 @@
                 hideExternalResultsButtons();
                 isQuizActive = true;
                 isQuizPaused = false;
-                totalQuizTimerStartMs = Date.now();
                 navigateToQuestion(firstIncorrectDisplayIndex);
                 renderTimelineNav();
             }
@@ -3844,7 +3841,6 @@
                         q.hintShown = false; // Reset hint
                     }
                 });
-                accumulatedTotalQuizTimeMs = 0;
                 currentQuestionDisplayOrderIndex = 0;
                 questionOrder = Array.from(Array(currentQuizQuestions.length).keys());
                 if (shuffleQ) {
@@ -3852,7 +3848,6 @@
                 }
             }
             isQuizPaused = false;
-            totalQuizTimerStartMs = Date.now(); 
             inputScreen.classList.add('hidden');
             resultsScreen.classList.add('hidden');
             quizScreen.classList.remove('hidden');
@@ -4398,6 +4393,23 @@
             }
         }
 
+        // "Quiz time" is the sum of time actually spent on each question while it was
+        // unanswered - not wall-clock time since the quiz started. That means it stops
+        // increasing while sitting on an already-answered question, in the pause modal,
+        // or anywhere else that isn't an active unanswered question, and it never
+        // double-counts a question visited more than once.
+        function computeQuizTimeMs(questionList) {
+            let total = 0;
+            for (const q of questionList) total += (q.timeTakenMs || 0);
+            if (isQuizActive && !isQuizPaused && questionSpecificTimerStartMs > 0) {
+                const current = getCurrentQuestionData();
+                if (current && current.isAnsweredCorrectly === null) {
+                    total += (Date.now() - questionSpecificTimerStartMs);
+                }
+            }
+            return total;
+        }
+
         function startTimers() {
             stopTimers(false);
             const limitSeconds = activeQuizSettings ? activeQuizSettings.timeLimitSeconds : effectiveTimeLimit();
@@ -4425,9 +4437,6 @@
             clearInterval(currentTimerInterval); currentTimerInterval = null;
             questionDeadlineMs = 0;
             currentQuestionTimerDisplay.classList.remove('time-low');
-            if (isPausingOrEndingQuiz && totalQuizTimerStartMs > 0) { 
-                accumulatedTotalQuizTimeMs += (Date.now() - totalQuizTimerStartMs); totalQuizTimerStartMs = 0; 
-            }
         }
         function navigateToQuestion(displayOrderIndex, isInitial = false) {
             const oldQuestion = getCurrentQuestionData();
@@ -4518,7 +4527,7 @@
             const answeredPercentage = answeredCount > 0 ? ((correctCount / answeredCount) * 100).toFixed(1) : 0;
             pausedScoreDisplay.textContent = `${correctCount}/${answeredCount} (${answeredPercentage}%)`;
             pausedRemainingDisplay.textContent = currentQuizQuestions.filter(q => q.isAnsweredCorrectly === null).length;
-            pausedTimeDisplay.textContent = formatTime(accumulatedTotalQuizTimeMs);
+            pausedTimeDisplay.textContent = formatTime(computeQuizTimeMs(currentQuizQuestions));
             
             pauseModal.classList.add('visible');
         }
@@ -4526,7 +4535,6 @@
         function resumeQuiz() {
             isQuizPaused = false; 
             pauseModal.classList.remove('visible');
-            totalQuizTimerStartMs = Date.now(); 
             const currentQ = getCurrentQuestionData();
             if (currentQ && currentQ.isAnsweredCorrectly === null) { 
                 questionSpecificTimerStartMs = Date.now(); 
@@ -4590,9 +4598,17 @@
             
             resultsTitle.textContent = isPrematureEnd ? "Quiz Submitted Early" : "Quiz Complete!";
             
-            currentQuizQuestions.forEach(cq => {
+            currentQuizQuestions.forEach((cq, indexInCurrent) => {
                 const originalQ = originalAllQuestionsData.find(oq => oq.id === cq.id);
-                if (originalQ) { Object.assign(originalQ, cq); }
+                if (originalQ) {
+                    Object.assign(originalQ, cq);
+                    // The number shown in results is the position the question was
+                    // actually presented at (1-based), not the AI's original numbering -
+                    // with question order randomised those two can differ, and showing
+                    // the AI's number made it look like results were mismatched.
+                    const displayIndex = questionOrder.indexOf(indexInCurrent);
+                    originalQ.displayNumber = displayIndex !== -1 ? displayIndex + 1 : originalQ.originalOrder;
+                }
             });
 
             let correctAnswers = 0, answeredQuestionsCount = 0;
@@ -4609,7 +4625,7 @@
             scoreDetailsDisplay.textContent = forceCorrectedCount > 0
                 ? `${correctAnswers} / ${totalQuestionsInSet} correct — ${forceCorrectedCount} force-corrected`
                 : `${correctAnswers} / ${totalQuestionsInSet} correct`;
-            totalQuizTimeDisplay.textContent = formatTime(accumulatedTotalQuizTimeMs);
+            totalQuizTimeDisplay.textContent = formatTime(computeQuizTimeMs(originalAllQuestionsData));
             
             const goldPerc = parseFloat(localStorage.getItem('goldMedal') || '89.5');
             const silverPerc = parseFloat(localStorage.getItem('silverMedal') || '84.5');
@@ -4650,15 +4666,19 @@
         // Results can be re-ordered without re-running the whole results screen.
         let resultsSortMode = localStorage.getItem('resultsSort') || 'number';
 
+        // displayNumber is the position the question was actually shown at (assigned in
+        // showResults); it falls back to originalOrder only if that assignment somehow
+        // never ran, so sorting/labelling can't throw on an undefined value.
+        const resultNum = q => (q.displayNumber !== undefined ? q.displayNumber : q.originalOrder);
         const RESULT_SORTERS = {
-            'number':     (a, b) => a.originalOrder - b.originalOrder,
+            'number':     (a, b) => resultNum(a) - resultNum(b),
             'time-desc':  (a, b) => (b.timeTakenMs || 0) - (a.timeTakenMs || 0),
             'time-asc':   (a, b) => (a.timeTakenMs || 0) - (b.timeTakenMs || 0),
-            'incorrect':  (a, b) => resultRank(a, false) - resultRank(b, false) || a.originalOrder - b.originalOrder,
-            'correct':    (a, b) => resultRank(a, true) - resultRank(b, true) || a.originalOrder - b.originalOrder,
-            'unanswered': (a, b) => (a.isAnsweredCorrectly === null ? 0 : 1) - (b.isAnsweredCorrectly === null ? 0 : 1) || a.originalOrder - b.originalOrder,
+            'incorrect':  (a, b) => resultRank(a, false) - resultRank(b, false) || resultNum(a) - resultNum(b),
+            'correct':    (a, b) => resultRank(a, true) - resultRank(b, true) || resultNum(a) - resultNum(b),
+            'unanswered': (a, b) => (a.isAnsweredCorrectly === null ? 0 : 1) - (b.isAnsweredCorrectly === null ? 0 : 1) || resultNum(a) - resultNum(b),
             // Retaken questions were the most recently completed, so they lead.
-            'recent':     (a, b) => (b.wasRetaken ? 1 : 0) - (a.wasRetaken ? 1 : 0) || a.originalOrder - b.originalOrder,
+            'recent':     (a, b) => (b.wasRetaken ? 1 : 0) - (a.wasRetaken ? 1 : 0) || resultNum(a) - resultNum(b),
         };
         function resultRank(q, correctFirst) {
             if (q.isAnsweredCorrectly === null) return 2;
@@ -4668,8 +4688,8 @@
         function renderResultsList() {
             resultsDetailsContainer.innerHTML = '';
             const buildResultItem = (q) => (currentQuizType === 'multiple-choice')
-                ? buildMCResultItemDOM(q, q.originalOrder)
-                : buildFITBResultItemDOM(q, q.originalOrder);
+                ? buildMCResultItemDOM(q, resultNum(q))
+                : buildFITBResultItemDOM(q, resultNum(q));
             const sorter = RESULT_SORTERS[resultsSortMode] || RESULT_SORTERS.number;
 
             // Only the default ordering keeps retaken questions in their own group;
@@ -4881,7 +4901,7 @@
             textareaPlaceholder.style.display = 'flex';
             originalAllQuestionsData = []; currentQuizQuestions = [];
             questionOrder = []; currentQuestionDisplayOrderIndex = 0;
-            accumulatedTotalQuizTimeMs = 0; stopTimers(true); isQuizPaused = false; 
+            stopTimers(true); isQuizPaused = false; 
             currentQuestionDOM = null; questionContentContainer.innerHTML = ''; 
             refreshPrimaryMode();
         };
@@ -4991,11 +5011,12 @@ EXPLANATIONS
 DIFFICULTY AND QUALITY
 - ${DIFFICULTY_BRIEF[homeState.difficulty]}
 - Every option must be a fully formed, plausible statement. No single words, no fragments, no obviously throwaway distractors.
-- At least one wrong option must be at least 3 characters longer than the correct option, and at least one wrong option at least 3 characters shorter, while still reading as a credible multi-word answer.
+- Vary the option lengths naturally so the correct answer cannot be picked out by length alone: it should be neither the longest nor the shortest option, with at least one wrong option clearly longer and at least one clearly shorter, while every option still reads as a credible, fully-formed answer.
 
 ${homeState.useLatex ? `MATHS
-- If a question needs mathematical notation, write it as LaTeX between \\\\( and \\\\) for inline maths, or between $$ and $$ for anything complex or displayed on its own line.
-- Never use a single dollar sign as a maths delimiter. A single $ always means a currency amount, so write sums of money plainly, for example $50.
+- If a question needs mathematical notation, write it as LaTeX between \\( and \\) for inline maths, or between $$ and $$ for a displayed equation.
+- Only use LaTeX for an actual mathematical expression: an equation, formula, fraction, exponent, or multi-term calculation. Never use it for a plain number, percentage, date, or count on its own - write "5 minutes" and "99.999%" as ordinary text, not as LaTeX.
+- Currency amounts are never LaTeX, even inside an otherwise mathematical question. Write them as plain text with a single $, for example $50 or $2 to $3 million - never \\($50\\) or $$50$$. A single $ is always read as a currency symbol, never as a maths delimiter.
 - Do not escape the backslashes and do not wrap the LaTeX in code fences.
 
 ` : ''}OUTPUT
@@ -5027,7 +5048,7 @@ Formatting Requirements (NEVER deviate from this):
 - After the explanation, write the literal word hint enclosed in square brackets the same way - [hint] - then a space, then the hint.
 - Never wrap a question across two lines; each question sits on a single line however long it is.
 - Never use asterisks, bold, or any other emphasis anywhere in your output.${homeState.useLatex ? `
-- If a question needs mathematical notation, write it as LaTeX between \\\\( and \\\\) for inline maths, or between $$ and $$ for anything complex. Never use a single dollar sign as a maths delimiter; a single $ always means a currency amount.` : ''}
+- If a question needs mathematical notation, write it as LaTeX between \\( and \\) for inline maths, or between $$ and $$ for a displayed equation - but only for an actual mathematical expression, never for a plain number, percentage, date, or count on its own. Currency amounts are never LaTeX: write them as plain text with a single $, for example $50 - never \\($50\\) or $$50$$; a single $ is always a currency symbol, not a maths delimiter.` : ''}
 - Do not include any other text, conversational filler, markdown symbols, or formatting before or after the questions.
 
 Example Question Formatting:
@@ -5252,10 +5273,8 @@ Example Question Formatting:
         function renderHeaderClock() {
             const now = new Date();
             clockNow.textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-            const live = (isQuizActive && !isQuizPaused && totalQuizTimerStartMs > 0)
-                ? accumulatedTotalQuizTimeMs + (Date.now() - totalQuizTimerStartMs)
-                : accumulatedTotalQuizTimeMs;
-            clockElapsed.textContent = formatTime(live);
+            const list = currentQuizQuestions.length ? currentQuizQuestions : originalAllQuestionsData;
+            clockElapsed.textContent = formatTime(computeQuizTimeMs(list));
         }
 
         function updateHeaderMode(onHome) {
