@@ -316,7 +316,10 @@
         display: flex;
         flex-direction: column;
         min-width: 0;
+        min-height: 0;
+        overflow-y: auto;
     }
+    .home-right .textarea-container { min-height: 8rem; }
 
     .seg-control {
         display: flex;
@@ -701,14 +704,21 @@
        it for free; a full-viewport blur(20px) cost roughly six passes over ~1.3M
        pixels every frame and was the single most expensive thing on the page. */
 
-    /* Gradient mode is deliberately static: several radial-gradient layers painted
-       once onto a single element. The animated version promoted every blob to its own
-       compositing layer and blended all of them each frame, which cost more than the
-       particle canvas does. Painting once costs nothing to keep on screen; press the
-       brush button for a new arrangement. */
+    /* Gradient mode: the radial-gradient blobs are painted once onto two oversized
+       layers, and the layers drift slowly in opposite directions. Only their
+       transform changes (at 8fps), so nothing is ever repainted - the compositor
+       just moves two finished textures. The old animated version gave every blob its
+       own layer and animated them at full frame rate, which cost more than the
+       particle canvas. */
     #gradient-background {
         opacity: 0;
         transition: opacity 1.2s ease-out;
+        overflow: hidden;
+    }
+    .gradient-drift-layer {
+        position: absolute;
+        inset: -20%;
+        will-change: transform;
     }
 
     #app {
@@ -894,6 +904,10 @@
         gap: 0.9rem;
         align-items: stretch;
         flex-grow: 1;
+        /* Without this the row refuses to shrink below its content, so on shorter
+           screens the bottom of the home screen was clipped by #app instead of the
+           columns scrolling. */
+        min-height: 0;
         padding: 1.5rem;
     }
     .textarea-container {
@@ -1409,6 +1423,31 @@
         white-space: pre-wrap;
         word-break: break-word;
         margin-top: 0.25rem;
+    }
+    /* Shown when the quiz contains maths that will not render. Amber so it reads as
+       a warning, distinct from the red parse failures above it. */
+    .latex-warning {
+        margin-top: 0.75rem;
+        padding: 0.6rem 0.75rem;
+        border-radius: 0.75rem;
+        border: 0.15rem solid var(--ui-amber-fills);
+        background-color: var(--ui-amber-bg);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-align: left;
+    }
+    .latex-warning-text {
+        flex: 1;
+        font-size: 0.875rem;
+        line-height: 1.35;
+        color: var(--text-primary);
+    }
+    .latex-warning-text strong { color: var(--ui-amber-fills); }
+    .latex-warning .btn {
+        flex: none;
+        padding: 0.45rem 0.8rem;
+        font-size: 0.875rem;
     }
 
     .app-footer {
@@ -2173,9 +2212,9 @@
                     <div class="option-card" data-group="autonextduration" id="auto-next-duration-card">
                         <div class="option-label">Auto Next Delay:</div>
                         <div class="chip-row">
-                            <button class="opt-chip" data-value="3">3s</button>
-                            <button class="opt-chip active" data-value="5">5s</button>
-                            <button class="opt-chip" data-value="10">10s</button>
+                            <button class="opt-chip" data-value="0">0s</button>
+                            <button class="opt-chip" data-value="1">1s</button>
+                            <button class="opt-chip active" data-value="3">3s</button>
                             <input type="text" inputmode="numeric" class="opt-chip custom-chip" data-value="custom" placeholder="Custom" maxlength="3">
                         </div>
                     </div>
@@ -2192,7 +2231,7 @@
                 </div>
             </div>
 
-            <div class="home-right">
+            <div class="home-right scrollable-content">
                 <ol class="home-steps">
                     <li><span class="step-num">1</span><span class="step-text">Copy the prompt with the button below.</span></li>
                     <li><span class="step-num">2</span><span class="step-text">Add any extra limits on the end &mdash; e.g. <em>&ldquo;Only use content from the lecture on the <span id="today-date"></span>&rdquo;</em></span></li>
@@ -2331,7 +2370,7 @@
                             <span class="setting-text">Auto Next Delay (s):</span>
                              <div class="number-input-container">
                                 <button class="number-input-btn auto-next-btn" data-action="minus">-</button>
-                                <input type="number" id="auto-next-duration-input" class="settings-number-input" min="1" max="120" value="5">
+                                <input type="number" id="auto-next-duration-input" class="settings-number-input" min="0" max="120" value="3">
                                 <button class="number-input-btn auto-next-btn" data-action="plus">+</button>
                             </div>
                         </div>
@@ -2623,6 +2662,10 @@
             <h3 id="parse-report-title">Parsed 0 of 0 questions</h3>
             <p id="parse-report-message" class="text-left"></p>
             <div id="parse-report-list" class="parse-report-list scrollable-content text-left"></div>
+            <div id="parse-report-latex-warning" class="latex-warning hidden">
+                <div id="parse-report-latex-text" class="latex-warning-text"></div>
+                <button id="parse-report-latex-btn" class="btn btn-blue hidden">Turn On</button>
+            </div>
             <div class="modal-buttons mt-6">
                 <button id="parse-report-start-btn" class="btn btn-green">Start Quiz</button>
                 <button id="parse-report-back-btn" class="btn btn-main">Edit</button>
@@ -2643,8 +2686,8 @@
         const ANSWER_PATTERN_GLOBAL = /@@(.*?)@@/g;
 
         // Single source of truth for what the footer shows.
-        const APP_VERSION = 'v3.0.1 - Beta';
-        const BUILD_DATE = '27th September 2026';
+        const APP_VERSION = 'v3.0.2 - Beta';
+        const BUILD_DATE = '19th October 2026';
 
         // DOM Elements
         const docHtml = document.documentElement;
@@ -2724,6 +2767,9 @@
         const parseReportList = document.getElementById('parse-report-list');
         const parseReportStartBtn = document.getElementById('parse-report-start-btn');
         const parseReportBackBtn = document.getElementById('parse-report-back-btn');
+        const parseReportLatexWarning = document.getElementById('parse-report-latex-warning');
+        const parseReportLatexText = document.getElementById('parse-report-latex-text');
+        const parseReportLatexBtn = document.getElementById('parse-report-latex-btn');
 
         const redoIncorrectBtnExt = document.getElementById('redo-incorrect-btn-ext');
         const redoQuizBtnExt = document.getElementById('redo-quiz-btn-ext');
@@ -2779,6 +2825,8 @@
         const smudgeCtx = smudgeBackgroundCanvas.getContext('2d');
         let isParticleAnimationRunning = false;
         let batteryListenersAttached = false;
+        // The background type currently on screen, after Auto has been resolved.
+        let currentResolvedBgType = null;
         
         // One flat list. These used to be split into dark/light sets with a toggle
         // to combine them; with light mode gone every palette is simply selectable.
@@ -2946,37 +2994,113 @@
             buildGradientBlobs();
         }
 
-        // Static gradient: a fresh random arrangement of soft radial layers on one
-        // element. No animation and no extra layers, so once it is painted it costs
-        // nothing to keep on screen.
+        // Gradient: a fresh random arrangement of soft radial blobs split across two
+        // oversized layers, which then drift against each other (see the CSS note).
+        const GRADIENT_LAYER_SCALE = 1.4;   // each layer is 140% of the viewport (inset -20%)
+        // Measured at 1920x1080 (GPU 3D engine, over the static gradient): 15fps cost
+        // about the same as the particle canvas, 8fps about half of that. The cost is
+        // mostly re-compositing the blurred glass panels each frame, so it scales with
+        // the frame rate rather than with the gradient itself.
+        const GRADIENT_DRIFT_FPS = 8;
+        let gradientDriftLayers = [];
+        let gradientDriftSeeds = [];
+        let gradientDriftRunning = false;
+        let gradientDriftLastMs = 0;
+        let gradientDriftStartMs = performance.now();
+
         function buildGradientBlobs() {
             if (!gradientBackgroundDiv) return;
             gradientBackgroundDiv.innerHTML = '';
-            if (!smudgeEffectColors || smudgeEffectColors.length === 0) {
-                gradientBackgroundDiv.style.backgroundImage = '';
-                return;
-            }
+            gradientBackgroundDiv.style.backgroundImage = '';
+            gradientDriftLayers = [];
+            if (!smudgeEffectColors || smudgeEffectColors.length === 0) return;
 
-            // Two passes over the palette so colours overlap and mix.
+            // Two passes over the palette so colours overlap and mix; alternate blobs
+            // go to alternate layers so both layers carry every colour.
             const passes = [...smudgeEffectColors, ...smudgeEffectColors];
-            const layers = [];
-            passes.forEach(colour => {
+            const layerImages = [[], []];
+            // Positions are picked in viewport percentages (as before) and mapped into
+            // the oversized layer's own coordinate space.
+            const toLayer = v => ((v + 20) / GRADIENT_LAYER_SCALE).toFixed(1);
+            passes.forEach((colour, i) => {
                 const c = rgbaToRgb(colour);
                 if (!c) return;
-                const x = Math.round(Math.random() * 120 - 10);
-                const y = Math.round(Math.random() * 120 - 10);
+                const x = Math.random() * 120 - 10;
+                const y = Math.random() * 120 - 10;
                 // Independent width/height gives each blob its own elliptical shape.
-                const w = Math.round(45 + Math.random() * 55);
-                const h = Math.round(45 + Math.random() * 55);
+                const w = ((45 + Math.random() * 55) / GRADIENT_LAYER_SCALE).toFixed(1);
+                const h = ((45 + Math.random() * 55) / GRADIENT_LAYER_SCALE).toFixed(1);
                 const peak = (0.55 + Math.random() * 0.25).toFixed(2);
-                layers.push(
-                    `radial-gradient(${w}% ${h}% at ${x}% ${y}%, ` +
+                layerImages[i % 2].push(
+                    `radial-gradient(${w}% ${h}% at ${toLayer(x)}% ${toLayer(y)}%, ` +
                     `rgba(${c.r}, ${c.g}, ${c.b}, ${peak}), ` +
                     `rgba(${c.r}, ${c.g}, ${c.b}, 0.2) 45%, ` +
                     `rgba(${c.r}, ${c.g}, ${c.b}, 0) 72%)`
                 );
             });
-            gradientBackgroundDiv.style.backgroundImage = layers.join(', ');
+
+            // Each layer gets its own slow, looping path. Periods of a minute or more
+            // keep it a drift rather than visible motion; the sign flip sends the two
+            // layers opposite ways so the blobs shift relative to each other.
+            gradientDriftSeeds = layerImages.map((_, i) => {
+                const dir = i === 0 ? 1 : -1;
+                const period = () => 80 + Math.random() * 60;   // seconds
+                return {
+                    fx: (2 * Math.PI) / period(), fy: (2 * Math.PI) / period(), fr: (2 * Math.PI) / period(),
+                    px: Math.random() * 6.28, py: Math.random() * 6.28, pr: Math.random() * 6.28,
+                    ax: 6 * dir, ay: 6 * dir, ar: 4 * dir,   // vw, vh, degrees
+                };
+            });
+
+            layerImages.forEach(images => {
+                const layer = document.createElement('div');
+                layer.className = 'gradient-drift-layer';
+                layer.style.backgroundImage = images.join(', ');
+                gradientBackgroundDiv.appendChild(layer);
+                gradientDriftLayers.push(layer);
+            });
+            positionGradientLayers(performance.now());
+        }
+
+        function positionGradientLayers(now) {
+            const t = (now - gradientDriftStartMs) / 1000;
+            gradientDriftLayers.forEach((layer, i) => {
+                const s = gradientDriftSeeds[i];
+                if (!s) return;
+                const x = Math.sin(t * s.fx + s.px) * s.ax;
+                const y = Math.cos(t * s.fy + s.py) * s.ay;
+                const r = Math.sin(t * s.fr + s.pr) * s.ar;
+                layer.style.transform = `translate3d(${x.toFixed(2)}vw, ${y.toFixed(2)}vh, 0) rotate(${r.toFixed(2)}deg)`;
+            });
+        }
+
+        function animateGradientDrift(now) {
+            if (!gradientDriftRunning) return;
+            requestAnimationFrame(animateGradientDrift);
+            // The drift moves about a pixel per frame at this rate, so a higher rate
+            // would only add compositor work without looking any smoother.
+            if (now - gradientDriftLastMs < (1000 / GRADIENT_DRIFT_FPS)) return;
+            gradientDriftLastMs = now;
+            positionGradientLayers(now);
+        }
+        function startGradientDrift() {
+            if (gradientDriftRunning) return;
+            gradientDriftRunning = true;
+            gradientDriftLastMs = 0;
+            requestAnimationFrame(animateGradientDrift);
+        }
+        function stopGradientDrift() {
+            gradientDriftRunning = false;
+        }
+
+        // Re-shows whatever palette is already on screen. Switching background type
+        // (including Auto re-resolving when the battery changes) goes through here, so
+        // it no longer rolls a new random palette - which is what made the colours
+        // "randomly change" on a laptop running on battery.
+        function showCurrentPalette() {
+            if (!currentPaletteForDisplay) { applyBackgroundPalette(); return; }
+            if (isParticleAnimationRunning) initSmudgeEffect();
+            buildGradientBlobs();
         }
 
         async function setBackgroundType(type, fromUserAction = false, controls = null) {
@@ -3039,6 +3163,13 @@
                  autoBgTypeDisplay.textContent = '';
             }
 
+            // Auto re-resolves on every battery level change (each 1%), and start-up
+            // applies the type more than once. If the result is what is already
+            // showing, leave the background exactly as it is.
+            if (resolvedType === currentResolvedBgType) return;
+            currentResolvedBgType = resolvedType;
+
+            stopGradientDrift();
             smudgeBackgroundCanvas.style.display = 'none';
             gradientBackgroundDiv.style.display = 'none';
             gradientBackgroundDiv.style.opacity = '0';
@@ -3049,13 +3180,14 @@
                 // first (as this used to) made the guard always true and could stack loops.
                 const wasRunning = isParticleAnimationRunning;
                 isParticleAnimationRunning = true;
-                applyBackgroundPalette();
+                showCurrentPalette();
                 if (!wasRunning) animateSmudgeBackground();
             } else {
                 isParticleAnimationRunning = false;
                 if (resolvedType === 'gradient') {
                     gradientBackgroundDiv.style.display = 'block';
-                    applyBackgroundPalette();
+                    showCurrentPalette();
+                    startGradientDrift();
                     // Needs a frame at display:block before the opacity transition runs.
                     requestAnimationFrame(() => { gradientBackgroundDiv.style.opacity = '0.85'; });
                 }
@@ -4846,7 +4978,61 @@
             initializeQuiz(originalAllQuestionsData, shuffleQ, shuffleA, false);
         }
 
+        // --- Maths that will not render ---------------------------------------
+        // Rendering fails silently (the source text is simply left in place), so
+        // the parse report says so up front when a quiz contains maths.
+        const LATEX_SOURCE_PATTERN = /\\\(|\\\[|\$\$/;   // \(  \[  $$
+        const DOUBLED_BACKSLASH_PATTERN = /\\\\[([]/;       // \\(  \\[
+
+        function collectQuestionStrings(value, out = []) {
+            if (typeof value === 'string') out.push(value);
+            else if (Array.isArray(value)) value.forEach(v => collectQuestionStrings(v, out));
+            else if (value && typeof value === 'object') Object.values(value).forEach(v => collectQuestionStrings(v, out));
+            return out;
+        }
+
+        // Returns null when there is nothing to warn about.
+        function getLatexWarning(questions) {
+            const text = collectQuestionStrings(questions).join('\n');
+            if (!LATEX_SOURCE_PATTERN.test(text)) return null;
+            if (typeof window.renderMathInElement !== 'function') {
+                return { canFix: false, html:
+                    '<strong>Maths will show as plain text.</strong> This quiz contains maths, but the maths renderer ' +
+                    "couldn't load. It is downloaded from the internet, so check your connection and reload the page." };
+            }
+            if (!latexEnabled) {
+                return { canFix: true, html:
+                    '<strong>Maths will show as plain text.</strong> This quiz contains maths, but ' +
+                    'Render LaTeX Maths is turned off (Settings &rarr; Quiz &rarr; Content).' };
+            }
+            if (DOUBLED_BACKSLASH_PATTERN.test(text)) {
+                return { canFix: false, html:
+                    "<strong>Some maths won't render.</strong> Part of this quiz writes maths with two backslashes " +
+                    'before the bracket instead of one. Ask the AI to use a single backslash.' };
+            }
+            return null;
+        }
+
+        function updateParseReportLatexWarning() {
+            const warning = getLatexWarning(originalAllQuestionsData);
+            parseReportLatexWarning.classList.toggle('hidden', !warning);
+            if (!warning) return;
+            parseReportLatexText.innerHTML = warning.html;
+            parseReportLatexBtn.classList.toggle('hidden', !warning.canFix);
+        }
+
+        parseReportLatexBtn.addEventListener('click', () => {
+            const toggle = document.getElementById('latex-toggle');
+            if (toggle) toggle.checked = true;
+            latexEnabled = true;
+            localStorage.setItem('latexEnabled', 'true');
+            // Re-check rather than just hiding: a doubled-backslash warning may
+            // still apply once rendering is on.
+            updateParseReportLatexWarning();
+        });
+
         function showParseReportModal(report) {
+            updateParseReportLatexWarning();
             const clean = report.failures.length === 0;
             parseReportTitle.classList.toggle('all-good', clean);
             parseReportTitle.textContent = clean
@@ -4873,6 +5059,22 @@
             startParsedQuiz();
         });
         parseReportBackBtn.addEventListener('click', () => parseReportModal.classList.remove('visible'));
+
+        // Enter / Space start the quiz and Escape goes back to edit. Captured on the
+        // window so the keypress never reaches the textarea that still has focus
+        // after the paste (it would otherwise type a newline or space into it).
+        window.addEventListener('keydown', (e) => {
+            if (!parseReportModal.classList.contains('visible')) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!e.repeat) parseReportStartBtn.click();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                parseReportBackBtn.click();
+            }
+        }, true);
 
         function startQuizFromInput() {
             const rawData = quizDataInput.value;
@@ -4930,20 +5132,28 @@
             timeLimit: 'none',
             customTime: 45,
             autoNext: 'none',
-            autoNextDuration: 5,
-            customAutoNext: 15,
+            autoNextDuration: 3,
+            customAutoNext: 5,
             keyboardFunctions: true,
             clickToSubmit: false,
             useLatex: false,
             blanksPerQuestion: 2,
         };
         let homeState = { ...HOME_DEFAULTS };
+        const AUTO_NEXT_PRESETS = [0, 1, 3];
 
         function loadHomeState() {
             try {
                 const saved = JSON.parse(localStorage.getItem('homeState') || '{}');
                 homeState = { ...HOME_DEFAULTS, ...(saved && typeof saved === 'object' ? saved : {}) };
             } catch (e) { homeState = { ...HOME_DEFAULTS }; }
+            // Delays saved before the presets became 0s / 1s / 3s (e.g. the old 5s or
+            // 10s) carry over as a Custom value rather than silently changing.
+            const delay = homeState.autoNextDuration;
+            if (delay !== 'custom' && !AUTO_NEXT_PRESETS.includes(Number(delay))) {
+                homeState.autoNextDuration = 'custom';
+                homeState.customAutoNext = Number(delay) || HOME_DEFAULTS.customAutoNext;
+            }
         }
         function saveHomeState() {
             localStorage.setItem('homeState', JSON.stringify(homeState));
@@ -5082,7 +5292,7 @@ Example Question Formatting:
             count:             { key: 'questionCount', numeric: true, customKey: 'customCount', min: 1, max: 200 },
             timelimit:         { key: 'timeLimit', customKey: 'customTime', min: 5, max: 600 },
             autonext:          { key: 'autoNext' },
-            autonextduration:  { key: 'autoNextDuration', customKey: 'customAutoNext', min: 1, max: 120 },
+            autonextduration:  { key: 'autoNextDuration', numeric: true, customKey: 'customAutoNext', min: 0, max: 120 },
             blanks:            { key: 'blanksPerQuestion', numeric: true },
         };
 
@@ -5093,7 +5303,9 @@ Example Question Formatting:
         }
         function effectiveAutoNextDuration() {
             if (homeState.autoNextDuration === 'custom') return clampCustom('autonextduration', homeState.customAutoNext);
-            return parseInt(homeState.autoNextDuration, 10) || 5;
+            // 0 is a real choice (advance straight away), so no || fallback here.
+            const v = parseInt(homeState.autoNextDuration, 10);
+            return Number.isNaN(v) ? HOME_DEFAULTS.autoNextDuration : v;
         }
         function clampCustom(group, value) {
             const spec = CHIP_GROUPS[group];
@@ -5518,7 +5730,7 @@ Example Question Formatting:
                 localStorage.setItem(storageKey, value);
             });
         }
-        setupNumberInput('auto-next', 'autoNextDuration', 1, 120, autoNextDurationInput);
+        setupNumberInput('auto-next', 'autoNextDuration', 0, 120, autoNextDurationInput);
         setupNumberInput('blanks-per-q', 'fitbBlanksPerQuestion', 1, 10, blanksPerQInput);
 
 
@@ -5572,8 +5784,14 @@ Example Question Formatting:
         bindSharedToggle(clickToSubmitToggle, 'clickToSubmit');
 
         autoNextDurationInput.addEventListener('change', () => {
-            homeState.autoNextDuration = 'custom';
-            homeState.customAutoNext = clampCustom('autonextduration', autoNextDurationInput.value);
+            // Values matching a home screen preset select that chip; anything else is Custom.
+            const v = clampCustom('autonextduration', autoNextDurationInput.value);
+            if (AUTO_NEXT_PRESETS.includes(v)) {
+                homeState.autoNextDuration = v;
+            } else {
+                homeState.autoNextDuration = 'custom';
+                homeState.customAutoNext = v;
+            }
             saveHomeState();
             applyHomeStateToUI();
         });
@@ -5860,7 +6078,11 @@ Example Question Formatting:
                         // Reload settings UI from scratch (which will now use defaults)
                         loadPreferences();
                         
-                        // Re-apply any visual settings that don't auto-update
+                        // Re-apply any visual settings that don't auto-update. Clearing
+                        // these forces a fresh palette, since the one on screen may have
+                        // been a custom palette that was just deleted.
+                        currentResolvedBgType = null;
+                        currentPaletteForDisplay = '';
                         const preferredBackground = localStorage.getItem('backgroundType') || 'auto';
                         applyBackgroundType(preferredBackground);
                         if (powerSavingToggle.checked) {
