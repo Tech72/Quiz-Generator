@@ -996,17 +996,6 @@
     }
 
 
-    .line-break-1{
-        border-width: 0.15rem;
-        border-radius: 99px;
-        border-color: var(--secondary-content-bg);
-        width: 99.5%;
-        align-self: center;
-        margin-top: 0.5rem;
-        margin-bottom: 0.1rem;
-        justify-self: center;
-    }
-    
     .timeline-circle {
         min-width: 28px;
         width: 28px;
@@ -1027,13 +1016,16 @@
         position: relative;
         z-index: 1;
     }
-    .timeline-line {
-        height: 2px;
+    /* Vertical connector between rail circles. Circle 28px + line 14px - 2px of
+       overlap gives the 40px pitch the rail's positioning maths assumes. */
+    .timeline-vline {
+        flex: none;
+        width: 2px;
+        height: 14px;
+        margin: -1px 0;
         background-color: var(--secondary-color);
-        flex-grow: 1;
-        min-width: 20px;
-        margin: 0 -1px;
     }
+    .timeline-vline.done { background-color: rgba(240, 240, 240, 0.28); }
     .timeline-circle:hover {
         transform: scale(1.3);
         border-color: var(--text-primary);
@@ -1055,124 +1047,11 @@
         color: white;
         border-color: var(--ui-blue-fills);
     }
-    /* "Current" is position only - size and a white ring - so the answer state
-       underneath stays readable. Listed last so it wins the border. */
-    .timeline-circle.current {
-        transform: scale(1.6);
-        border-color: white;
-        font-weight: 700;
-        z-index: 2;
-    }
-    .timeline-circle.current:hover {
-        transform: scale(1.6);
-        border-color: white;
-    }
-    
-    #results-screen:not(.hidden) {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        padding: 1.5rem;
-    }
-
-    .results-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-    }
-    .results-sort {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .results-sort-label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        font-weight: 700;
-        color: var(--text-secondary);
-    }
-    .results-sort-trigger {
-        width: 11rem;
-        padding: 0.4rem 0.7rem;
-        font-size: 0.85rem;
-    }
-
-    .result-question-item { 
-        border-radius: 0.75rem;
-        margin-bottom: 0.5rem;
-        padding: 1rem;
-        transition: all 0.3s ease-in-out; 
-        border-left-width: 0.3rem;
-        border-left-style: solid;
-        background-color: var(--main-content-bg);
-    }
-    .result-question-item:last-child {
-        margin-bottom: 0;
-    }
-    .result-question-item.correct {
-        border-left-color: var(--ui-green-fills);
-    }
-    .result-question-item.incorrect {
-        border-left-color: var(--ui-red-fills);
-    }
-    .result-question-item.unanswered {
-        border-left-color: var(--secondary-color);
-    }
-    /* Force-corrected: green fill (it scored as correct) with a blue left border
-       (it was overridden rather than answered). */
-    .result-question-item.force-corrected {
-        border-left-color: var(--ui-blue-fills);
-        background-color: var(--ui-green-bg);
-    }
-    .result-options-container { 
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
-        padding-top: 0;
-        padding-bottom: 0; 
-        border-left: 2px solid var(--secondary-color);
-    }
-    .result-options-container.expanded {
-        /* max-height is set from scrollHeight in JS so long explanations aren't clipped. */
-        padding-top: 0.75rem;
-        padding-bottom: 0.75rem;
-    }
-    .result-option {
-        padding: 0.5rem;
-        margin-bottom: 0.25rem;
-        border-radius: 0.5rem;
-        border: 1px solid transparent;
-    }
-    .result-option.user-selected {
-        border: 2px solid var(--ui-main-fills-hover);
-    }
-    .result-option.correct-answer {
-        background-color: var(--ui-green-bg);
-        color: var(--ui-green-fills);
-    }
-    .result-option.incorrect-answer {
-        background-color: var(--ui-red-bg);
-        color: var(--ui-red-fills);
-    }
-    .result-option.user-selected.incorrect-answer {
-        border: 2px solid var(--ui-main-fills-hover);
-    }
-    .explanation-container {
-        background-color: var(--secondary-content-bg);
-        border-radius: 0.5rem;
-        padding: 0.5rem;
-    }
-
-    .result-option-time{
-        width: max-content;
-        color: var(--text-secondary);
-    }
-
-    .result-option-question{
-        padding-right: 0.5rem;
+    /* The current question's circle is replaced by the larger badge beside the
+       question, so the rail just leaves a badge-sized gap where it would be. */
+    .timeline-circle.slot {
+        visibility: hidden;
+        margin: 7px 0;
     }
     
     .katex { color: inherit; font-size: 1.05em; }
@@ -1190,39 +1069,6 @@
     .dropdown-arrow.expanded, .select-arrow.expanded svg {
         transform: rotate(180deg);
         color: var(--text-secondary);
-    }
-
-    #results-details-container {
-        flex-grow: 1;
-        min-height: 0;
-    }
-
-    #score-display-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 1.5rem;
-        border-radius: 0.75rem;
-        margin-bottom: 1rem;
-        transition: background-color 0.5s ease;
-        border-width: 0.15rem;
-        border-style: solid;
-    }
-    #score-display-container.default {
-        background-color: var(--ui-blue-bg);
-        border-color: var(--ui-blue-fills);
-    }
-    #score-display-container.gold {
-        background-color: var(--ui-medal-gold-bg);
-        border-color: var(--ui-medal-gold-fills);
-    }
-    #score-display-container.silver {
-        background-color: var(--ui-medal-silver-bg);
-        border-color: var(--ui-medal-silver-fills);
-    }
-    #score-display-container.bronze {
-        background-color: var(--ui-medal-bronze-bg);
-        border-color: var(--ui-medal-bronze-fills);
     }
 
     .top-controls-area {
@@ -1478,41 +1324,206 @@
         text-align: right;
     }
 
+    /* --- Quiz screen ---------------------------------------------------------
+       A vertical timeline rail on the left. The current question's number is a
+       larger badge that sits in the rail and leads into the question text; the
+       question area and its badge slide as one panel when the question changes. */
     #quiz-screen {
         position: relative;
-        flex-grow: 1; 
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-        overflow: hidden; /* FIX: Prevents scrollbar on animation */
-    }
-
-    #quiz-sticky-header {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        background-color: var(--layout-background);
-        padding: 1rem 2rem 0 2rem;
-        flex-shrink: 0;
-    }
-
-    #quiz-scrollable-content {
         flex-grow: 1;
         min-height: 0;
-        overflow-x: hidden;
-        padding: 0.75rem 1.5rem 0.75rem 1.5rem;
+        overflow: hidden;
+    }
+    #quiz-rail {
+        position: absolute;
+        left: 0.9rem;
+        top: 0.9rem;
+        bottom: 0.9rem;
+        width: 3.9rem;
+        border-radius: 1rem;
+        background-color: var(--secondary-content-bg);
+        overflow: hidden;
+        z-index: 1;
+    }
+    #quiz-rail .rail-view {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 3.2rem;
+        overflow: hidden;
+        -webkit-mask: linear-gradient(transparent, #000 0.7rem, #000 calc(100% - 1.8rem), transparent);
+        mask: linear-gradient(transparent, #000 0.7rem, #000 calc(100% - 1.8rem), transparent);
+    }
+    #rail-track {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
         display: flex;
         flex-direction: column;
+        align-items: center;
+        will-change: transform;
     }
+    /* Bottom of the rail: the answered count and/or the current question's time,
+       stacked. Which show is a setting (Show In Rail); with both on, the divider
+       between them turns into a swap button on hover. */
+    #rail-info {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0.45rem;    /* leaves the same 0.6rem below the text as above the badge */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.15rem;
+        text-align: center;
+        line-height: 1.15;
+    }
+    #rail-info[data-order="time"] { flex-direction: column-reverse; }
+    .rail-stat b { display: block; font-size: 0.74rem; white-space: nowrap; }
+    .rail-stat span { font-size: 0.52rem; font-weight: 700; letter-spacing: 0.04em; color: var(--text-secondary); }
+    .rail-swap {
+        position: relative;
+        width: 1.6rem;
+        height: 0.9rem;
+        padding: 0;
+        border: none;
+        border-radius: 0.4rem;
+        background: transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .rail-swap::before {
+        content: "";
+        width: 1.3rem;
+        height: 1px;
+        background-color: rgba(240, 240, 240, 0.18);
+        transition: opacity 0.15s;
+    }
+    .rail-swap svg { position: absolute; width: 0.85rem; height: 0.85rem; opacity: 0; transition: opacity 0.15s; }
+    #rail-info:hover .rail-swap::before { opacity: 0; }
+    #rail-info:hover .rail-swap svg { opacity: 1; }
+    .rail-swap:hover { color: var(--text-primary); background-color: var(--ui-main-bg-hover); }
+    #quiz-rail[data-info="none"] #rail-info,
+    #quiz-rail[data-info="answered"] .rail-stat[data-stat="time"],
+    #quiz-rail[data-info="time"] .rail-stat[data-stat="answered"],
+    #quiz-rail:not([data-info="both"]) .rail-swap { display: none; }
+    #quiz-rail[data-info="none"] .rail-view { bottom: 0.9rem; }
+    #quiz-rail[data-info="both"] .rail-view { bottom: 5.8rem; }
 
-    #quiz-bottom-controls {
-        margin-top: auto;
-        padding-top: 1rem;
+    #quiz-stage {
+        position: absolute;
+        left: 0.9rem;
+        right: 0;
+        top: 0;
+        bottom: 4.9rem;
+        overflow: hidden;
+        z-index: 2;
+        pointer-events: none;
+        /* The badge column never draws above the rail's top edge (0.9rem down), so
+           a badge sliding up out of view can't show in the container's margin. The
+           question text to its right still uses the full height. */
+        clip-path: polygon(0 0.9rem, 5.3rem 0.9rem, 5.3rem 0, 100% 0, 100% 100%, 0 100%);
     }
-     #quiz-bottom-buttons-container {
+    .quiz-panel {
+        position: absolute;
+        inset: 0;
+    }
+    .quiz-panel.leaving .qp-body { pointer-events: none; }
+    /* The badge isn't part of the sliding question panel: it belongs to the rail.
+       On a question change it shrinks back into its rail circle, and the new one
+       grows out of its circle as the rail carries it up (see animateBadgeSwap). */
+    .qp-badge-col {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 5.3rem;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 3;
+    }
+    .qp-badge, .qp-tab { --c: 240, 240, 240; }
+    .qp-badge[data-state="ok"], .qp-tab[data-state="ok"] { --c: 7, 177, 124; }
+    .qp-badge[data-state="bad"], .qp-tab[data-state="bad"] { --c: 255, 71, 71; }
+    .qp-badge[data-state="forced"], .qp-tab[data-state="forced"] { --c: 71, 141, 255; }
+    /* While the rail is scrolled the badge rides with it; fade it at the rail's ends
+       like the circles, rather than letting it slide over the counter. */
+    #quiz-screen.detached .qp-badge-col {
+        -webkit-mask: linear-gradient(transparent 0.9rem, #000 1.5rem, #000 calc(100% - 1.6rem), transparent);
+        mask: linear-gradient(transparent 0.9rem, #000 1.5rem, #000 calc(100% - 1.6rem), transparent);
+    }
+    #quiz-screen.detached .qp-tab { opacity: 0; }
+    /* On a long jump the arriving badge rides up from the bottom of the rail with
+       its circle; fade it in there the way the rail's circles fade. */
+    .qp-badge-col.travelling {
+        -webkit-mask: linear-gradient(#000 calc(100% - 1.6rem), transparent);
+        mask: linear-gradient(#000 calc(100% - 1.6rem), transparent);
+    }
+    .qp-badge {
+        position: absolute;
+        left: 0.65rem;
+        top: 1.5rem;        /* 0.6rem below the rail's top edge */
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #fff;
+        border: 0.18rem solid #fff;
+        background: rgb(30, 30, 30);
+        z-index: 2;
+        box-shadow: 0 0 0 0.3rem rgba(10, 10, 10, 0.55), 0 0 1.1rem 0.1rem rgba(var(--c), 0.55);
+    }
+    .qp-badge[data-state="ok"] { background: linear-gradient(135deg, rgb(7, 120, 86), rgb(7, 177, 124)); }
+    .qp-badge[data-state="bad"] { background: linear-gradient(135deg, rgb(150, 40, 40), rgb(255, 71, 71)); }
+    .qp-badge[data-state="forced"] { background: linear-gradient(135deg, rgb(7, 150, 110), rgb(71, 141, 255)); }
+    .qp-tab {
+        position: absolute;
+        left: 1.95rem;
+        right: 0;
+        top: 1.65rem;
+        height: 2.3rem;
+        border-radius: 0 1.2rem 1.2rem 0;
+        background: linear-gradient(90deg, rgba(var(--c), 0.5), rgba(var(--c), 0));
+    }
+    .qp-body {
+        position: absolute;
+        left: 4.1rem;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        /* The side and bottom padding leave room for the options' hover glow. */
+        padding: 1.9rem 1.5rem 1.25rem 1.2rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+        pointer-events: auto;
+    }
+    #sticky-question-text {
+        margin: 0 0 0.9rem 0;
+        font-size: 1.15rem;
+        font-weight: 600;
+        line-height: 1.55;
+        overflow-wrap: break-word;
+    }
+    #sticky-question-text:empty { display: none; }
+
+    #quiz-bottom-buttons-container {
+        position: absolute;
+        left: 6.2rem;
+        right: 1.5rem;
+        bottom: 1.2rem;
         display: flex;
         gap: 0.5rem;
         align-items: stretch;
+        z-index: 4;
     }
     #submit-answer-btn {
         flex-grow: 1;
@@ -2099,6 +2110,294 @@
         .sm\:space-y-0 > :not([hidden]) ~ :not([hidden]) { --tw-space-y-reverse: 0; margin-top: calc(0px * calc(1 - var(--tw-space-y-reverse))); margin-bottom: calc(0px * var(--tw-space-y-reverse)); }
     }
 
+
+    /* --- Results screen ------------------------------------------------------
+       Overview (score, stat tiles, chart) and Review (sorted list + one question
+       in full) as two tabs. */
+    #results-screen:not(.hidden) {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+    }
+    .rs-head {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.1rem 1.4rem 0.9rem;
+    }
+    .rs-head h2 { margin: 0; font-size: 1.6rem; font-weight: 700; white-space: nowrap; }
+    .rs-tabs {
+        display: flex;
+        gap: 0.3rem;
+        padding: 0.25rem;
+        width: 15rem;
+        border-radius: 0.85rem;
+        background-color: var(--ui-main-bg);
+        border: 0.15rem solid var(--ui-main-fills);
+    }
+    .rs-tab {
+        flex: 1;
+        font: inherit;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 0.4rem;
+        border: none;
+        border-radius: 0.62rem;
+        background: transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+    }
+    .rs-tab.active { background-color: var(--ui-blue-bg); color: var(--text-primary); box-shadow: inset 0 0 0 0.12rem var(--ui-blue-fills); }
+
+    .rs-overview { flex: 1; min-height: 0; padding: 0 1.4rem 1.2rem; }
+    .rs-top { display: grid; grid-template-columns: 12rem 1fr; gap: 0.7rem; margin-bottom: 0.8rem; }
+    .rs-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+    .rs-score, .rs-stat {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+        border-radius: 1rem;
+        border: 0.12rem solid var(--ui-main-fills);
+    }
+    .rs-score {
+        --medal: 71, 141, 255;
+        padding: 0.8rem 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-color: rgba(var(--medal), 0.65);
+        background: linear-gradient(150deg, rgba(var(--medal), 0.55), rgba(var(--medal), 0.12) 80%);
+    }
+    .rs-score.gold { --medal: 255, 175, 0; }
+    .rs-score.silver { --medal: 192, 192, 192; }
+    .rs-score.bronze { --medal: 102, 54, 7; }
+    .rs-score .pct { position: relative; z-index: 1; font-size: 2.4rem; font-weight: 800; line-height: 1; }
+    .rs-score .sub { position: relative; z-index: 1; font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.3rem; }
+    .rs-stat {
+        padding: 0.65rem 0.85rem;
+        min-height: 4.9rem;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 65%), var(--main-content-bg);
+    }
+    .rs-stat.link { cursor: pointer; }
+    .rs-stat.link:hover { border-color: var(--ui-main-fills-hover); }
+    .rs-stat .k, .rs-stat .v, .rs-stat .s { position: relative; z-index: 1; }
+    .rs-stat .k { font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; }
+    .rs-stat .v { font-size: 1.15rem; font-weight: 700; margin-top: 0.15rem; white-space: nowrap; }
+    .rs-stat .v small { font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); }
+    .rs-stat .s { font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.1rem; }
+    .rs-deco { position: absolute; pointer-events: none; z-index: 0; }
+    .rs-wm { right: -0.8rem; top: 50%; width: 5.4rem; height: 5.4rem; transform: translateY(-50%); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .rs-score .rs-wm { width: 7rem; height: 7rem; right: -1.4rem; opacity: 0.9; }
+
+    /* Total Time and Avg / Question glow from the bottom edge in a colour set by the
+       average time per question (green at 15s or less, red at 60s or more). */
+    .rs-stat.pace {
+        border-color: rgba(var(--pace), 0.55);
+        background:
+            radial-gradient(75% 95% at 22% 118%, rgba(var(--pace), 0.55), transparent 72%),
+            radial-gradient(60% 85% at 78% 125%, rgba(var(--pace), 0.4), transparent 72%),
+            var(--main-content-bg);
+    }
+    .rs-stat.pace .k { color: rgb(var(--pace)); }
+    .rs-stat.slow { border-color: var(--ui-red-fills); background: linear-gradient(135deg, rgba(255, 71, 71, 0.45), rgba(255, 71, 71, 0.06) 75%); }
+    .rs-stat.quick { border-color: var(--ui-green-fills); background: linear-gradient(135deg, rgba(7, 177, 124, 0.45), rgba(7, 177, 124, 0.06) 75%); }
+    .rs-stat.blue { border-color: var(--ui-blue-fills); background: linear-gradient(135deg, rgba(71, 141, 255, 0.45), rgba(71, 141, 255, 0.06) 75%); }
+    .rs-stat.slow .k { color: rgb(255, 140, 140); }
+    .rs-stat.quick .k { color: rgb(90, 220, 170); }
+    .rs-stat.blue .k { color: rgb(150, 190, 255); }
+    /* Each clock's second hand ticks once a second (one change a second costs nothing
+       measurable); they start at random positions. */
+    .rs-tick { transform-box: view-box; transform-origin: 50% 50%; animation: rsTick 60s steps(60) infinite; }
+    @keyframes rsTick { to { transform: rotate(360deg); } }
+    body.power-saving-mode .rs-tick { animation: none; }
+
+    /* Best streak: a flame with its glow attached, so the glow sways with it. It only
+       moves for a few seconds when Overview opens and while hovered - continuous
+       motion makes the browser redraw the whole blurred container every frame
+       (measured at about +4.7% GPU, against nothing while still). */
+    .rs-stat.fire { border-color: rgba(245, 176, 66, 0.75); background: linear-gradient(200deg, rgba(245, 176, 66, 0.06), rgba(255, 90, 40, 0.3) 85%), var(--main-content-bg); }
+    .rs-blaze { right: 0.1rem; bottom: -0.9rem; width: 4.8rem; height: 5.6rem; transform-origin: 50% 100%; }
+    .rs-blaze .halo { position: absolute; left: -75%; right: -75%; top: 5%; bottom: -35%; opacity: 0.85;
+        background: radial-gradient(closest-side, rgba(255, 120, 40, 0.6), rgba(255, 71, 71, 0.25) 55%, transparent); }
+    .rs-blaze svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.8; }
+    .rs-blaze .core { transform-box: fill-box; transform-origin: 50% 100%; }
+    .rs-ember { width: 0.22rem; height: 0.22rem; border-radius: 50%; background: rgb(255, 190, 90); bottom: 1.2rem; opacity: 0; }
+    body:not(.power-saving-mode) .rs-stat.fire.anim .rs-blaze { animation: rsBlaze 2.4s ease-in-out infinite; }
+    body:not(.power-saving-mode) .rs-stat.fire.anim .halo { animation: rsHalo 2.4s ease-in-out infinite; }
+    body:not(.power-saving-mode) .rs-stat.fire.anim .core { animation: rsCore 1.2s ease-in-out infinite; }
+    body:not(.power-saving-mode) .rs-stat.fire.anim .rs-ember { animation: rsRise 3s linear infinite; }
+    @keyframes rsBlaze { 0%, 100% { transform: scale(1, 1) skewX(0); } 25% { transform: scale(0.97, 1.07) skewX(2deg); } 55% { transform: scale(1.02, 0.95) skewX(-1.5deg); } 80% { transform: scale(0.99, 1.04) skewX(1deg); } }
+    @keyframes rsHalo { 0%, 100% { opacity: 0.85; } 40% { opacity: 1; } 70% { opacity: 0.65; } }
+    @keyframes rsCore { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.16); } }
+    @keyframes rsRise { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 0.9; } 100% { transform: translate(-0.4rem, -3.6rem); opacity: 0; } }
+
+    .rs-card { border-radius: 1rem; padding: 0.8rem 1rem; margin-bottom: 0.8rem; background-color: var(--main-content-bg); }
+    .rs-card h4 { margin: 0 0 0.6rem; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; }
+    .rs-note { margin: 0; color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6; }
+    .rs-note b { color: var(--text-primary); font-weight: 600; }
+
+    /* Time-per-question bars follow the button style: solid border, see-through fill. */
+    .rs-bars { display: flex; align-items: flex-end; gap: 3px; height: 8.5rem; padding-top: 0.9rem; position: relative; }
+    .rs-bar {
+        --c: 100, 100, 100;
+        flex: 1;
+        min-width: 0;
+        min-height: 6px;
+        position: relative;
+        cursor: pointer;
+        border-radius: 0.35rem 0.35rem 0.15rem 0.15rem;
+        border: 0.12rem solid rgb(var(--c));
+        background: linear-gradient(to top, rgba(var(--c), 0.5), rgba(var(--c), 0) 65%);
+    }
+    .rs-bar:hover { background: linear-gradient(to top, rgba(var(--c), 0.7), rgba(var(--c), 0.1) 80%); }
+    .rs-bar.ok { --c: 7, 177, 124; }
+    .rs-bar.bad { --c: 255, 71, 71; }
+    .rs-bar.forced { --c: 71, 141, 255; }
+    .rs-ring { display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 50%;
+        background: radial-gradient(circle, transparent 30%, rgba(71, 141, 255, 0.35) 50%, rgb(71, 141, 255) 72%); }
+    .rs-bar .rs-ring { position: absolute; top: -1rem; left: 50%; transform: translateX(-50%); }
+    .rs-avg { position: absolute; left: 0; right: 0; border-top: 1px dashed rgba(240, 240, 240, 0.5); pointer-events: none; }
+    .rs-avg span { position: absolute; right: 0; top: -1rem; font-size: 0.66rem; color: var(--text-secondary); }
+    .rs-axis { display: flex; gap: 3px; margin-top: 0.25rem; }
+    .rs-axis span { flex: 1; min-width: 0; text-align: center; font-size: 0.6rem; color: var(--text-secondary); }
+    .rs-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.5rem; align-items: center; }
+    .rs-legend i { display: inline-block; width: 0.65rem; height: 0.8rem; margin-right: 0.3rem; vertical-align: -2px;
+        border-radius: 0.2rem 0.2rem 0.1rem 0.1rem; border: 0.1rem solid rgb(var(--c)); background: linear-gradient(to top, rgba(var(--c), 0.5), rgba(var(--c), 0) 80%); }
+    .rs-legend .rs-ring { margin-right: 0.3rem; vertical-align: -1px; }
+
+    .rs-badge {
+        flex: none;
+        width: 1.9rem;
+        height: 1.9rem;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border: 0.15rem solid var(--ui-main-fills);
+        background-color: var(--ui-main-bg);
+    }
+    .rs-badge.ok { background-color: var(--ui-green-bg); border-color: var(--ui-green-fills); }
+    .rs-badge.bad { background-color: var(--ui-red-bg); border-color: var(--ui-red-fills); }
+    .rs-badge.forced { background: linear-gradient(135deg, var(--ui-green-bg), var(--ui-blue-bg)); border-color: var(--ui-blue-fills); }
+    .rs-meta { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.74rem; color: var(--text-secondary); white-space: nowrap; }
+    .rs-meta svg { width: 0.9rem; height: 0.9rem; }
+    .rs-meta.views { color: var(--ui-blue-fills); }
+    .rs-meta.retake { color: var(--ui-amber-fills); }
+    .rs-meta.forced { color: var(--ui-blue-fills); }
+
+    .rs-row {
+        display: flex;
+        gap: 0.6rem;
+        align-items: center;
+        padding: 0.55rem 0.6rem;
+        border-radius: 0.8rem;
+        cursor: pointer;
+        border: 0.12rem solid transparent;
+        margin-bottom: 0.3rem;
+        background-color: var(--main-content-bg);
+    }
+    .rs-row:hover { background-color: var(--ui-main-bg-hover); }
+    .rs-row.sel { border-color: var(--ui-main-fills-hover); background-color: var(--ui-main-bg-hover); }
+    .rs-row .txt { flex: 1; min-width: 0; font-size: 0.82rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .rs-row .side { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem; }
+    /* Display maths would make a list row tall; keep it in the line there. */
+    .rs-row .txt .katex-display { display: inline; margin: 0; }
+    .rs-row .txt .katex-display > .katex { display: inline; }
+    .rs-mini .rs-row { background: transparent; padding: 0.4rem 0.3rem; margin: 0; }
+    .rs-mini .rs-row:hover { background-color: var(--ui-main-bg-hover); }
+    .rs-divider { display: flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); margin: 0.6rem 0.2rem 0.45rem; }
+    .rs-divider::after { content: ""; flex: 1; height: 1px; background: rgba(255, 255, 255, 0.08); }
+
+    .rs-review {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 20rem 1fr;
+        margin: 0 1.4rem 1.4rem;
+        border-radius: 1rem;
+        background-color: var(--secondary-content-bg);
+        overflow: hidden;
+    }
+    .rs-review.hidden { display: none !important; }
+    .rs-left { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid rgba(255, 255, 255, 0.06); }
+    .rs-sortbar { flex: none; display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 0.6rem 0.55rem; position: relative; z-index: 5; }
+    .rs-sort-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); }
+    .rs-dd { position: relative; flex: 1; }
+    .rs-dd-trigger {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.4rem;
+        font: inherit;
+        font-size: 0.84rem;
+        font-weight: 600;
+        padding: 0.42rem 0.7rem;
+        border-radius: 0.7rem;
+        cursor: pointer;
+        color: var(--text-primary);
+        background-color: var(--ui-main-bg);
+        border: 0.15rem solid var(--ui-main-fills);
+    }
+    .rs-dd-trigger:hover { border-color: var(--ui-main-fills-hover); }
+    .rs-dd-trigger svg { width: 1rem; height: 1rem; color: var(--text-secondary); transition: transform 0.25s; }
+    .rs-dd.open .rs-dd-trigger svg { transform: rotate(180deg); }
+    .rs-dd-menu {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + 0.35rem);
+        padding: 0.35rem;
+        border-radius: 0.8rem;
+        background-color: rgba(20, 20, 20, 0.97);
+        border: 0.12rem solid var(--ui-main-fills);
+        box-shadow: 0 0.6rem 1.6rem rgba(0, 0, 0, 0.5);
+    }
+    .rs-dd.open .rs-dd-menu { display: block; }
+    .rs-dd-group { font-size: 0.64rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-secondary); padding: 0.45rem 0.55rem 0.2rem; opacity: 0.8; }
+    .rs-dd-opt { display: flex; align-items: center; justify-content: space-between; font-size: 0.84rem; padding: 0.38rem 0.55rem; border-radius: 0.5rem; cursor: pointer; }
+    .rs-dd-opt:hover { background-color: var(--ui-main-bg-hover); }
+    .rs-dd-opt.on { background-color: var(--ui-blue-bg); box-shadow: inset 0 0 0 0.1rem var(--ui-blue-fills); }
+    .rs-dd-opt .n { font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; }
+    .rs-list { flex: 1; min-height: 0; padding: 0 0.6rem 0.6rem; }
+    .rs-detail { min-height: 0; padding: 1rem 1.2rem; }
+
+    .rs-d-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
+    .rs-d-head h3 { margin: 0; font-size: 1.05rem; font-weight: 700; flex: 1; }
+    .rs-d-q { font-size: 1.02rem; font-weight: 600; line-height: 1.45; margin: 0 0 0.8rem; }
+    .rs-d-q .blank-input { margin: 0.1rem 0; font-weight: 500; }
+    .rs-opt {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.55rem 0.75rem;
+        border-radius: 0.6rem;
+        margin-bottom: 0.35rem;
+        font-size: 0.88rem;
+        line-height: 1.4;
+        background-color: var(--main-content-bg);
+        border: 0.12rem solid transparent;
+        color: var(--text-secondary);
+    }
+    .rs-opt .l { font-weight: 700; flex: none; }
+    .rs-opt.correct { background-color: var(--ui-green-bg); color: var(--text-primary); border-color: var(--ui-green-fills); }
+    .rs-opt.wrong { background-color: var(--ui-red-bg); color: var(--text-primary); border-color: var(--ui-red-fills); }
+    .rs-opt .tagline { margin-left: auto; flex: none; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.9; align-self: center; }
+    .rs-expl { margin-top: 0.8rem; background-color: var(--main-content-bg); border-radius: 0.7rem; padding: 0.7rem 0.85rem; font-size: 0.88rem; line-height: 1.55; }
+    .rs-expl b { display: block; font-size: 0.8rem; margin-bottom: 0.2rem; }
+    .rs-d-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 0.9rem; }
+    .rs-d-foot .btn { padding: 0.5rem 0.9rem; font-size: 0.85rem; }
+    .rs-kbd { font-size: 0.72rem; color: var(--text-secondary); }
+    .rs-kbd kbd { font-family: inherit; font-size: 0.7rem; padding: 0.05rem 0.35rem; border-radius: 0.3rem; border: 1px solid var(--ui-main-fills); background-color: var(--ui-main-bg); }
+
 </style>
 </head>
 <body>
@@ -2251,66 +2550,87 @@
         </div>
 
         <div id="quiz-screen" class="hidden screen">
-            <div id="quiz-sticky-header">
-                 <div class="flex justify-between items-center mb-2">
-                    <h2 id="quiz-screen-title" class="text-2xl font-semibold text-right">Question 1</h2>
-                    <div id="current-question-timer">Time: 0s</div>
+            <div id="quiz-rail">
+                <div class="rail-view"><div id="rail-track"></div></div>
+                <div id="rail-info" data-order="answered">
+                    <div class="rail-stat" data-stat="answered"><b id="rail-answered">0/0</b><span>answered</span></div>
+                    <button id="rail-swap" class="rail-swap" type="button" title="Swap order" aria-label="Swap the order of answered and time">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 4v16M4 8l4-4 4 4M16 20V4M12 16l4 4 4-4"/></svg>
+                    </button>
+                    <div class="rail-stat" data-stat="time"><b id="current-question-timer">0s</b><span id="rail-time-label">time</span></div>
                 </div>
-                <p id="sticky-question-text" class="whitespace-normal break-words text-lg leading-relaxed mb-2 max-w-full"></p>
             </div>
-            <div id="quiz-scrollable-content" class="scrollable-content">
-                <div id="question-content-container"></div>
-                <div id="quiz-bottom-controls">
-                    <div id="quiz-bottom-buttons-container">
-                        <button id="submit-answer-btn" class="btn btn-blue">Submit Answer</button>
-                        <button id="explanation-btn" class="btn btn-main hidden">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" /></svg>
-                        </button>
-                    </div>
-                    <hr class="line-break-1">
-                    <div id="timeline-nav-container" class="timeline-nav-container w-full max-w-full p-0">
-                        <div id="timeline-nav-track" class="flex items-center p-2 min-w-min h-[60px]"></div>
+            <div id="quiz-stage">
+                <div id="quiz-panel" class="quiz-panel">
+                    <div id="quiz-scrollable-content" class="qp-body scrollable-content">
+                        <p id="sticky-question-text"></p>
+                        <div id="question-content-container"></div>
                     </div>
                 </div>
+                <div id="quiz-badge-col" class="qp-badge-col"><div id="quiz-tab" class="qp-tab"></div><div id="quiz-badge" class="qp-badge">1</div></div>
+            </div>
+            <div id="quiz-bottom-buttons-container">
+                <button id="submit-answer-btn" class="btn btn-blue">Submit Answer</button>
+                <button id="explanation-btn" class="btn btn-main hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" /></svg>
+                </button>
             </div>
         </div>
-        
+
         <div id="results-screen" class="hidden screen">
-            <h2 id="results-title" class="text-3xl font-bold mb-4 text-center">Quiz Complete!</h2>
-            <div id="score-display-container">
-                <div>
-                    <div id="score-percentage" class="text-4xl font-bold">0%</div>
-                    <div id="score-details" class="text-sm">0/0 correct</div>
-                </div>
-                <div class="text-sm text-right">
-                    <p id="score-message"></p>
-                    <p>Total Quiz Time: <strong id="total-quiz-time">0s</strong></p>
+            <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+                <defs>
+                    <linearGradient id="rsFlameOuter" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="rgb(255,71,71)"/><stop offset=".6" stop-color="rgb(255,120,40)"/><stop offset="1" stop-color="rgb(245,176,66)"/></linearGradient>
+                    <linearGradient id="rsFlameInner" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="rgb(245,176,66)"/><stop offset="1" stop-color="rgb(255,225,150)"/></linearGradient>
+                    <linearGradient id="rsRed" gradientUnits="userSpaceOnUse" x1="4" y1="20" x2="20" y2="4"><stop offset="0" stop-color="rgb(255,71,71)" stop-opacity=".95"/><stop offset="1" stop-color="rgb(255,71,71)" stop-opacity=".1"/></linearGradient>
+                    <linearGradient id="rsGreen" gradientUnits="userSpaceOnUse" x1="4" y1="20" x2="20" y2="4"><stop offset="0" stop-color="rgb(7,177,124)" stop-opacity=".95"/><stop offset="1" stop-color="rgb(7,177,124)" stop-opacity=".1"/></linearGradient>
+                    <linearGradient id="rsBlue" gradientUnits="userSpaceOnUse" x1="4" y1="20" x2="20" y2="4"><stop offset="0" stop-color="rgb(71,141,255)" stop-opacity=".95"/><stop offset="1" stop-color="rgb(71,141,255)" stop-opacity=".1"/></linearGradient>
+                    <linearGradient id="rsGrey" gradientUnits="userSpaceOnUse" x1="4" y1="20" x2="20" y2="4"><stop offset="0" stop-color="rgb(240,240,240)" stop-opacity=".45"/><stop offset="1" stop-color="rgb(240,240,240)" stop-opacity=".04"/></linearGradient>
+                    <linearGradient id="rsGold" gradientUnits="userSpaceOnUse" x1="4" y1="20" x2="20" y2="4"><stop offset="0" stop-color="rgb(255,215,120)" stop-opacity=".9"/><stop offset="1" stop-color="rgb(255,175,0)" stop-opacity=".05"/></linearGradient>
+                    <linearGradient id="rsSilver" gradientUnits="userSpaceOnUse" x1="4" y1="20" x2="20" y2="4"><stop offset="0" stop-color="rgb(235,235,235)" stop-opacity=".9"/><stop offset="1" stop-color="rgb(192,192,192)" stop-opacity=".05"/></linearGradient>
+                    <linearGradient id="rsBronze" gradientUnits="userSpaceOnUse" x1="4" y1="20" x2="20" y2="4"><stop offset="0" stop-color="rgb(205,140,80)" stop-opacity=".9"/><stop offset="1" stop-color="rgb(102,54,7)" stop-opacity=".05"/></linearGradient>
+                </defs>
+            </svg>
+            <div class="rs-head">
+                <h2 id="results-title">Quiz Complete!</h2>
+                <div class="rs-tabs" role="tablist">
+                    <button class="rs-tab active" data-rs-tab="overview" role="tab">Overview</button>
+                    <button class="rs-tab" data-rs-tab="review" role="tab">Review</button>
                 </div>
             </div>
-            <div class="results-head">
-                <h3 class="text-xl font-semibold">Review Your Answers:</h3>
-                <div class="results-sort">
-                    <span class="results-sort-label">Sort</span>
-                    <div id="results-sort-select" class="relative">
-                        <button class="btn btn-main custom-select-trigger results-sort-trigger">
-                            <span class="custom-select-value">Question Number</span>
-                            <div class="select-arrow">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </div>
-                        </button>
-                        <div class="hidden custom-select-options">
-                            <div class="custom-option" data-value="number">Question Number</div>
-                            <div class="custom-option" data-value="time-desc">Time Taken (slowest)</div>
-                            <div class="custom-option" data-value="time-asc">Time Taken (fastest)</div>
-                            <div class="custom-option" data-value="incorrect">Incorrect First</div>
-                            <div class="custom-option" data-value="correct">Correct First</div>
-                            <div class="custom-option" data-value="unanswered">Unanswered First</div>
-                            <div class="custom-option" data-value="recent">Recently Completed</div>
-                        </div>
+            <div id="rs-overview" class="rs-overview scrollable-content">
+                <div class="rs-top">
+                    <div id="rs-score" class="rs-score"></div>
+                    <div id="rs-tiles" class="rs-tiles"></div>
+                </div>
+                <div class="rs-card">
+                    <h4>Time per question</h4>
+                    <div id="rs-bars" class="rs-bars"></div>
+                    <div id="rs-axis" class="rs-axis"></div>
+                    <div class="rs-legend">
+                        <span><i style="--c:7,177,124"></i>Correct</span>
+                        <span><i style="--c:255,71,71"></i>Incorrect</span>
+                        <span><i style="--c:71,141,255"></i>Force-corrected</span>
+                        <span><span class="rs-ring"></span>Viewed more than once</span>
+                        <span>- - - average</span>
                     </div>
                 </div>
+                <div class="rs-card"><h4>Worth another look</h4><div id="rs-worth" class="rs-mini"></div></div>
+                <div class="rs-card"><h4>Where the time went</h4><p id="rs-timesplit" class="rs-note"></p></div>
             </div>
-            <div id="results-details-container" class="scrollable-content"></div>
+            <div id="rs-review" class="rs-review hidden">
+                <div class="rs-left">
+                    <div class="rs-sortbar">
+                        <span class="rs-sort-label">Sort</span>
+                        <div id="rs-sort" class="rs-dd">
+                            <button class="rs-dd-trigger" type="button"><span id="rs-sort-value"></span><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>
+                            <div id="rs-sort-menu" class="rs-dd-menu"></div>
+                        </div>
+                    </div>
+                    <div id="rs-list" class="rs-list scrollable-content"></div>
+                </div>
+                <div id="rs-detail" class="rs-detail scrollable-content"></div>
+            </div>
         </div>
     </div>
 
@@ -2383,6 +2703,28 @@
                                 <button class="number-input-btn time-limit-btn" data-action="minus">-</button>
                                 <input type="number" id="time-limit-input" class="settings-number-input" min="0" max="600" step="5" value="0">
                                 <button class="number-input-btn time-limit-btn" data-action="plus">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Timeline</h3>
+                        <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Show In Rail:</span>
+                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">What the bottom of the timeline rail shows: how many questions you've answered, the time on the current question, both, or nothing. With both on, hover between them and click the arrow to swap their order.</span></div>
+                            </div>
+                            <div id="rail-info-select" class="relative">
+                                <button class="btn btn-main custom-select-trigger" style="width: 10rem;">
+                                    <span class="custom-select-value">Both</span>
+                                    <div class="select-arrow"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div>
+                                </button>
+                                <div class="hidden custom-select-options">
+                                   <div class="custom-option" data-value="none">Nothing</div>
+                                   <div class="custom-option" data-value="answered">Answered</div>
+                                   <div class="custom-option" data-value="time">Time</div>
+                                   <div class="custom-option" data-value="both">Both</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2686,8 +3028,8 @@
         const ANSWER_PATTERN_GLOBAL = /@@(.*?)@@/g;
 
         // Single source of truth for what the footer shows.
-        const APP_VERSION = 'v3.0.2 - Beta';
-        const BUILD_DATE = '19th October 2026';
+        const APP_VERSION = 'v3.1.0 - Beta';
+        const BUILD_DATE = '2nd November 2026';
 
         // DOM Elements
         const docHtml = document.documentElement;
@@ -2706,7 +3048,6 @@
 
         const inputScreen = document.getElementById('input-screen');
         const quizScreen = document.getElementById('quiz-screen');
-        const quizScreenTitle = document.getElementById('quiz-screen-title');
         const resultsScreen = document.getElementById('results-screen');
         const resultsTitle = document.getElementById('results-title');
         const stickyQuestionText = document.getElementById('sticky-question-text');
@@ -2730,15 +3071,19 @@
         const submitAnswerBtn = document.getElementById('submit-answer-btn');
         const explanationBtn = document.getElementById('explanation-btn');
         
-        const timelineNavContainer = document.getElementById('timeline-nav-container');
-        const timelineNavTrack = document.getElementById('timeline-nav-track');
+        const quizRail = document.getElementById('quiz-rail');
+        const railTrack = document.getElementById('rail-track');
+        const railInfo = document.getElementById('rail-info');
+        const railAnswered = document.getElementById('rail-answered');
+        const railTimeLabel = document.getElementById('rail-time-label');
+        const railSwap = document.getElementById('rail-swap');
+        const quizStage = document.getElementById('quiz-stage');
+        const quizPanel = document.getElementById('quiz-panel');
+        const quizBadge = document.getElementById('quiz-badge');
+        const quizBadgeCol = document.getElementById('quiz-badge-col');
+        const quizTab = document.getElementById('quiz-tab');
+        const quizScrollable = document.getElementById('quiz-scrollable-content');
         
-        const scoreDisplayContainer = document.getElementById('score-display-container'); 
-        const scorePercentageDisplay = document.getElementById('score-percentage');
-        const scoreDetailsDisplay = document.getElementById('score-details');
-        const scoreMessageDisplay = document.getElementById('score-message');
-        const totalQuizTimeDisplay = document.getElementById('total-quiz-time');
-        const resultsDetailsContainer = document.getElementById('results-details-container');
 
         const confirmationModal = document.getElementById('confirmation-modal');
         const modalTitle = document.getElementById('modal-title');
@@ -2811,9 +3156,6 @@
         let isQuizActive = false;
         let autoAdvanceTimeout = null;
         let questionRenderTimeout = null;
-        let isTimelineDragging = false;
-        let timelineStartX;
-        let timelineScrollLeftStart;
         let copyTimeout = null;
         let lastClickTime = 0;
         let currentPaletteForDisplay = '';
@@ -3857,6 +4199,8 @@
             activeQuizSettings = captureQuizSettings();
             
             currentQuizQuestions.forEach(q => q.wasRetaken = false);
+            // The results after this round open on "Redone first".
+            lastRoundWasRedo = true;
 
             questionOrder.forEach((questionIndexInCurrent, displayIndex) => {
                 const question = currentQuizQuestions[questionIndexInCurrent];
@@ -3950,6 +4294,8 @@
             questionSpecificTimerStartMs = 0;
 
             isQuizActive = true;
+            lastRoundWasRedo = false;
+            lastDisplayedIndex = null;
             hideExternalResultsButtons();
             currentQuizQuestions = JSON.parse(JSON.stringify(questionsToUse)); 
             if (currentQuizQuestions.length === 0) {
@@ -3965,6 +4311,8 @@
                     q.wasRetaken = false;
                     q.wasForceCorrected = false;
                     q.pendingOptionLetter = null;
+                    q.revisits = 0;         // times navigated back to after answering
+                    q.answeredAt = null;    // for "Recently completed"
                     if (currentQuizType === 'multiple-choice') {
                         q.userSelectedOptionLetter = null;
                         if (shuffleA) shuffleOptionsForQuestion(q);
@@ -4099,6 +4447,46 @@
             submitAnswerBtn.disabled = false;
         }
 
+        // The panel currently on screen, so a navigation knows which way to slide.
+        let lastDisplayedIndex = null;
+        let questionSwapAnims = [];
+
+        // Moving between questions: the outgoing question is a static copy that slides
+        // away while the real panel, already showing the new question, slides in. It is
+        // always one step, however far the jump - the rail's glide shows the distance -
+        // and a long jump also fades so it reads as a skip.
+        function snapshotQuestionPanel() {
+            const ghost = quizPanel.cloneNode(true);
+            ghost.removeAttribute('id');
+            ghost.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+            ghost.classList.add('leaving');
+            ghost.setAttribute('aria-hidden', 'true');
+            // Typed answers live in the inputs' value property, which cloning doesn't copy.
+            const liveInputs = quizPanel.querySelectorAll('input');
+            ghost.querySelectorAll('input').forEach((input, i) => { if (liveInputs[i]) input.value = liveInputs[i].value; });
+            return ghost;
+        }
+        function slideQuestionPanels(ghost, dir, far) {
+            questionSwapAnims.forEach(a => a.cancel());
+            quizStage.querySelectorAll('.quiz-panel.leaving').forEach(el => { if (el !== ghost) el.remove(); });
+            const h = quizStage.clientHeight;
+            const timing = { duration: 440, easing: 'cubic-bezier(.25,.8,.25,1)', fill: 'forwards' };
+            const out = ghost.animate([
+                { transform: 'translateY(0)', opacity: 1 },
+                { transform: `translateY(${-dir * h}px)`, opacity: far ? 0 : 1 },
+            ], timing);
+            const inn = quizPanel.animate([
+                { transform: `translateY(${dir * h}px)`, opacity: far ? 0 : 1 },
+                { transform: 'translateY(0)', opacity: 1 },
+            ], timing);
+            questionSwapAnims = [out, inn];
+            Promise.all([out.finished, inn.finished]).then(() => {
+                ghost.remove();
+                inn.cancel();
+                questionSwapAnims = [];
+            }).catch(() => {});
+        }
+
         function displayQuestion(isInitialLoad = false) {
             clearTimeout(autoAdvanceTimeout);
             // Drop any queued render from a previous navigation, otherwise rapid
@@ -4141,8 +4529,6 @@
                 submitAnswerBtn.disabled = currentQuizType === 'multiple-choice' && !selectedOptionLetter;
             }
             
-            quizScreenTitle.textContent = `Question ${currentQuestionDisplayOrderIndex + 1}`;
-            
             const updateContent = () => {
                 let newQuestionDOM;
                 stickyQuestionText.innerHTML = '';
@@ -4156,16 +4542,13 @@
                 
                 questionContentContainer.innerHTML = '';
                 questionContentContainer.className = '';
-                stickyQuestionText.className = 'whitespace-normal break-words text-lg leading-relaxed mb-2 max-w-full';
+                quizScrollable.scrollTop = 0;
 
                 questionContentContainer.appendChild(newQuestionDOM);
                 currentQuestionDOM = newQuestionDOM;
 
                 renderMath(stickyQuestionText);
                 renderMath(currentQuestionDOM);
-
-                stickyQuestionText.classList.add('is-fading-in-fast');
-                questionContentContainer.classList.add('is-fading-in');
 
                 const currentFeedbackContainer = currentQuestionDOM.querySelector(`[id$="-feedback"]`);
                 if (question.isAnsweredCorrectly !== null) { 
@@ -4180,13 +4563,6 @@
                                 if (optData && optData.isCorrectOption) btn.classList.add('correct'); 
                             });
                         }
-                        // --- MODIFICATION START ---
-                        // Show (disabled) explanation button if explanation exists
-                        if (question.explanation) {
-                            explanationBtn.classList.remove('hidden');
-                            explanationBtn.disabled = true; 
-                        }
-                        // --- MODIFICATION END ---
                     } else if (currentQuizType === 'fill-in-the-blank') {
                         styleFillInTheBlankInputs(question.isAnsweredCorrectly, question.wasForceCorrected);
 
@@ -4204,7 +4580,7 @@
                         }
                     }
 
-                    currentQuestionTimerDisplay.textContent = `Time: ${formatTime(question.timeTakenMs)}`;
+                    showQuestionTime(question.timeTakenMs, false);
                     checkAndShowNextButton();
                 } else if (currentQuizType === 'fill-in-the-blank' && question.hintShown) {
                     // Re-display hint if user navigates away and comes back
@@ -4216,20 +4592,22 @@
                     questionSpecificTimerStartMs = Date.now();
                     startTimers();
                 }
-                updateTimelineNav(); centerCurrentTimelineCircle();
+                updateTimelineNav();
             };
 
-            if (isInitialLoad) {
-                updateContent();
-            } else {
-                stickyQuestionText.classList.remove('is-fading-in-fast');
-                questionContentContainer.classList.remove('is-fading-in');
-                
-                stickyQuestionText.classList.add('is-fading-out-fast');
-                questionContentContainer.classList.add('is-fading-out');
-
-                questionRenderTimeout = setTimeout(updateContent, 200);
+            const from = lastDisplayedIndex, to = currentQuestionDisplayOrderIndex;
+            const animate = !isInitialLoad && from !== null && from !== to
+                && !document.body.classList.contains('power-saving-mode');
+            let ghost = null;
+            if (animate) {
+                ghost = snapshotQuestionPanel();
+                quizStage.insertBefore(ghost, quizPanel);
+                const ghostBody = ghost.querySelector('.qp-body');
+                if (ghostBody) ghostBody.scrollTop = quizScrollable.scrollTop;
             }
+            updateContent();
+            lastDisplayedIndex = to;
+            if (ghost) slideQuestionPanels(ghost, Math.sign(to - from), Math.abs(to - from) > 1);
         }
         
         function styleFillInTheBlankInputs(isCorrect, wasForceCorrected = false) {
@@ -4283,6 +4661,7 @@
             stopTimers(false);
             const timeElapsed = Date.now() - questionSpecificTimerStartMs;
             question.timeTakenMs = (question.timeTakenMs || 0) + timeElapsed;
+            question.answeredAt = Date.now();
 
             if (currentQuizType === 'multiple-choice') {
                 handleSubmitMCAnswer(question);
@@ -4507,6 +4886,7 @@
                 question.userSelectedOptionLetter = null;
                 question.isAnsweredCorrectly = false;
                 question.status = 'answered-incorrect';
+                question.answeredAt = Date.now();
                 if (currentQuestionDOM) {
                     currentQuestionDOM.querySelectorAll('.btn-option').forEach(btn => {
                         btn.disabled = true;
@@ -4553,12 +4933,12 @@
                      const elapsedTime = Date.now() - questionSpecificTimerStartMs;
                     if (questionDeadlineMs > 0) {
                         const left = Math.max(0, questionDeadlineMs - Date.now());
-                        currentQuestionTimerDisplay.textContent = `Left: ${formatTime(left)}`;
+                        showQuestionTime(left, true);
                         currentQuestionTimerDisplay.classList.toggle('time-low', left <= 5000);
                         if (left <= 0) { questionDeadlineMs = 0; handleTimeLimitExpiry(); return; }
                     } else {
                         currentQuestionTimerDisplay.classList.remove('time-low');
-                        currentQuestionTimerDisplay.textContent = `Time: ${formatTime((question.timeTakenMs || 0) + elapsedTime)}`;
+                        showQuestionTime((question.timeTakenMs || 0) + elapsedTime, false);
                     }
                 }
             };
@@ -4574,72 +4954,212 @@
             const oldQuestion = getCurrentQuestionData();
             if (oldQuestion && oldQuestion.isAnsweredCorrectly === null && questionSpecificTimerStartMs > 0) {
                  const timeElapsed = Date.now() - questionSpecificTimerStartMs;
-                 oldQuestion.timeTakenMs = (oldQuestion.timeTakenMs || 0) + timeElapsed; 
+                 oldQuestion.timeTakenMs = (oldQuestion.timeTakenMs || 0) + timeElapsed;
             }
             stopTimers(false);
+            const from = currentQuestionDisplayOrderIndex;
+            const distance = Math.abs(displayOrderIndex - from);
+            const railMs = Math.min(360 + 16 * distance, 720); // the rail's glide shows the distance
+            // Where the new question's circle is on screen right now, relative to the
+            // badge spot - its badge grows out of it.
+            const wheelBefore = railWheel;
+            const startOffset = railCentre(displayOrderIndex) - railCentre(from) + wheelBefore;
+            const leavingBadge = (!isInitial && distance > 0 && !document.body.classList.contains('power-saving-mode'))
+                ? snapshotBadge() : null;
             currentQuestionDisplayOrderIndex = displayOrderIndex;
-            updateTimelineNav(); // <-- FIX: Update timeline circle immediately
+            // Coming back to an answered question (usually to re-read its explanation).
+            const arrived = getCurrentQuestionData();
+            if (!isInitial && distance > 0 && arrived && arrived.isAnsweredCorrectly !== null) {
+                arrived.revisits = (arrived.revisits || 0) + 1;
+            }
+            railWheel = 0;
+            railDetached = false;
+            updateTimelineNav(railMs);
             displayQuestion(isInitial);
+            // ...and where the old question's circle ends up, which its badge shrinks into.
+            if (leavingBadge) animateBadgeSwap(leavingBadge, wheelBefore, railCentre(from) - railCentre(displayOrderIndex), startOffset, railMs);
         }
 
-        function renderTimelineNav() { 
-            timelineNavTrack.innerHTML = '';
-            questionOrder.forEach((questionIndexInCurrentArray, indexInDisplayOrder) => { 
+        // --- Badge hand-over --------------------------------------------------------
+        // The badge travels with the rail rather than the question panel: the old one
+        // shrinks to circle size as the rail carries it to its circle, and the new one
+        // starts as its circle and grows on the way to the badge spot. Both run on the
+        // rail's own timing, so the rail, the circles and the badges move as one.
+        let badgeSwapAnims = [];
+        function snapshotBadge() {
+            quizBadgeCol.querySelectorAll('.qp-badge.leaving').forEach(el => el.remove());
+            const clone = quizBadge.cloneNode(true);
+            clone.removeAttribute('id');
+            clone.classList.add('leaving');
+            clone.style.transform = '';
+            clone.style.transition = '';
+            quizBadgeCol.appendChild(clone);
+            return clone;
+        }
+        function animateBadgeSwap(leaving, fromOffset, leaveTo, arriveFrom, ms) {
+            badgeSwapAnims.forEach(a => a.cancel());
+            const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+            const circleScale = 28 / (2.6 * rootPx);          // a rail circle is 28px, the badge 2.6rem
+            // Each badge rides with its own circle the whole way, however far the jump,
+            // so it stays locked into the rail and the circles in between never pass
+            // underneath it. Entering from beyond the rail, it fades in at the edge.
+            const timing = { duration: ms, easing: RAIL_GLIDE };
+            const out = leaving.animate([
+                { transform: `translateY(${fromOffset}px) scale(1)`, opacity: 1 },
+                { opacity: 1, offset: 0.45 },
+                { transform: `translateY(${leaveTo}px) scale(${circleScale})`, opacity: 0 },
+            ], { ...timing, fill: 'forwards' });
+            const inn = quizBadge.animate([
+                { transform: `translateY(${arriveFrom}px) scale(${circleScale})`, opacity: 0 },
+                { opacity: 1, offset: 0.2 },
+                { transform: 'translateY(0) scale(1)', opacity: 1 },
+            ], timing);
+            quizBadgeCol.classList.add('travelling');
+            inn.finished.then(() => quizBadgeCol.classList.remove('travelling')).catch(() => {});
+            // The glow joins the badge to the question text, so it waits for both.
+            const tab = quizTab.animate([
+                { opacity: 0 }, { opacity: 0, offset: 0.55 }, { opacity: 1 },
+            ], { duration: ms + 120, easing: 'ease-out' });
+            badgeSwapAnims = [out, inn, tab];
+            out.finished.then(() => leaving.remove()).catch(() => leaving.remove());
+        }
+
+        // --- Timeline rail ----------------------------------------------------------
+        // Positions are worked out rather than measured so the gap at the current
+        // question can move without the rail jumping: circles are 40px apart, and the
+        // gap adds 7px either side of the current one (see .timeline-circle.slot).
+        const RAIL_PITCH = 40, RAIL_HALF = 14, RAIL_GAP = 7;
+        const RAIL_GLIDE = 'cubic-bezier(.22,1,.36,1)', RAIL_EASE = 'cubic-bezier(.25,.8,.25,1)';
+        let railWheel = 0;          // how far the rail has been scrolled away from the current question
+        let railDetached = false;
+        let railSnapTimer = null;
+
+        function railCentre(i) {
+            const cur = currentQuestionDisplayOrderIndex;
+            return RAIL_HALF + i * RAIL_PITCH + (i > cur ? 2 * RAIL_GAP : i === cur ? RAIL_GAP : 0);
+        }
+        function railWheelRange() {
+            const at = railCentre(currentQuestionDisplayOrderIndex);
+            return [-(railCentre(questionOrder.length - 1) - at), at - railCentre(0)];
+        }
+        // The current question sits level with the badge (1.9rem down the rail).
+        function placeRail(ms, ease = RAIL_GLIDE) {
+            const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+            const y = 1.9 * rootPx - railCentre(currentQuestionDisplayOrderIndex) + railWheel;
+            railTrack.style.transition = ms ? `transform ${ms}ms ${ease}` : 'none';
+            railTrack.style.transform = `translateY(${y}px)`;
+
+            // While the rail is scrolled, the badge and its glow ride in their gap on the
+            // same timing; the glow fades quickly on the way out and back on the way home.
+            const nowDetached = railWheel !== 0;
+            quizScreen.classList.toggle('detached', nowDetached);
+            const riders = [quizBadge, quizTab];
+            const clear = el => { el.style.transform = ''; el.style.transition = ''; };
+            if (nowDetached || railDetached) {
+                riders.forEach(el => {
+                    el.style.transition = `transform ${ms}ms ${ease}, opacity 150ms ease-out`;
+                    el.style.transform = `translateY(${railWheel}px)`;
+                });
+                if (!nowDetached) setTimeout(() => { if (railWheel === 0) riders.forEach(clear); }, ms + 30);
+            } else {
+                riders.forEach(clear);
+            }
+            railDetached = nowDetached;
+        }
+
+        function renderTimelineNav() {
+            railTrack.innerHTML = '';
+            questionOrder.forEach((questionIndexInCurrentArray, indexInDisplayOrder) => {
                 const questionData = currentQuizQuestions[questionIndexInCurrentArray];
                 if (!questionData) return;
+                if (indexInDisplayOrder > 0) {
+                    const line = document.createElement('div');
+                    line.className = 'timeline-vline';
+                    railTrack.appendChild(line);
+                }
                 const circle = document.createElement('div');
                 circle.className = 'timeline-circle';
-                circle.textContent = indexInDisplayOrder + 1; 
+                circle.textContent = indexInDisplayOrder + 1;
                 circle.dataset.displayOrderIndex = indexInDisplayOrder;
                 circle.id = `timeline-circle-${indexInDisplayOrder}`;
-                if (questionData.wasForceCorrected) circle.classList.add('force-corrected');
-                else if (questionData.status === 'answered-correct') circle.classList.add('answered-correct');
-                else if (questionData.status === 'answered-incorrect') circle.classList.add('answered-incorrect');
-                if (indexInDisplayOrder === currentQuestionDisplayOrderIndex) circle.classList.add('current');
                 circle.addEventListener('click', () => {
                     if (isQuizPaused) return;
                     navigateToQuestion(indexInDisplayOrder);
                 });
-                timelineNavTrack.appendChild(circle);
-                if (indexInDisplayOrder < questionOrder.length - 1) {
-                    const line = document.createElement('div');
-                    line.className = 'timeline-line';
-                    timelineNavTrack.appendChild(line);
-                }
+                railTrack.appendChild(circle);
             });
-            updateTimelineNav(); requestAnimationFrame(centerCurrentTimelineCircle); 
+            railWheel = 0;
+            railDetached = false;
+            updateTimelineNav(0);
         }
-        function updateTimelineNav() { 
-            timelineNavTrack.querySelectorAll('.timeline-circle').forEach(circle => {
+
+        // Refreshes circle states, the gap, the counter and the badge. Pass a duration
+        // to also move the rail (navigation); leave it out for state-only changes.
+        function updateTimelineNav(railMs = null) {
+            const circles = railTrack.querySelectorAll('.timeline-circle');
+            const isDone = q => q && q.isAnsweredCorrectly !== null;
+            circles.forEach(circle => {
                 const displayIdx = parseInt(circle.dataset.displayOrderIndex);
-                const questionIndexInCurrentArray = questionOrder[displayIdx];
-                const questionData = currentQuizQuestions[questionIndexInCurrentArray];
+                const questionData = currentQuizQuestions[questionOrder[displayIdx]];
                 if (!questionData) return;
-                circle.classList.remove('current', 'answered-correct', 'answered-incorrect', 'force-corrected');
+                circle.classList.remove('slot', 'answered-correct', 'answered-incorrect', 'force-corrected');
                 if (questionData.wasForceCorrected) circle.classList.add('force-corrected');
                 else if (questionData.status === 'answered-correct') circle.classList.add('answered-correct');
                 else if (questionData.status === 'answered-incorrect') circle.classList.add('answered-incorrect');
-                if (displayIdx === currentQuestionDisplayOrderIndex) circle.classList.add('current');
+                if (displayIdx === currentQuestionDisplayOrderIndex) circle.classList.add('slot');
+                const line = circle.previousElementSibling;
+                if (line) line.classList.toggle('done', isDone(questionData) && isDone(currentQuizQuestions[questionOrder[displayIdx - 1]]));
             });
+            const answered = currentQuizQuestions.filter(q => q.isAnsweredCorrectly !== null).length;
+            railAnswered.textContent = `${answered}/${currentQuizQuestions.length}`;
+
+            const current = getCurrentQuestionData();
+            quizBadge.textContent = currentQuestionDisplayOrderIndex + 1;
+            quizBadge.dataset.state = quizTab.dataset.state = !current ? '' : current.wasForceCorrected ? 'forced'
+                : current.status === 'answered-correct' ? 'ok' : current.status === 'answered-incorrect' ? 'bad' : '';
+            if (railMs !== null) placeRail(railMs);
         }
-        function centerCurrentTimelineCircle() { 
-            const currentCircle = document.getElementById(`timeline-circle-${currentQuestionDisplayOrderIndex}`);
-            if (currentCircle && timelineNavContainer) { 
-                const containerWidth = timelineNavContainer.offsetWidth;
-                const scrollLeftTarget = currentCircle.offsetLeft - (containerWidth / 2) + (currentCircle.offsetWidth / 2);
-                timelineNavContainer.scrollTo({ left: scrollLeftTarget, behavior: 'smooth' });
-            }
+
+        // The current question's time in the rail; with a time limit it counts down.
+        function showQuestionTime(ms, isCountdown) {
+            currentQuestionTimerDisplay.textContent = formatTime(ms);
+            railTimeLabel.textContent = isCountdown ? 'left' : 'time';
         }
-        
-        timelineNavContainer.addEventListener('mousedown', (e) => { isTimelineDragging = true; timelineStartX = e.pageX - timelineNavContainer.offsetLeft; timelineScrollLeftStart = timelineNavContainer.scrollLeft; });
-        timelineNavContainer.addEventListener('mouseleave', () => { isTimelineDragging = false; });
-        timelineNavContainer.addEventListener('mouseup', () => { isTimelineDragging = false; });
-        timelineNavContainer.addEventListener('mousemove', (e) => {
-            if (!isTimelineDragging) return; e.preventDefault();
-            const x = e.pageX - timelineNavContainer.offsetLeft;
-            const walk = (x - timelineStartX) * 1.5; 
-            timelineNavContainer.scrollLeft = timelineScrollLeftStart - walk;
+
+        // Show In Rail: nothing, the answered count, the time, or both (in either order).
+        const RAIL_INFO_MODES = ['none', 'answered', 'time', 'both'];
+        function applyRailInfo() {
+            const mode = localStorage.getItem('railInfo') || 'both';
+            quizRail.dataset.info = RAIL_INFO_MODES.includes(mode) ? mode : 'both';
+            railInfo.dataset.order = localStorage.getItem('railInfoOrder') === 'time' ? 'time' : 'answered';
+        }
+        railSwap.addEventListener('click', () => {
+            const stats = [...railInfo.querySelectorAll('.rail-stat')];
+            const before = stats.map(el => el.getBoundingClientRect().top);
+            const next = railInfo.dataset.order === 'time' ? 'answered' : 'time';
+            railInfo.dataset.order = next;
+            localStorage.setItem('railInfoOrder', next);
+            if (document.body.classList.contains('power-saving-mode')) return;
+            // Slide each one from where it was into its new place.
+            stats.forEach((el, i) => {
+                const dy = before[i] - el.getBoundingClientRect().top;
+                if (dy) el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'translateY(0)' }], { duration: 260, easing: RAIL_EASE });
+            });
         });
+
+        // Scrolling over the rail looks further up or down it; moving question or
+        // taking the mouse off the rail snaps it back.
+        quizRail.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            clearTimeout(railSnapTimer);
+            const [lo, hi] = railWheelRange();
+            railWheel = Math.max(lo, Math.min(hi, railWheel - e.deltaY * 0.5));
+            placeRail(140, RAIL_EASE);
+        }, { passive: false });
+        quizRail.addEventListener('mouseleave', () => {
+            railSnapTimer = setTimeout(() => { if (railWheel !== 0) { railWheel = 0; placeRail(380); } }, 700);
+        });
+        quizRail.addEventListener('mouseenter', () => clearTimeout(railSnapTimer));
 
         function pauseQuiz() {
             if (isQuizPaused) return; 
@@ -4672,7 +5192,7 @@
                 questionSpecificTimerStartMs = Date.now(); 
                 startTimers();
             } else if (currentQ) {
-                 currentQuestionTimerDisplay.textContent = `Time: ${formatTime(currentQ.timeTakenMs || 0)}`;
+                 showQuestionTime(currentQ.timeTakenMs || 0, false);
             }
         }
         pauseQuizBtn.addEventListener('click', pauseQuiz);
@@ -4724,12 +5244,12 @@
             resultsScreen.classList.remove('hidden');
             pauseQuizBtn.classList.add('hidden');
             explanationBtn.classList.add('hidden');
-            
-            redoQuizBtnExt.classList.remove('hidden'); 
+
+            redoQuizBtnExt.classList.remove('hidden');
             newQuizBtnExt.classList.remove('hidden');
-            
+
             resultsTitle.textContent = isPrematureEnd ? "Quiz Submitted Early" : "Quiz Complete!";
-            
+
             currentQuizQuestions.forEach((cq, indexInCurrent) => {
                 const originalQ = originalAllQuestionsData.find(oq => oq.id === cq.id);
                 if (originalQ) {
@@ -4743,42 +5263,14 @@
                 }
             });
 
-            let correctAnswers = 0, answeredQuestionsCount = 0;
-            originalAllQuestionsData.forEach(q => { if (q.isAnsweredCorrectly !== null) answeredQuestionsCount++; if (q.isAnsweredCorrectly) correctAnswers++; });
-            
-            const totalQuestionsInSet = originalAllQuestionsData.length;
-            const percentage = totalQuestionsInSet > 0 ? ((correctAnswers / totalQuestionsInSet) * 100) : 0;
-            
-            const forceCorrectedCount = originalAllQuestionsData.filter(q => q.wasForceCorrected).length;
-
-            scorePercentageDisplay.textContent = `${percentage.toFixed(1)}%`;
-            // Force-corrected questions count toward the score, but say how many so the
-            // percentage can be read for what it is.
-            scoreDetailsDisplay.textContent = forceCorrectedCount > 0
-                ? `${correctAnswers} / ${totalQuestionsInSet} correct — ${forceCorrectedCount} force-corrected`
-                : `${correctAnswers} / ${totalQuestionsInSet} correct`;
-            totalQuizTimeDisplay.textContent = formatTime(computeQuizTimeMs(originalAllQuestionsData));
-            
-            const goldPerc = parseFloat(localStorage.getItem('goldMedal') || '89.5');
-            const silverPerc = parseFloat(localStorage.getItem('silverMedal') || '84.5');
-            const bronzePerc = parseFloat(localStorage.getItem('bronzeMedal') || '79.5');
-
-            // Layout and spacing come from the #score-display-container rule; only the
-            // medal state is managed here.
-            scoreDisplayContainer.classList.remove('default', 'gold', 'silver', 'bronze');
-            if (isPrematureEnd) {
-                scoreDisplayContainer.classList.add('default');
-                scoreMessageDisplay.textContent = `You answered ${answeredQuestionsCount} of ${totalQuestionsInSet} questions.`;
-            } else {
-                // Compare the real percentage, not a rounded one, so the 0.1 step on the
-                // medal thresholds actually has an effect.
-                if (percentage >= goldPerc) { scoreDisplayContainer.classList.add('gold'); scoreMessageDisplay.textContent = "Excellent Work!"; }
-                else if (percentage >= silverPerc) { scoreDisplayContainer.classList.add('silver'); scoreMessageDisplay.textContent = "Almost There!"; }
-                else if (percentage >= bronzePerc) { scoreDisplayContainer.classList.add('bronze'); scoreMessageDisplay.textContent = "Needs Work!"; }
-                else { scoreDisplayContainer.classList.add('default'); scoreMessageDisplay.textContent = "Keep Practicing!"; }
-            }
-
-            renderResultsList();
+            resultsIsPrematureEnd = isPrematureEnd;
+            // After a Redo Incorrect round the redone questions come first; otherwise
+            // the sort chosen last time.
+            resultsSortMode = lastRoundWasRedo ? 'redone' : savedResultsSort();
+            resultsSortOpen = false;
+            resultsSelectedNum = null;
+            renderResults();
+            showResultsTab('overview');
 
             const incorrectForRedoButton = originalAllQuestionsData.filter(q => q.isAnsweredCorrectly === false);
             if (incorrectForRedoButton.length > 0) {
@@ -4788,182 +5280,410 @@
             }
         }
 
-        // Expand to the content's real height so long explanations aren't clipped by a
-        // fixed max-height, while keeping the open/close transition.
-        function toggleResultOptions(optionsDiv) {
-            const isExpanded = optionsDiv.classList.toggle('expanded');
-            optionsDiv.style.maxHeight = isExpanded ? `${optionsDiv.scrollHeight}px` : '';
+        // --- Results screen -----------------------------------------------------------
+        // Overview: score, six stat tiles, a time-per-question chart and two short
+        // summaries. Review: a sorted list on the left, one question in full on the right.
+        const RESULTS_SORTS = [
+            ['Order', [['asc', 'Ascending'], ['desc', 'Descending'], ['recent', 'Recently completed']]],
+            ['Time', [['fastest', 'Fastest first'], ['slowest', 'Slowest first']]],
+            ['Show first', [['incorrect', 'Incorrect'], ['correct', 'Correct'], ['revisited', 'Revisited'], ['redone', 'Redone']]],
+        ];
+        // "Show first" sorts keep every question: the matching ones lead, then the rest
+        // in ascending order.
+        const RESULTS_SHOW_FIRST = {
+            incorrect: q => q.isAnsweredCorrectly === false,
+            correct:   q => q.isAnsweredCorrectly === true,
+            revisited: q => (q.revisits || 0) > 0,
+            redone:    q => !!q.wasRetaken,
+        };
+        // Sort names saved by earlier versions.
+        const LEGACY_RESULTS_SORTS = { 'number': 'asc', 'time-desc': 'slowest', 'time-asc': 'fastest', 'unanswered': 'asc' };
+        function savedResultsSort() {
+            const saved = localStorage.getItem('resultsSort') || 'asc';
+            const value = LEGACY_RESULTS_SORTS[saved] || saved;
+            return RESULTS_SORTS.some(([, items]) => items.some(([key]) => key === value)) ? value : 'asc';
         }
-
-        // Results can be re-ordered without re-running the whole results screen.
-        let resultsSortMode = localStorage.getItem('resultsSort') || 'number';
+        let resultsSortMode = savedResultsSort();
+        let resultsSortOpen = false;
+        let resultsTab = 'overview';
+        let resultsSelectedNum = null;
+        let resultsIsPrematureEnd = false;
+        let lastRoundWasRedo = false;
+        let flameBurstTimer = null;
 
         // displayNumber is the position the question was actually shown at (assigned in
         // showResults); it falls back to originalOrder only if that assignment somehow
         // never ran, so sorting/labelling can't throw on an undefined value.
         const resultNum = q => (q.displayNumber !== undefined ? q.displayNumber : q.originalOrder);
-        const RESULT_SORTERS = {
-            'number':     (a, b) => resultNum(a) - resultNum(b),
-            'time-desc':  (a, b) => (b.timeTakenMs || 0) - (a.timeTakenMs || 0),
-            'time-asc':   (a, b) => (a.timeTakenMs || 0) - (b.timeTakenMs || 0),
-            'incorrect':  (a, b) => resultRank(a, false) - resultRank(b, false) || resultNum(a) - resultNum(b),
-            'correct':    (a, b) => resultRank(a, true) - resultRank(b, true) || resultNum(a) - resultNum(b),
-            'unanswered': (a, b) => (a.isAnsweredCorrectly === null ? 0 : 1) - (b.isAnsweredCorrectly === null ? 0 : 1) || resultNum(a) - resultNum(b),
-            // Retaken questions were the most recently completed, so they lead.
-            'recent':     (a, b) => (b.wasRetaken ? 1 : 0) - (a.wasRetaken ? 1 : 0) || resultNum(a) - resultNum(b),
+        const byResultNum = (a, b) => resultNum(a) - resultNum(b);
+        const resultState = q => q.wasForceCorrected ? 'forced'
+            : q.isAnsweredCorrectly === true ? 'ok' : q.isAnsweredCorrectly === false ? 'bad' : 'none';
+        const findResult = num => originalAllQuestionsData.find(q => resultNum(q) === num);
+
+        function resultsSortLabel(key) {
+            for (const [, items] of RESULTS_SORTS) for (const [value, label] of items) {
+                if (value === key) return RESULTS_SHOW_FIRST[key] ? `${label} first` : label;
+            }
+            return 'Ascending';
+        }
+        function sortedResults(key) {
+            const all = [...originalAllQuestionsData].sort(byResultNum);
+            const time = q => q.timeTakenMs || 0;
+            if (key === 'desc') return { list: all.reverse() };
+            if (key === 'recent') return { list: all.sort((a, b) => (b.answeredAt || 0) - (a.answeredAt || 0) || byResultNum(a, b)) };
+            if (key === 'slowest') return { list: all.sort((a, b) => time(b) - time(a) || byResultNum(a, b)) };
+            if (key === 'fastest') return { list: all.sort((a, b) => time(a) - time(b) || byResultNum(a, b)) };
+            const test = RESULTS_SHOW_FIRST[key];
+            if (!test) return { list: all };
+            const top = all.filter(test);
+            if (key === 'revisited') top.sort((a, b) => (b.revisits || 0) - (a.revisits || 0) || byResultNum(a, b));
+            return { list: [...top, ...all.filter(q => !test(q))], split: top.length };
+        }
+
+        // Pace colour from the average time per question: 15s or faster is green,
+        // 60s or slower is red, and everything in between blends through amber.
+        const PACE_STOPS = [[15, [7, 177, 124]], [37.5, [245, 176, 66]], [60, [255, 71, 71]]];
+        function paceRGB(seconds) {
+            if (seconds <= PACE_STOPS[0][0]) return PACE_STOPS[0][1].join(',');
+            for (let i = 1; i < PACE_STOPS.length; i++) {
+                const [s1, c1] = PACE_STOPS[i], [s0, c0] = PACE_STOPS[i - 1];
+                if (seconds <= s1) {
+                    const t = (seconds - s0) / (s1 - s0);
+                    return c0.map((v, k) => Math.round(v + (c1[k] - v) * t)).join(',');
+                }
+            }
+            return PACE_STOPS[PACE_STOPS.length - 1][1].join(',');
+        }
+
+        const RS_ICON = {
+            clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+            eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+            redo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>',
         };
-        function resultRank(q, correctFirst) {
-            if (q.isAnsweredCorrectly === null) return 2;
-            return q.isAnsweredCorrectly === correctFirst ? 0 : 1;
+        const RS_FLAME = 'M12 1.5c.9 3.6 5.6 6.2 5.6 11.7a5.6 5.6 0 0 1-11.2 0c0-2.9 1.4-4.5 2.8-5.9.3 1.9 1.2 2.9 2.3 3.2C10.6 7.4 11 4.4 12 1.5Z';
+        const RS_FLAME_CORE = 'M12 9.5c.4 1.7 2.8 3 2.8 5.6a2.8 2.8 0 0 1-5.6 0c0-1.5.7-2.3 1.4-3 .2 1 .6 1.4 1.1 1.6-.1-1.6.1-3 .3-4.2Z';
+        // Corner watermarks, stroked with a gradient that fades towards the top right.
+        const RS_WM = {
+            clock: grad => `<svg class="rs-deco rs-wm" viewBox="0 0 24 24" stroke="url(#${grad})"><circle cx="12" cy="12" r="9.5"/><path d="M12 12V7.2M12 12l3.2 1.9"/><line class="rs-tick" x1="12" y1="12.8" x2="12" y2="4" stroke-width="1" style="animation-delay:-${(Math.random() * 60).toFixed(1)}s"/></svg>`,
+            hourglass: '<svg class="rs-deco rs-wm" viewBox="0 0 24 24" stroke="url(#rsGrey)"><path d="M6 3h12M6 21h12M7 3c0 5 5 6.5 5 9s-5 4-5 9M17 3c0 5-5 6.5-5 9s5 4 5 9"/></svg>',
+            gauge: '<svg class="rs-deco rs-wm" viewBox="0 0 24 24" stroke="url(#rsGrey)"><path d="M3.5 17a9 9 0 1 1 17 0"/><path d="M12 14l4-5"/><circle cx="12" cy="14" r="1.2"/></svg>',
+            eye: '<svg class="rs-deco rs-wm" viewBox="0 0 24 24" stroke="url(#rsBlue)"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3.2"/></svg>',
+            medal: grad => `<svg class="rs-deco rs-wm" viewBox="0 0 24 24" stroke="url(#${grad})"><circle cx="12" cy="14.5" r="6"/><path d="M8.5 9.6 6 2.5h4l2 5M15.5 9.6 18 2.5h-4l-2 5"/><path d="M12 11.8l.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2-1.45-1.4 2-.3Z"/></svg>`,
+            blaze: () => `<div class="rs-deco rs-blaze"><div class="halo"></div><svg viewBox="0 0 24 24"><path d="${RS_FLAME}" fill="url(#rsFlameOuter)"/><path class="core" d="${RS_FLAME_CORE}" fill="url(#rsFlameInner)"/></svg></div>`
+                + [[78, 0], [86, 1.1], [70, 2.0]].map(([l, d]) => `<span class="rs-deco rs-ember" style="left:${l}%;animation-delay:${d}s"></span>`).join(''),
+        };
+
+        // Short, single-line text for list rows (blanks shown as underscores).
+        const resultRowText = q => q.questionText || '';
+        const resultMetaHTML = q =>
+            `<span class="rs-meta">${RS_ICON.clock}${formatTime(q.timeTakenMs || 0)}</span>`
+            + ((q.revisits || 0) > 0 ? `<span class="rs-meta views">${RS_ICON.eye}×${q.revisits + 1}</span>` : '')
+            + (q.wasRetaken ? `<span class="rs-meta retake">${RS_ICON.redo}Redone</span>` : '')
+            + (q.wasForceCorrected ? '<span class="rs-meta forced">Force-corrected</span>' : '')
+            + (q.isAnsweredCorrectly === null ? '<span class="rs-meta">Not answered</span>' : '');
+
+        function computeResultStats() {
+            const qs = [...originalAllQuestionsData].sort(byResultNum);
+            const answered = qs.filter(q => q.isAnsweredCorrectly !== null);
+            const timed = answered.filter(q => (q.timeTakenMs || 0) > 0);
+            const totalMs = computeQuizTimeMs(qs);
+            const avgMs = totalMs / Math.max(1, answered.length);
+            const sortedTimes = timed.map(q => q.timeTakenMs).sort((a, b) => a - b);
+            const medianMs = sortedTimes.length ? sortedTimes[Math.floor((sortedTimes.length - 1) / 2)] : 0;
+            const longest = timed.reduce((a, q) => (!a || q.timeTakenMs > a.timeTakenMs ? q : a), null);
+            const quickest = timed.reduce((a, q) => (!a || q.timeTakenMs < a.timeTakenMs ? q : a), null);
+            const revisited = qs.filter(q => (q.revisits || 0) > 0);
+            const extraViews = revisited.reduce((a, q) => a + q.revisits, 0);
+            // Longest run of answers that were right first time, in question order.
+            let streak = 0, streakStart = null, run = 0;
+            qs.forEach((q, i) => {
+                run = q.isAnsweredCorrectly === true && !q.wasForceCorrected ? run + 1 : 0;
+                if (run > streak) { streak = run; streakStart = qs[i - run + 1]; }
+            });
+            const correct = qs.filter(q => q.isAnsweredCorrectly === true).length;
+            return { qs, answered, totalMs, avgMs, medianMs, longest, quickest, revisited, extraViews, streak, streakStart, correct };
         }
 
-        function renderResultsList() {
-            resultsDetailsContainer.innerHTML = '';
-            const buildResultItem = (q) => (currentQuizType === 'multiple-choice')
-                ? buildMCResultItemDOM(q, resultNum(q))
-                : buildFITBResultItemDOM(q, resultNum(q));
-            const sorter = RESULT_SORTERS[resultsSortMode] || RESULT_SORTERS.number;
+        function renderResultsOverview(st) {
+            // Score tile: medal tiers as before, now as a gradient with a medal watermark.
+            const total = st.qs.length;
+            const percentage = total > 0 ? (st.correct / total) * 100 : 0;
+            const forcedCount = st.qs.filter(q => q.wasForceCorrected).length;
+            const goldPerc = parseFloat(localStorage.getItem('goldMedal') || '89.5');
+            const silverPerc = parseFloat(localStorage.getItem('silverMedal') || '84.5');
+            const bronzePerc = parseFloat(localStorage.getItem('bronzeMedal') || '79.5');
+            let tier = 'default', message;
+            if (resultsIsPrematureEnd) {
+                message = `You answered ${st.answered.length} of ${total} questions.`;
+            } else if (percentage >= goldPerc) { tier = 'gold'; message = 'Excellent Work!'; }
+            else if (percentage >= silverPerc) { tier = 'silver'; message = 'Almost There!'; }
+            else if (percentage >= bronzePerc) { tier = 'bronze'; message = 'Needs Work!'; }
+            else { message = 'Keep Practicing!'; }
+            const medalGrad = { gold: 'rsGold', silver: 'rsSilver', bronze: 'rsBronze', default: 'rsBlue' }[tier];
+            const scoreTile = document.getElementById('rs-score');
+            scoreTile.className = `rs-score ${tier}`;
+            // Force-corrected questions count toward the score, but say how many so the
+            // percentage can be read for what it is.
+            scoreTile.innerHTML = RS_WM.medal(medalGrad)
+                + `<div class="pct">${percentage.toFixed(1)}%</div>`
+                + `<div class="sub">${st.correct} / ${total} correct${forcedCount ? ` — ${forcedCount} force-corrected` : ''}</div>`
+                + `<div class="sub">${message}</div>`;
 
-            // Only the default ordering keeps retaken questions in their own group;
-            // every other sort is a deliberate re-order of the whole list.
-            if (resultsSortMode === 'number') {
-                const retaken = originalAllQuestionsData.filter(q => q.wasRetaken).sort(sorter);
-                const rest = originalAllQuestionsData.filter(q => !q.wasRetaken).sort(sorter);
-                retaken.forEach(q => resultsDetailsContainer.appendChild(buildResultItem(q)));
-                if (retaken.length > 0) {
-                    const separator = document.createElement('hr');
-                    separator.className = 'my-6 border-t-2 rounded-full';
-                    separator.style.borderColor = 'var(--border-color)';
-                    resultsDetailsContainer.appendChild(separator);
-                }
-                rest.forEach(q => resultsDetailsContainer.appendChild(buildResultItem(q)));
+            const avgSec = st.avgMs / 1000;
+            const pace = paceRGB(avgSec);
+            const none = '<span class="v">—</span>';
+            const tiles = [
+                `<div class="rs-stat pace" style="--pace:${pace}">${RS_WM.hourglass}<span class="k">Total Time</span><span class="v">${formatTime(st.totalMs)}</span><span class="s">${total} question${total === 1 ? '' : 's'}</span></div>`,
+                st.longest
+                    ? `<div class="rs-stat slow link" data-rs-jump="longest">${RS_WM.clock('rsRed')}<span class="k">Longest</span><span class="v">${formatTime(st.longest.timeTakenMs)} <small>Q${resultNum(st.longest)}</small></span><span class="s">Slowest answer</span></div>`
+                    : `<div class="rs-stat slow">${RS_WM.clock('rsRed')}<span class="k">Longest</span>${none}</div>`,
+                st.quickest
+                    ? `<div class="rs-stat quick link" data-rs-jump="quickest">${RS_WM.clock('rsGreen')}<span class="k">Quickest</span><span class="v">${formatTime(st.quickest.timeTakenMs)} <small>Q${resultNum(st.quickest)}</small></span><span class="s">Fastest answer</span></div>`
+                    : `<div class="rs-stat quick">${RS_WM.clock('rsGreen')}<span class="k">Quickest</span>${none}</div>`,
+                `<div class="rs-stat pace" style="--pace:${pace}">${RS_WM.gauge}<span class="k">Avg / Question</span><span class="v">${formatTime(st.avgMs)}</span><span class="s">Median ${formatTime(st.medianMs)}</span></div>`,
+                `<div class="rs-stat blue ${st.revisited.length ? 'link' : ''}" ${st.revisited.length ? 'data-rs-jump="revisited"' : ''}>${RS_WM.eye}<span class="k">Revisited</span><span class="v">${st.revisited.length} <small>question${st.revisited.length === 1 ? '' : 's'}</small></span><span class="s">${st.extraViews ? `${st.extraViews} extra view${st.extraViews === 1 ? '' : 's'}` : 'None went back to'}</span></div>`,
+                `<div class="rs-stat fire ${st.streak ? 'link' : ''}" ${st.streak ? 'data-rs-jump="streak"' : ''}>${RS_WM.blaze()}<span class="k">Best Streak</span><span class="v">${st.streak} <small>in a row</small></span><span class="s">${st.streak ? `Q${resultNum(st.streakStart)}–Q${resultNum(st.streakStart) + st.streak - 1}` : 'No streak yet'}</span></div>`,
+            ];
+            const tilesEl = document.getElementById('rs-tiles');
+            tilesEl.innerHTML = tiles.join('');
+            const fire = tilesEl.querySelector('.rs-stat.fire');
+            fire.addEventListener('mouseenter', () => { clearTimeout(flameBurstTimer); fire.classList.add('anim'); });
+            fire.addEventListener('mouseleave', () => fire.classList.remove('anim'));
+
+            // Time per question.
+            const maxMs = Math.max(1, ...st.qs.map(q => q.timeTakenMs || 0));
+            const bars = st.qs.map(q => {
+                const ms = q.timeTakenMs || 0;
+                const title = `Q${resultNum(q)} · ${formatTime(ms)}${q.revisits ? ` · viewed ×${q.revisits + 1}` : ''}`;
+                return `<div class="rs-bar ${resultState(q)}" data-rs-num="${resultNum(q)}" title="${title}" style="height:${(ms / maxMs) * 100}%">${q.revisits ? '<span class="rs-ring"></span>' : ''}</div>`;
+            }).join('');
+            const avgLine = st.answered.length ? `<div class="rs-avg" style="bottom:${Math.min(100, (st.avgMs / maxMs) * 100)}%"><span>avg ${formatTime(st.avgMs)}</span></div>` : '';
+            document.getElementById('rs-bars').innerHTML = bars + avgLine;
+            const step = st.qs.length > 30 ? 10 : 5;
+            document.getElementById('rs-axis').innerHTML = st.qs.map(q => {
+                const n = resultNum(q);
+                return `<span>${n === 1 || n % step === 0 ? n : ''}</span>`;
+            }).join('');
+
+            // Worth another look: wrong answers first, then ones you came back to.
+            const worth = st.qs.filter(q => q.isAnsweredCorrectly === false || (q.revisits || 0) > 0)
+                .sort((a, b) => ((a.isAnsweredCorrectly === false ? 0 : 1) - (b.isAnsweredCorrectly === false ? 0 : 1)) || (b.timeTakenMs || 0) - (a.timeTakenMs || 0))
+                .slice(0, 5);
+            const worthEl = document.getElementById('rs-worth');
+            worthEl.innerHTML = worth.length
+                ? worth.map(q => `<div class="rs-row" data-rs-num="${resultNum(q)}"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span><span class="txt">${resultRowText(q)}</span><span class="side">${resultMetaHTML(q)}</span></div>`).join('')
+                : '<p class="rs-note">Nothing to flag: every answer was right and you didn\'t need to go back to any.</p>';
+            renderMath(worthEl);
+            if (resultsTab === 'overview') trimRowPreviews(worthEl);
+
+            // Where the time went.
+            const avgOf = list => list.length ? list.reduce((a, q) => a + (q.timeTakenMs || 0), 0) / list.length : 0;
+            const right = st.answered.filter(q => q.isAnsweredCorrectly === true);
+            const wrong = st.answered.filter(q => q.isAnsweredCorrectly === false);
+            let text;
+            if (!st.answered.length) {
+                text = 'No questions were answered.';
+            } else if (!wrong.length) {
+                text = `Every answer was correct, at <b>${formatTime(avgOf(right))}</b> a question on average.`;
+            } else if (!right.length) {
+                text = `No answers were correct. They took <b>${formatTime(avgOf(wrong))}</b> each on average.`;
             } else {
-                [...originalAllQuestionsData].sort(sorter)
-                    .forEach(q => resultsDetailsContainer.appendChild(buildResultItem(q)));
+                const r = avgOf(wrong) / Math.max(1, avgOf(right));
+                const reading = r > 1.2 ? 'so you were stuck on the ones you missed rather than guessing.'
+                    : r < 0.8 ? 'so the ones you missed were quicker answers, which can mean rushed or guessed.'
+                    : 'so you took about as long whether you were right or not.';
+                text = `Incorrect answers averaged <b>${formatTime(avgOf(wrong))}</b> against <b>${formatTime(avgOf(right))}</b> for correct ones, ${reading}`;
             }
-            renderMath(resultsDetailsContainer);
+            text += st.revisited.length
+                ? ` You came back to <b>${st.revisited.length}</b> question${st.revisited.length === 1 ? '' : 's'} after answering (${st.extraViews} extra view${st.extraViews === 1 ? '' : 's'}).`
+                : ' You didn\'t go back to any questions after answering them.';
+            document.getElementById('rs-timesplit').innerHTML = text;
         }
 
-        function buildMCResultItemDOM(question, displayNum) {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = `result-question-item ${question.isAnsweredCorrectly === true ? 'correct' : question.isAnsweredCorrectly === false ? 'incorrect' : 'unanswered'}`;
-            itemDiv.innerHTML = `
-                <div class="flex justify-between items-center cursor-pointer">
-                    <span class="font-semibold result-option-question">${displayNum}. ${question.questionText}</span>
-                    <div class="flex items-center">
-                        <span class="text-xs mr-2 result-option-time">Time: ${formatTime(question.timeTakenMs || 0)}</span>
-                        <svg class="dropdown-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </div>
-                </div>
-                <div class="result-options-container pl-4 ml-1"></div>`;
-            const optionsDiv = itemDiv.querySelector('.result-options-container');
-            if (question.options && question.options.length > 0) {
-                question.options.forEach(opt => {
-                    const optP = document.createElement('p');
-                    optP.className = 'result-option text-sm';
-                    optP.innerHTML = `${opt.letter}. ${opt.text}`;
-                    
-                    if (opt.isCorrectOption) optP.classList.add('correct-answer');
-                    else optP.classList.add('incorrect-answer');
-                    
-                    if (opt.letter === question.userSelectedOptionLetter) optP.classList.add('user-selected');
-                    optionsDiv.appendChild(optP);
-                });
-                if (question.explanation) {
-                    const explanationDiv = document.createElement('div');
-                    explanationDiv.className = 'explanation-container mt-3';
-                    explanationDiv.innerHTML = `<p class="font-semibold text-sm">Explanation:</p><p class="text-sm">${question.explanation}</p>`;
-                    optionsDiv.appendChild(explanationDiv);
-                }
-            }
-            itemDiv.querySelector('.cursor-pointer').addEventListener('click', (e) => {
-                toggleResultOptions(optionsDiv);
-                e.currentTarget.querySelector('.dropdown-arrow').classList.toggle('expanded');
-            });
-            return itemDiv;
-        }
-
-        function buildFITBResultItemDOM(question, displayNum) {
-            const itemDiv = document.createElement('div');
-            const stateClass = question.wasForceCorrected ? 'force-corrected'
-                : question.isAnsweredCorrectly === true ? 'correct'
-                : question.isAnsweredCorrectly === false ? 'incorrect' : 'unanswered';
-            itemDiv.className = `result-question-item ${stateClass}`;
-
-            let questionHTML = question.questionText;
-            let blankIndex = 0;
-            questionHTML = questionHTML.replace(/____/g, () => {
-                const blank = question.blanks[blankIndex];
-                const userAnswer = (blank.userAnswer || "").trim().toLowerCase();
-                const isCorrect = blank.answers.includes(userAnswer);
-                // A force-corrected question scored as correct, so its blanks must not
-                // still render red underneath a green item.
-                const colorClass = question.wasForceCorrected ? 'force-corrected' : (isCorrect ? 'correct' : 'incorrect');
-                const value = blank.userAnswer || (question.isAnsweredCorrectly === null ? '' : (blank.displayAnswers || blank.answers)[0]);
-                blankIndex++;
-                return `<input type="text" class="blank-input ${colorClass}" value="${escapeHtml(value)}" disabled>`;
-            });
-
-            itemDiv.innerHTML = `
-                <div class="flex justify-between items-center cursor-pointer">
-                    <div class="font-semibold result-option-question">${displayNum}. ${questionHTML}</div>
-                    <div class="flex items-center">
-                        <span class="text-xs mr-2 result-option-time">Time: ${formatTime(question.timeTakenMs || 0)}</span>
-                        ${question.explanation || question.hint ? '<svg class="dropdown-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>' : ''}
-                    </div>
-                </div>
-                <div class="result-options-container pl-4 ml-1"></div>`;
-
-            const optionsDiv = itemDiv.querySelector('.result-options-container');
-            let hasContent = false;
-
-            // --- MODIFICATION START ---
-            // Add "Correct Answer(s)" section if the user got it wrong, or overrode it -
-            // an overridden question is exactly the one whose real answer you want to see.
-            if (question.isAnsweredCorrectly === false || question.wasForceCorrected) {
-                let correctedQuestionHTML = question.questionText;
+        function resultDetailHTML(q) {
+            const n = resultNum(q);
+            let body;
+            if (currentQuizType === 'multiple-choice') {
+                const opts = (q.options || []).map(o => {
+                    let cls = '', tag = '';
+                    if (o.isCorrectOption) { cls = 'correct'; tag = o.letter === q.userSelectedOptionLetter ? 'Your answer' : 'Correct'; }
+                    else if (o.letter === q.userSelectedOptionLetter) { cls = 'wrong'; tag = 'Your answer'; }
+                    return `<div class="rs-opt ${cls}"><span class="l">${o.letter}.</span><span>${o.text}</span>${tag ? `<span class="tagline">${tag}</span>` : ''}</div>`;
+                }).join('');
+                body = `<p class="rs-d-q">${q.questionText}</p>${opts}`
+                    + (q.explanation ? `<div class="rs-expl"><b>Explanation:</b>${q.explanation}</div>` : '');
+            } else {
+                // Your answers in place, coloured; then the real answers if you were wrong.
                 let blankIndex = 0;
-                correctedQuestionHTML = correctedQuestionHTML.replace(/____/g, () => {
-                    const blank = question.blanks[blankIndex];
-                    const correctAnswers = blank ? (blank.displayAnswers || blank.answers).join('/') : '';
-                    blankIndex++;
-                    return `<strong class="mx-1">${correctAnswers || '???'}</strong>`;
+                const withAnswers = (q.questionText || '').replace(/____/g, () => {
+                    const blank = q.blanks[blankIndex++];
+                    if (!blank) return '____';
+                    const isRight = blank.answers.includes((blank.userAnswer || '').trim().toLowerCase());
+                    const cls = q.wasForceCorrected ? 'force-corrected' : q.isAnsweredCorrectly === null ? '' : (isRight ? 'correct' : 'incorrect');
+                    return `<input type="text" class="blank-input ${cls}" value="${escapeHtml(blank.userAnswer || '')}" disabled>`;
                 });
-
-                const answersDiv = document.createElement('div');
-                answersDiv.className = 'explanation-container'; // Use same styling
-                answersDiv.innerHTML = `<p class="font-semibold text-sm">Correct Answer(s):</p><p class="text-sm fill-in-the-blank-question-text" style="line-height: 1.5;">${correctedQuestionHTML}</p>`;
-                optionsDiv.appendChild(answersDiv);
-                hasContent = true;
-            }
-            // --- MODIFICATION END ---
-            
-            if (question.explanation) {
-                const explanationDiv = document.createElement('div');
-                // Fix: Add margin-top if content already exists
-                explanationDiv.className = 'explanation-container' + (hasContent ? ' mt-3' : '');
-                explanationDiv.innerHTML = `<p class="font-semibold text-sm">Explanation:</p><p class="text-sm">${question.explanation}</p>`;
-                optionsDiv.appendChild(explanationDiv);
-                hasContent = true;
-            }
-
-            if (question.hint) {
-                 const hintDiv = document.createElement('div');
-                // Fix: Add margin-top if content already exists
-                hintDiv.className = 'explanation-container' + (hasContent ? ' mt-3' : '');
-                hintDiv.innerHTML = `<p class="font-semibold text-sm">Hint:</p><p class="text-sm">${question.hint}</p>`;
-                optionsDiv.appendChild(hintDiv);
-                hasContent = true;
-            }
-
-            if (hasContent) {
-                itemDiv.querySelector('.cursor-pointer').addEventListener('click', (e) => {
-                    toggleResultOptions(optionsDiv);
-                    e.currentTarget.querySelector('.dropdown-arrow').classList.toggle('expanded');
+                blankIndex = 0;
+                const corrected = (q.questionText || '').replace(/____/g, () => {
+                    const blank = q.blanks[blankIndex++];
+                    return `<strong>${blank ? (blank.displayAnswers || blank.answers).join('/') : '???'}</strong>`;
                 });
+                body = `<div class="rs-d-q fill-in-the-blank-question-text">${withAnswers}</div>`
+                    + (q.isAnsweredCorrectly !== true || q.wasForceCorrected ? `<div class="rs-expl"><b>Correct answer(s):</b>${corrected}</div>` : '')
+                    + (q.explanation ? `<div class="rs-expl"><b>Explanation:</b>${q.explanation}</div>` : '')
+                    + (q.hint ? `<div class="rs-expl"><b>Hint:</b>${q.hint}</div>` : '');
             }
-            return itemDiv;
+            return `<div class="rs-d-head"><span class="rs-badge ${resultState(q)}">${n}</span><h3>Question ${n}</h3>${resultMetaHTML(q)}</div>`
+                + body
+                + `<div class="rs-d-foot"><button class="btn btn-main" data-rs-step="-1">&larr; Previous</button><span class="rs-kbd"><kbd>←</kbd> <kbd>→</kbd></span><button class="btn btn-main" data-rs-step="1">Next &rarr;</button></div>`;
         }
+
+        function renderResultsReview() {
+            const { list, split } = sortedResults(resultsSortMode);
+            if (!list.length) return;
+            if (resultsSelectedNum === null || !findResult(resultsSelectedNum)) resultsSelectedNum = resultNum(list[0]);
+
+            document.getElementById('rs-sort-value').textContent = resultsSortLabel(resultsSortMode);
+            document.getElementById('rs-sort').classList.toggle('open', resultsSortOpen);
+            document.getElementById('rs-sort-menu').innerHTML = RESULTS_SORTS.map(([group, items]) =>
+                `<div class="rs-dd-group">${group}</div>` + items.map(([value, label]) => {
+                    const test = RESULTS_SHOW_FIRST[value];
+                    const count = test ? `<span class="n">${originalAllQuestionsData.filter(test).length}</span>` : '';
+                    return `<div class="rs-dd-opt ${value === resultsSortMode ? 'on' : ''}" data-rs-sort="${value}"><span>${label}</span>${count}</div>`;
+                }).join('')).join('');
+
+            const listEl = document.getElementById('rs-list');
+            listEl.innerHTML = list.map((q, i) =>
+                (split && i === 0 ? `<div class="rs-divider">${resultsSortLabel(resultsSortMode).replace(' first', '')}</div>` : '')
+                + (split !== undefined && i === split && split > 0 ? '<div class="rs-divider">Everything else · ascending</div>' : '')
+                + `<div class="rs-row ${resultNum(q) === resultsSelectedNum ? 'sel' : ''}" data-rs-num="${resultNum(q)}"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span><span class="txt">${resultRowText(q)}</span><span class="side"><span class="rs-meta">${formatTime(q.timeTakenMs || 0)}</span>${q.revisits ? `<span class="rs-meta views">${RS_ICON.eye}×${q.revisits + 1}</span>` : ''}${q.wasRetaken ? `<span class="rs-meta retake">${RS_ICON.redo}</span>` : ''}</span></div>`
+            ).join('');
+            renderMath(listEl);
+            if (resultsTab === 'review') trimRowPreviews(listEl);
+            renderResultsDetail();
+        }
+        function renderResultsDetail() {
+            const q = findResult(resultsSelectedNum);
+            const detailEl = document.getElementById('rs-detail');
+            if (!q) { detailEl.innerHTML = ''; return; }
+            detailEl.innerHTML = resultDetailHTML(q);
+            detailEl.scrollTop = 0;
+            renderMath(detailEl);
+            document.querySelectorAll('#rs-list .rs-row').forEach(row => row.classList.toggle('sel', +row.dataset.rsNum === resultsSelectedNum));
+            const sel = document.querySelector('#rs-list .rs-row.sel');
+            if (sel && resultsTab === 'review') sel.scrollIntoView({ block: 'nearest' });
+        }
+
+        // A row preview shows two lines and clips the rest, but tall maths on a clipped
+        // line still paints up into the visible ones. Hide maths whose middle falls
+        // below the preview. Needs the rows on screen, so it runs when a tab is shown.
+        function trimRowPreviews(container) {
+            container.querySelectorAll('.rs-row .txt').forEach(txt => {
+                const box = txt.getBoundingClientRect();
+                if (!box.height) return;
+                txt.querySelectorAll('.katex').forEach(k => {
+                    const r = k.getBoundingClientRect();
+                    k.style.visibility = (r.top + r.bottom) / 2 > box.bottom ? 'hidden' : '';
+                });
+            });
+        }
+
+        function renderResults() {
+            renderResultsOverview(computeResultStats());
+            renderResultsReview();
+        }
+        // Kept under its old name: the LaTeX setting re-renders results through it.
+        function renderResultsList() { renderResults(); }
+
+        function burstFlame() {
+            const fire = document.querySelector('#rs-tiles .rs-stat.fire');
+            if (!fire) return;
+            fire.classList.add('anim');
+            clearTimeout(flameBurstTimer);
+            flameBurstTimer = setTimeout(() => { if (!fire.matches(':hover')) fire.classList.remove('anim'); }, 4800);
+        }
+        function showResultsTab(tab) {
+            resultsTab = tab;
+            document.querySelectorAll('.rs-tab').forEach(b => b.classList.toggle('active', b.dataset.rsTab === tab));
+            document.getElementById('rs-overview').classList.toggle('hidden', tab !== 'overview');
+            document.getElementById('rs-review').classList.toggle('hidden', tab !== 'review');
+            if (tab === 'overview') {
+                trimRowPreviews(document.getElementById('rs-worth'));
+                burstFlame();
+            } else {
+                trimRowPreviews(document.getElementById('rs-list'));
+                const sel = document.querySelector('#rs-list .rs-row.sel');
+                if (sel) sel.scrollIntoView({ block: 'nearest' });
+            }
+        }
+        function selectResult(num, tab = 'review') {
+            resultsSelectedNum = num;
+            renderResultsDetail();
+            if (tab !== resultsTab) showResultsTab(tab);
+        }
+        function stepResult(dir) {
+            const { list } = sortedResults(resultsSortMode);
+            const i = list.findIndex(q => resultNum(q) === resultsSelectedNum);
+            const next = list[Math.max(0, Math.min(list.length - 1, i + dir))];
+            if (next && resultNum(next) !== resultsSelectedNum) selectResult(resultNum(next));
+        }
+        function setResultsSort(key, { persist = true, select = null } = {}) {
+            resultsSortMode = key;
+            if (persist) localStorage.setItem('resultsSort', key);
+            resultsSortOpen = false;
+            resultsSelectedNum = select !== null ? select : resultNum(sortedResults(key).list[0]);
+            renderResultsReview();
+            document.getElementById('rs-list').scrollTop = 0;
+            renderResultsDetail();
+        }
+
+        resultsScreen.addEventListener('click', (e) => {
+            const tab = e.target.closest('[data-rs-tab]');
+            if (tab) { showResultsTab(tab.dataset.rsTab); return; }
+            if (e.target.closest('.rs-dd-trigger')) {
+                e.stopPropagation();
+                resultsSortOpen = !resultsSortOpen;
+                document.getElementById('rs-sort').classList.toggle('open', resultsSortOpen);
+                return;
+            }
+            const sortOpt = e.target.closest('[data-rs-sort]');
+            if (sortOpt) { setResultsSort(sortOpt.dataset.rsSort); return; }
+            const stepBtn = e.target.closest('[data-rs-step]');
+            if (stepBtn) { stepResult(+stepBtn.dataset.rsStep); return; }
+            const item = e.target.closest('[data-rs-num]');
+            if (item) { selectResult(+item.dataset.rsNum); return; }
+            const jump = e.target.closest('[data-rs-jump]');
+            if (jump) {
+                // Stat tiles open Review with the matching sort (not saved as your choice).
+                const st = computeResultStats();
+                const kind = jump.dataset.rsJump;
+                if (kind === 'longest' && st.longest) setResultsSort('slowest', { persist: false, select: resultNum(st.longest) });
+                if (kind === 'quickest' && st.quickest) setResultsSort('fastest', { persist: false, select: resultNum(st.quickest) });
+                if (kind === 'revisited') setResultsSort('revisited', { persist: false });
+                if (kind === 'streak' && st.streakStart) setResultsSort('asc', { persist: false, select: resultNum(st.streakStart) });
+                showResultsTab('review');
+            }
+        });
+        document.addEventListener('click', (e) => {
+            if (resultsSortOpen && !e.target.closest('#rs-sort')) {
+                resultsSortOpen = false;
+                document.getElementById('rs-sort').classList.remove('open');
+            }
+        });
+        // Review: up/down (or left/right) step through the list in its current order.
+        document.addEventListener('keydown', (e) => {
+            if (resultsScreen.classList.contains('hidden')) return;
+            if (document.querySelector('.modal-overlay.visible')) return;
+            const target = e.target;
+            if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+            if (e.key === 'Escape' && resultsSortOpen) {
+                resultsSortOpen = false;
+                document.getElementById('rs-sort').classList.remove('open');
+                return;
+            }
+            if (resultsTab !== 'review' || !homeState.keyboardFunctions) return;
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); stepResult(1); }
+            if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); stepResult(-1); }
+        });
 
 
         function hideExternalResultsButtons() {
@@ -5635,6 +6355,10 @@ Example Question Formatting:
             const latexToggle = document.getElementById('latex-toggle');
             if (latexToggle) latexToggle.checked = latexEnabled;
 
+            applyRailInfo();
+            const railInfoOption = document.querySelector(`#rail-info-select .custom-option[data-value="${quizRail.dataset.info}"]`);
+            if (railInfoOption) document.querySelector('#rail-info-select .custom-select-value').textContent = railInfoOption.textContent;
+
             powerSavingToggle.checked = localStorage.getItem('powerSaving') === 'true';
             applyPowerSavingMode(powerSavingToggle.checked);
             
@@ -6031,7 +6755,7 @@ Example Question Formatting:
             document.title = `Quiz Generator ${APP_VERSION}`;
 
             setupCustomSelect('background-type-select', 'backgroundType', (value, controls) => setBackgroundType(value, true, controls), true);
-            setupCustomSelect('results-sort-select', 'resultsSort', (value) => { resultsSortMode = value; renderResultsList(); });
+            setupCustomSelect('rail-info-select', 'railInfo', () => applyRailInfo());
             setupCustomSelect('auto-next-type-select', null, (value) => {
                 homeState.autoNext = value;
                 saveHomeState();
@@ -6039,9 +6763,6 @@ Example Question Formatting:
             });
 
 
-            const savedSort = localStorage.getItem('resultsSort') || 'number';
-            const sortOption = document.querySelector(`#results-sort-select .custom-option[data-value="${savedSort}"]`);
-            if (sortOption) document.querySelector('#results-sort-select .custom-select-value').textContent = sortOption.textContent;
 
             loadPreferences(); 
             loadPromptBuilderSettings();
@@ -6070,6 +6791,7 @@ Example Question Formatting:
                             'keyboardFunctions', 'autoNextType', 'autoNextDuration', 
                             'clickToSubmit', 'doubleClickToSubmit', 'hideSubmitButton', 
                             'randomiseQuestionOrder', 'randomiseAnswerOrder',
+                            'railInfo', 'railInfoOrder',
                             'homeState'
                         ];
                         
