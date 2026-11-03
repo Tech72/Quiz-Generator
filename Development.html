@@ -1234,6 +1234,44 @@
         justify-content: center;
         gap: 1rem;
     }
+    .modal-content.wide { max-width: 38rem; }
+
+    /* Redo Suggested confirm: one row per question being reset. */
+    .modal-detail { margin-top: 1rem; max-height: 19rem; overflow-y: auto; text-align: left; }
+    .rs-redo-row {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.5rem 0.6rem;
+        border-radius: 0.8rem;
+        background-color: var(--main-content-bg);
+        margin-bottom: 0.3rem;
+    }
+    .rs-redo-row .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+    .rs-redo-row .txt { font-size: 0.82rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+    .rs-redo-row .txt .katex-display { display: inline; margin: 0; }
+    .rs-redo-row .txt .katex-display > .katex { display: inline; }
+    .rs-redo-row .whys { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .rs-why {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 0.05rem 0.4rem;
+        border-radius: 0.4rem;
+        border: 0.1rem solid currentColor;
+        white-space: nowrap;
+    }
+    .rs-why svg { width: 0.8rem; height: 0.8rem; }
+    .rs-why.bad { color: rgb(255, 140, 140); background-color: var(--ui-red-bg); }
+    .rs-why.views { color: rgb(150, 190, 255); background-color: var(--ui-blue-bg); }
+    .rs-why.slow { color: rgb(255, 140, 140); background-color: transparent; }
+    .rs-why.marked { color: var(--ui-pink-fills-hover); background-color: var(--ui-pink-bg); }
+    .rs-redo-row .time { flex: none; display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+    .rs-redo-row .time .t { font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+    .rs-redo-row .time .what { font-size: 0.66rem; color: var(--text-secondary); white-space: nowrap; }
+    .rs-redo-row .time .what.reset { color: rgb(90, 220, 170); }
 
     .format-example {
         background-color: var(--secondary-content-bg);
@@ -2302,6 +2340,8 @@
        since nothing changes until the redo starts. */
     .rs-row.marked { box-shadow: inset 0.22rem 0 0 var(--ui-pink-fills); }
     .rs-card h4 .n { margin-left: 0.35rem; color: var(--text-primary); }
+    .rs-card h4 .rs-cut { float: right; text-transform: none; letter-spacing: 0; font-weight: 600; cursor: help; }
+    .rs-meta.slow { color: rgb(255, 140, 140); }
     .rs-mark {
         display: inline-flex;
         align-items: center;
@@ -2646,7 +2686,7 @@
                         <span>- - - average</span>
                     </div>
                 </div>
-                <div class="rs-card"><h4>Worth another look<span id="rs-worth-count" class="n"></span></h4><div id="rs-worth" class="rs-mini"></div></div>
+                <div class="rs-card"><h4>Worth another look<span id="rs-worth-count" class="n"></span><span id="rs-worth-cut" class="rs-cut"></span></h4><div id="rs-worth" class="rs-mini"></div></div>
                 <div class="rs-card"><h4>Where the time went</h4><p id="rs-timesplit" class="rs-note"></p></div>
             </div>
             <div id="rs-review" class="rs-review hidden">
@@ -3025,6 +3065,7 @@
         <div class="modal-content">
             <h3 id="modal-title">Are you sure?</h3>
             <p id="modal-message">This action cannot be undone.</p>
+            <div id="modal-detail" class="modal-detail hidden"></div>
             <div class="modal-buttons mt-6">
                 <button id="modal-confirm-btn" class="btn btn-red">Confirm</button>
                 <button id="modal-cancel-btn" class="btn btn-main">Cancel</button>
@@ -3100,7 +3141,7 @@
         const ANSWER_PATTERN_GLOBAL = /@@(.*?)@@/g;
 
         // Single source of truth for what the footer shows.
-        const APP_VERSION = 'v3.2.1 - Beta';
+        const APP_VERSION = 'v3.2.2 - Beta';
         const BUILD_DATE = '3rd November 2026';
 
         // DOM Elements
@@ -3160,6 +3201,7 @@
         const confirmationModal = document.getElementById('confirmation-modal');
         const modalTitle = document.getElementById('modal-title');
         const modalMessage = document.getElementById('modal-message');
+        const modalDetail = document.getElementById('modal-detail');
         const modalConfirmBtn = document.getElementById('modal-confirm-btn');
         const modalCancelBtn = document.getElementById('modal-cancel-btn');
         let confirmActionCallback = null;
@@ -4285,6 +4327,8 @@
                     // A question you got right starts its time again; a wrong one
                     // (force-corrected included) keeps adding to what it took.
                     if (question.isAnsweredCorrectly === true && !question.wasForceCorrected) question.timeTakenMs = 0;
+                    // Slow is judged on the new attempt alone.
+                    question.priorTimeMs = question.timeTakenMs || 0;
                     question.isAnsweredCorrectly = null;
                     // Start the view count again so a question that's right this time
                     // stops being suggested.
@@ -4336,23 +4380,33 @@
         }
 
         redoSuggestedBtnExt.addEventListener('click', () => {
-            const qs = originalAllQuestionsData;
-            const wrong = qs.filter(q => q.isAnsweredCorrectly === false).length;
-            const looked = qs.filter(q => q.isAnsweredCorrectly !== false && isSuggested(q)).length;
-            const marked = qs.filter(q => !isSuggested(q) && resultsMarked.has(q.id)).length;
-            const parts = [[wrong, 'incorrect'], [looked, 'revisited'], [marked, 'marked for reset']]
-                .filter(([n]) => n).map(([n, what]) => `${n} ${what}`);
-            const list = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0];
-            const total = wrong + looked + marked;
-            const restarting = qs.filter(q => q.isAnsweredCorrectly === true && !q.wasForceCorrected && (isSuggested(q) || resultsMarked.has(q.id))).length;
-            const timeNote = !restarting ? 'Your timer for those questions will continue.'
-                : restarting === total ? 'Their times start again from zero.'
-                : 'Incorrect ones keep their time; ones you got right start again from zero.';
+            // Each question that will be reset, why, and what happens to its time
+            // (the same rules handleRedoSuggested applies).
+            const redo = originalAllQuestionsData.filter(q => isSuggested(q) || resultsMarked.has(q.id)).sort(byResultNum);
+            const rows = redo.map(q => {
+                const reasons = [
+                    q.isAnsweredCorrectly === false && '<span class="rs-why bad">Incorrect</span>',
+                    (q.revisits || 0) > 0 && `<span class="rs-why views">${RS_ICON.eye}Viewed ×${q.revisits + 1}</span>`,
+                    isSlow(q) && `<span class="rs-why slow">${RS_ICON.clock}Slow</span>`,
+                    !isSuggested(q) && `<span class="rs-why marked">${RS_ICON.redo}Marked</span>`,
+                ].filter(Boolean).join('');
+                const keepsTime = !(q.isAnsweredCorrectly === true && !q.wasForceCorrected);
+                const time = formatTime(q.timeTakenMs || 0);
+                const timeCell = keepsTime
+                    ? `<span class="t">${time}</span><span class="what">Time kept</span>`
+                    : `<span class="t">${time} &rarr; 0s</span><span class="what reset">Time reset</span>`;
+                return `<div class="rs-redo-row"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span>`
+                    + `<span class="body"><span class="txt">${resultRowText(q)}</span><span class="whys">${reasons}</span></span>`
+                    + `<span class="time">${timeCell}</span></div>`;
+            }).join('');
+            const total = redo.length;
             showConfirmationModal(
                 "Redo Suggested Questions?",
-                `This will reset ${total} question${total === 1 ? '' : 's'} (${list}) so you can answer ${total === 1 ? 'it' : 'them'} again. ${timeNote} Are you sure?`,
+                `${total === 1 ? 'This question' : `These ${total} questions`} will be reset so you can answer ${total === 1 ? 'it' : 'them'} again. Wrong answers keep adding to their time; ones you got right start again from zero.`,
                 handleRedoSuggested,
-                'btn-green'
+                'btn-green',
+                null,
+                `<div class="rs-redo-list">${rows}</div>`
             );
         });
 
@@ -4413,6 +4467,7 @@
                     q.wasForceCorrected = false;
                     q.pendingOptionLetter = null;
                     q.revisits = 0;         // times navigated back to after answering
+                    q.priorTimeMs = 0;      // time from earlier attempts (set by Redo Suggested)
                     q.answeredAt = null;    // for "Recently completed"
                     if (currentQuizType === 'multiple-choice') {
                         q.userSelectedOptionLetter = null;
@@ -5301,9 +5356,15 @@
         pauseQuizBtn.addEventListener('click', pauseQuiz);
         resumeQuizBtn.addEventListener('click', resumeQuiz);
 
-        function showConfirmationModal(title, message, onConfirm, confirmBtnClass = 'btn-red', onCancel = null) {
+        // detailHTML (optional) goes under the message and widens the box, e.g. the
+        // list of questions Redo Suggested will reset.
+        function showConfirmationModal(title, message, onConfirm, confirmBtnClass = 'btn-red', onCancel = null, detailHTML = '') {
             modalTitle.textContent = title;
             modalMessage.textContent = message;
+            modalDetail.innerHTML = detailHTML;
+            modalDetail.classList.toggle('hidden', !detailHTML);
+            confirmationModal.querySelector('.modal-content').classList.toggle('wide', !!detailHTML);
+            if (detailHTML) { modalDetail.scrollTop = 0; renderMath(modalDetail); }
             confirmActionCallback = onConfirm;
             cancelActionCallback = onCancel;
 
@@ -5372,6 +5433,10 @@
             resultsSortMode = lastRoundWasRedo ? 'redone' : savedResultsSort();
             resultsSortOpen = false;
             resultsSelectedNum = null;
+            // The slow line comes from the full attempt and stays put through redo
+            // rounds; otherwise quick redo answers would pull it down and flag
+            // questions you didn't redo.
+            if (!lastRoundWasRedo) resultsSlow = computeSlowCut(originalAllQuestionsData);
             renderResults();
             showResultsTab('overview');
 
@@ -5390,7 +5455,7 @@
         const RESULTS_SORTS = [
             ['Order', [['asc', 'Ascending'], ['desc', 'Descending'], ['recent', 'Recently completed']]],
             ['Time', [['fastest', 'Fastest first'], ['slowest', 'Slowest first']]],
-            ['Show first', [['incorrect', 'Incorrect'], ['correct', 'Correct'], ['revisited', 'Revisited'], ['redone', 'Redone'], ['marked', 'Marked for reset']]],
+            ['Show first', [['incorrect', 'Incorrect'], ['correct', 'Correct'], ['revisited', 'Revisited'], ['slow', 'Slow'], ['redone', 'Redone'], ['marked', 'Marked for reset']]],
         ];
         // "Show first" sorts keep every question: the matching ones lead, then the rest
         // in ascending order.
@@ -5399,10 +5464,35 @@
             correct:   q => q.isAnsweredCorrectly === true,
             revisited: q => (q.revisits || 0) > 0,
             redone:    q => !!q.wasRetaken,
+            slow:      q => isSlow(q),
             marked:    q => resultsMarked.has(q.id),
         };
+        // Slow: the latest attempt took longer than the median + 1.5 × MAD of every
+        // answered question's latest attempt. MAD (median distance from the median,
+        // scaled by 1.4826 to read like a standard deviation) isn't pulled up by the
+        // slow questions themselves the way the mean and SD are, so a few very slow
+        // ones can't lift the line past each other. Fixed strength; needs at least
+        // five answers to mean anything.
+        const SLOW_K = 1.5;
+        const SLOW_MIN_ANSWERED = 5;
+        // A redone wrong answer keeps its earlier time (priorTimeMs), so only the
+        // time since the redo counts here.
+        const attemptMs = q => Math.max(0, (q.timeTakenMs || 0) - (q.priorTimeMs || 0));
+        const medianOf = list => {
+            const a = [...list].sort((x, y) => x - y), m = a.length >> 1;
+            return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+        };
+        let resultsSlow = { cutMs: Infinity, medianMs: 0, madMs: 0 };
+        function computeSlowCut(questions) {
+            const times = questions.filter(q => q.isAnsweredCorrectly !== null).map(attemptMs).filter(ms => ms > 0);
+            if (times.length < SLOW_MIN_ANSWERED) return { cutMs: Infinity, medianMs: 0, madMs: 0 };
+            const medianMs = medianOf(times);
+            const madMs = 1.4826 * medianOf(times.map(t => Math.abs(t - medianMs)));
+            return { cutMs: medianMs + SLOW_K * madMs, medianMs, madMs };
+        }
+        const isSlow = q => q.isAnsweredCorrectly !== null && attemptMs(q) > resultsSlow.cutMs;
         // Worth another look, and what Redo Suggested resets on top of marked ones.
-        const isSuggested = q => q.isAnsweredCorrectly === false || (q.revisits || 0) > 0;
+        const isSuggested = q => q.isAnsweredCorrectly === false || (q.revisits || 0) > 0 || isSlow(q);
         // Question ids marked for reset in Review. Marking changes nothing in the
         // results; the questions are only reset when Redo Suggested starts the round.
         const resultsMarked = new Set();
@@ -5503,7 +5593,7 @@
         // Short, single-line text for list rows (blanks shown as underscores).
         const resultRowText = q => q.questionText || '';
         const resultMetaHTML = q =>
-            `<span class="rs-meta">${RS_ICON.clock}${formatTime(q.timeTakenMs || 0)}</span>`
+            `<span class="rs-meta ${isSlow(q) ? 'slow' : ''}">${RS_ICON.clock}${formatTime(q.timeTakenMs || 0)}${isSlow(q) ? ' · slow' : ''}</span>`
             + ((q.revisits || 0) > 0 ? `<span class="rs-meta views">${RS_ICON.eye}×${q.revisits + 1}</span>` : '')
             + (q.wasRetaken ? `<span class="rs-meta retake">${RS_ICON.redo}Redone</span>` : '')
             + (q.wasForceCorrected ? '<span class="rs-meta forced">Force-corrected</span>' : '')
@@ -5595,11 +5685,19 @@
             // Worth another look: wrong answers first, then ones you came back to.
             const worth = st.qs.filter(isSuggested)
                 .sort((a, b) => ((a.isAnsweredCorrectly === false ? 0 : 1) - (b.isAnsweredCorrectly === false ? 0 : 1)) || (b.timeTakenMs || 0) - (a.timeTakenMs || 0));
-            document.getElementById('rs-worth-count').textContent = worth.length || '';
+            document.getElementById('rs-worth-count').textContent = worth.length ? `- ${worth.length} question${worth.length === 1 ? '' : 's'}` : '';
+            const cutEl = document.getElementById('rs-worth-cut');
+            if (Number.isFinite(resultsSlow.cutMs)) {
+                cutEl.textContent = `Slow: over ${formatTime(resultsSlow.cutMs)}`;
+                cutEl.title = `Median ${formatTime(resultsSlow.medianMs)} + 1.5 × spread ${formatTime(resultsSlow.madMs)}. Right answers slower than this are listed too.`;
+            } else {
+                cutEl.textContent = '';
+                cutEl.title = '';
+            }
             const worthEl = document.getElementById('rs-worth');
             worthEl.innerHTML = worth.length
                 ? worth.map(q => `<div class="rs-row" data-rs-num="${resultNum(q)}"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span><span class="txt">${resultRowText(q)}</span><span class="side">${resultMetaHTML(q)}</span></div>`).join('')
-                : '<p class="rs-note">Nothing to flag: every answer was right and you didn\'t need to go back to any.</p>';
+                : '<p class="rs-note">Nothing to flag: every answer was right, none were unusually slow and you didn\'t need to go back to any.</p>';
             renderMath(worthEl);
             if (resultsTab === 'overview') trimRowPreviews(worthEl);
 
@@ -5700,7 +5798,7 @@
         }
         const resultListRowHTML = q => {
             const marked = resultsMarked.has(q.id);
-            return `<div class="rs-row ${resultNum(q) === resultsSelectedNum ? 'sel' : ''} ${marked ? 'marked' : ''}" data-rs-num="${resultNum(q)}"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span><span class="txt">${resultRowText(q)}</span><span class="side"><span class="rs-meta">${formatTime(q.timeTakenMs || 0)}</span>${q.revisits ? `<span class="rs-meta views">${RS_ICON.eye}×${q.revisits + 1}</span>` : ''}${q.wasRetaken ? `<span class="rs-meta retake">${RS_ICON.redo}</span>` : ''}${marked ? `<span class="rs-meta marked" title="Marked for reset">${RS_ICON.redo}Reset</span>` : ''}</span></div>`;
+            return `<div class="rs-row ${resultNum(q) === resultsSelectedNum ? 'sel' : ''} ${marked ? 'marked' : ''}" data-rs-num="${resultNum(q)}"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span><span class="txt">${resultRowText(q)}</span><span class="side"><span class="rs-meta ${isSlow(q) ? 'slow' : ''}">${formatTime(q.timeTakenMs || 0)}</span>${q.revisits ? `<span class="rs-meta views">${RS_ICON.eye}×${q.revisits + 1}</span>` : ''}${q.wasRetaken ? `<span class="rs-meta retake">${RS_ICON.redo}</span>` : ''}${marked ? `<span class="rs-meta marked" title="Marked for reset">${RS_ICON.redo}Reset</span>` : ''}</span></div>`;
         };
 
         function renderResultsReview() {
