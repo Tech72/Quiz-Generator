@@ -957,7 +957,8 @@
     .scrollable-content,
     #quiz-data-input, 
     .timeline-nav-container,
-    .custom-select-options {
+    .custom-select-options,
+    .modal-detail {
         overflow: auto;
         scrollbar-width: auto;
     }
@@ -965,7 +966,8 @@
     .scrollable-content::-webkit-scrollbar, 
     #quiz-data-input::-webkit-scrollbar, 
     .timeline-nav-container::-webkit-scrollbar, 
-    .custom-select-options::-webkit-scrollbar {
+    .custom-select-options::-webkit-scrollbar,
+    .modal-detail::-webkit-scrollbar {
         width: 8px;
         height: 8px;
     }
@@ -973,14 +975,16 @@
     .scrollable-content::-webkit-scrollbar-track, 
     #quiz-data-input::-webkit-scrollbar-track, 
     .timeline-nav-container::-webkit-scrollbar-track, 
-    .custom-select-options::-webkit-scrollbar-track {
+    .custom-select-options::-webkit-scrollbar-track,
+    .modal-detail::-webkit-scrollbar-track {
         background: transparent;
     }
 
     .scrollable-content::-webkit-scrollbar-thumb, 
     #quiz-data-input::-webkit-scrollbar-thumb, 
     .timeline-nav-container::-webkit-scrollbar-thumb, 
-    .custom-select-options::-webkit-scrollbar-thumb {
+    .custom-select-options::-webkit-scrollbar-thumb,
+    .modal-detail::-webkit-scrollbar-thumb {
         background-color: var(--secondary-content-bg);
         border-radius: 99px;
         background-clip: content-box;
@@ -989,14 +993,16 @@
     .scrollable-content::-webkit-scrollbar-thumb:hover, 
     #quiz-data-input::-webkit-scrollbar-thumb:hover, 
     .timeline-nav-container::-webkit-scrollbar-thumb:hover, 
-    .custom-select-options::-webkit-scrollbar-thumb:hover {
+    .custom-select-options::-webkit-scrollbar-thumb:hover,
+    .modal-detail::-webkit-scrollbar-thumb:hover {
         background-color: var(--ui-main-bg-hover);
     }
 
     .scrollable-content::-webkit-scrollbar-button,
     #quiz-data-input::-webkit-scrollbar-button,
     .timeline-nav-container::-webkit-scrollbar-button,
-    .custom-select-options::-webkit-scrollbar-button {
+    .custom-select-options::-webkit-scrollbar-button,
+    .modal-detail::-webkit-scrollbar-button {
         display: none;
     }
 
@@ -1237,7 +1243,7 @@
     .modal-content.wide { max-width: 38rem; }
 
     /* Redo Suggested confirm: one row per question being reset. */
-    .modal-detail { margin-top: 1rem; max-height: 19rem; overflow-y: auto; text-align: left; }
+    .modal-detail { margin-top: 1rem; max-height: 19rem; overflow-x: hidden; overflow-y: auto; padding-right: 0.35rem; text-align: left; }
     .rs-redo-row {
         display: flex;
         align-items: center;
@@ -3141,7 +3147,7 @@
         const ANSWER_PATTERN_GLOBAL = /@@(.*?)@@/g;
 
         // Single source of truth for what the footer shows.
-        const APP_VERSION = 'v3.2.2 - Beta';
+        const APP_VERSION = 'v3.2.3 - Beta';
         const BUILD_DATE = '3rd November 2026';
 
         // DOM Elements
