@@ -2297,6 +2297,32 @@
     .rs-meta.views { color: var(--ui-blue-fills); }
     .rs-meta.retake { color: var(--ui-amber-fills); }
     .rs-meta.forced { color: var(--ui-blue-fills); }
+    .rs-meta.marked { color: var(--ui-pink-fills); }
+    /* Marked for reset: a pink edge on the row. The badge keeps its result colour,
+       since nothing changes until the redo starts. */
+    .rs-row.marked { box-shadow: inset 0.22rem 0 0 var(--ui-pink-fills); }
+    .rs-card h4 .n { margin-left: 0.35rem; color: var(--text-primary); }
+    .rs-mark {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.3rem 0.7rem;
+        border-radius: 0.6rem;
+        font: inherit;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        background-color: var(--ui-main-bg);
+        border: 0.12rem solid var(--ui-main-fills);
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .rs-mark svg { width: 0.95rem; height: 0.95rem; }
+    .rs-mark:hover { color: var(--text-primary); border-color: var(--ui-pink-fills); }
+    .rs-mark.on { color: var(--text-primary); background-color: var(--ui-pink-bg); border-color: var(--ui-pink-fills); }
+    .rs-mark.on:hover { background-color: var(--ui-pink-bg-hover); border-color: var(--ui-pink-fills-hover); }
+    .rs-mark.auto { cursor: default; opacity: 0.6; }
+    .rs-mark.auto:hover { color: var(--text-secondary); border-color: var(--ui-main-fills); }
 
     .rs-row {
         display: flex;
@@ -2433,7 +2459,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-6-13.5v13.5" /></svg>
             </button>
             
-            <button id="redo-incorrect-btn-ext" class="external-quiz-action-btn btn btn-green hidden">Redo Incorrect</button>
+            <button id="redo-suggested-btn-ext" class="external-quiz-action-btn btn btn-green hidden">Redo Suggested</button>
             <button id="redo-quiz-btn-ext" class="external-quiz-action-btn btn btn-blue hidden">Retake Quiz</button>
             <button id="new-quiz-btn-ext" class="external-quiz-action-btn btn btn-red hidden">New Quiz</button>
         </div>
@@ -2620,7 +2646,7 @@
                         <span>- - - average</span>
                     </div>
                 </div>
-                <div class="rs-card"><h4>Worth another look</h4><div id="rs-worth" class="rs-mini"></div></div>
+                <div class="rs-card"><h4>Worth another look<span id="rs-worth-count" class="n"></span></h4><div id="rs-worth" class="rs-mini"></div></div>
                 <div class="rs-card"><h4>Where the time went</h4><p id="rs-timesplit" class="rs-note"></p></div>
             </div>
             <div id="rs-review" class="rs-review hidden">
@@ -2698,6 +2724,16 @@
                                 <input type="number" id="auto-next-duration-input" class="settings-number-input" min="0" max="120" value="3">
                                 <button class="number-input-btn auto-next-btn" data-action="plus">+</button>
                             </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Auto Go To Results</span>
+                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">Opens the results screen by itself once the last question is answered, after the Auto Next Delay. Works whether Auto Next is on or not. When off, the quiz waits on the last question until you click See Results.</span></div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="auto-results-toggle">
+                                <span class="toggle-switch-circle"></span>
+                            </label>
                         </div>
                         <div id="time-limit-item" class="setting-item">
                             <div class="setting-text-container">
@@ -3033,7 +3069,7 @@
         const ANSWER_PATTERN_GLOBAL = /@@(.*?)@@/g;
 
         // Single source of truth for what the footer shows.
-        const APP_VERSION = 'v3.1.1 - Beta';
+        const APP_VERSION = 'v3.2.0 - Beta';
         const BUILD_DATE = '3rd November 2026';
 
         // DOM Elements
@@ -3121,7 +3157,7 @@
         const parseReportLatexText = document.getElementById('parse-report-latex-text');
         const parseReportLatexBtn = document.getElementById('parse-report-latex-btn');
 
-        const redoIncorrectBtnExt = document.getElementById('redo-incorrect-btn-ext');
+        const redoSuggestedBtnExt = document.getElementById('redo-suggested-btn-ext');
         const redoQuizBtnExt = document.getElementById('redo-quiz-btn-ext');
         const newQuizBtnExt = document.getElementById('new-quiz-btn-ext');
         
@@ -3136,6 +3172,7 @@
         const keyboardFunctionsToggle = document.getElementById('keyboard-functions-toggle');
         const autoNextDurationItem = document.getElementById('auto-next-duration-item');
         const autoNextDurationInput = document.getElementById('auto-next-duration-input');
+        const autoResultsToggle = document.getElementById('auto-results-toggle');
         const timeLimitInput = document.getElementById('time-limit-input');
         const clickToSubmitToggle = document.getElementById('click-to-submit-toggle');
         const doubleClickToSubmitToggle = document.getElementById('double-click-to-submit-toggle');
@@ -4198,7 +4235,9 @@
             return questions;
         }
         
-        function handleRedoIncorrect() {
+        // Redo Suggested resets everything in Worth another look (wrong answers and
+        // ones you went back to) plus anything marked for reset in Review.
+        function handleRedoSuggested() {
             let firstIncorrectDisplayIndex = -1;
             // The previous quiz is over, so any settings changed meanwhile apply now.
             activeQuizSettings = captureQuizSettings();
@@ -4209,8 +4248,14 @@
 
             questionOrder.forEach((questionIndexInCurrent, displayIndex) => {
                 const question = currentQuizQuestions[questionIndexInCurrent];
-                if (question.isAnsweredCorrectly === false) {
+                if (isSuggested(question) || resultsMarked.has(question.id)) {
+                    // A question you got right starts its time again; a wrong one
+                    // (force-corrected included) keeps adding to what it took.
+                    if (question.isAnsweredCorrectly === true && !question.wasForceCorrected) question.timeTakenMs = 0;
                     question.isAnsweredCorrectly = null;
+                    // Start the view count again so a question that's right this time
+                    // stops being suggested.
+                    question.revisits = 0;
                     question.status = 'unanswered';
                     question.wasRetaken = true;
                     question.wasForceCorrected = false;
@@ -4225,6 +4270,11 @@
                     if (firstIncorrectDisplayIndex === -1) firstIncorrectDisplayIndex = displayIndex;
                 }
             });
+            resultsMarked.clear();
+            // The last answer's start stamp is still set; without clearing it, moving
+            // to the first redo question would bank the time spent on the results
+            // screen into the question the quiz finished on.
+            questionSpecificTimerStartMs = 0;
             
             if (firstIncorrectDisplayIndex !== -1) {
                 resultsScreen.classList.add('hidden');
@@ -4252,11 +4302,23 @@
             }
         }
 
-        redoIncorrectBtnExt.addEventListener('click', () => {
+        redoSuggestedBtnExt.addEventListener('click', () => {
+            const qs = originalAllQuestionsData;
+            const wrong = qs.filter(q => q.isAnsweredCorrectly === false).length;
+            const looked = qs.filter(q => q.isAnsweredCorrectly !== false && isSuggested(q)).length;
+            const marked = qs.filter(q => !isSuggested(q) && resultsMarked.has(q.id)).length;
+            const parts = [[wrong, 'incorrect'], [looked, 'revisited'], [marked, 'marked for reset']]
+                .filter(([n]) => n).map(([n, what]) => `${n} ${what}`);
+            const list = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0];
+            const total = wrong + looked + marked;
+            const restarting = qs.filter(q => q.isAnsweredCorrectly === true && !q.wasForceCorrected && (isSuggested(q) || resultsMarked.has(q.id))).length;
+            const timeNote = !restarting ? 'Your timer for those questions will continue.'
+                : restarting === total ? 'Their times start again from zero.'
+                : 'Incorrect ones keep their time; ones you got right start again from zero.';
             showConfirmationModal(
-                "Redo Incorrect Questions?",
-                "This will mark your incorrect answers as unanswered and let you try them again. Your timer for those questions will continue. Are you sure?",
-                handleRedoIncorrect,
+                "Redo Suggested Questions?",
+                `This will reset ${total} question${total === 1 ? '' : 's'} (${list}) so you can answer ${total === 1 ? 'it' : 'them'} again. ${timeNote} Are you sure?`,
+                handleRedoSuggested,
                 'btn-green'
             );
         });
@@ -4300,6 +4362,7 @@
 
             isQuizActive = true;
             lastRoundWasRedo = false;
+            resultsMarked.clear();
             lastDisplayedIndex = null;
             hideExternalResultsButtons();
             currentQuizQuestions = JSON.parse(JSON.stringify(questionsToUse)); 
@@ -4635,6 +4698,22 @@
              }
         }
         
+        // Whether answering this question moves on by itself. Once every question is
+        // answered that means going to results, which only Auto Go To Results does.
+        function willAutoAdvance(question) {
+            if (currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null)) return autoResultsToggle.checked;
+            const autoNextType = homeState.autoNext || 'none';
+            return (autoNextType === 'all') ||
+                   (autoNextType === 'correct' && question.isAnsweredCorrectly) ||
+                   (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
+        }
+
+        function scheduleAutoAdvance() {
+            autoAdvanceTimeout = setTimeout(() => {
+                if (!isQuizPaused && isQuizActive) handleNextAction();
+            }, effectiveAutoNextDuration() * 1000);
+        }
+
         function checkAndShowNextButton() {
             const question = getCurrentQuestionData();
             if (!question || question.isAnsweredCorrectly === null) return;
@@ -4643,11 +4722,7 @@
             // unless auto-next is about to fire.
             submitAnswerBtn.classList.remove('hidden');
 
-            const storageKeyPrefix = currentQuizType === 'multiple-choice' ? 'auto' : 'fitbAuto';
-            const autoNextType = homeState.autoNext || 'none';
-            const shouldAutoNext = (autoNextType === 'all') ||
-                                (autoNextType === 'correct' && question.isAnsweredCorrectly) ||
-                                (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
+            const shouldAutoNext = willAutoAdvance(question);
 
             // If the button was hidden, fade it in.
             if (currentQuizType === 'multiple-choice' && hideSubmitButtonToggle.checked && !shouldAutoNext) {
@@ -4697,19 +4772,7 @@
             submitAnswerBtn.disabled = false;
 
             checkAndShowNextButton();
-            
-            const autoNextType = homeState.autoNext || 'none';
-            const autoNextDuration = effectiveAutoNextDuration() * 1000;
-
-            const shouldAutoNext = (autoNextType === 'all') ||
-                                (autoNextType === 'correct' && question.isAnsweredCorrectly) ||
-                                (autoNextType === 'incorrect' && !question.isAnsweredCorrectly);
-
-            if (shouldAutoNext) {
-                autoAdvanceTimeout = setTimeout(() => { 
-                    if (!isQuizPaused && isQuizActive) handleNextAction();
-                }, autoNextDuration);
-            }
+            if (willAutoAdvance(question)) scheduleAutoAdvance();
             if (allAnswered) {
                 pauseQuizBtn.classList.add('hidden');
             }
@@ -4904,7 +4967,9 @@
                 updateTimelineNav();
                 checkAndShowNextButton();
                 submitAnswerBtn.disabled = false;
-                submitAnswerBtn.textContent = currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null) ? 'See Results' : 'Next Question';
+                const allAnswered = currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null);
+                submitAnswerBtn.textContent = allAnswered ? 'See Results' : 'Next Question';
+                if (allAnswered && autoResultsToggle.checked) scheduleAutoAdvance();
             } else {
                 handleSubmitAnswer();
             }
@@ -5269,7 +5334,7 @@
             });
 
             resultsIsPrematureEnd = isPrematureEnd;
-            // After a Redo Incorrect round the redone questions come first; otherwise
+            // After a Redo Suggested round the redone questions come first; otherwise
             // the sort chosen last time.
             resultsSortMode = lastRoundWasRedo ? 'redone' : savedResultsSort();
             resultsSortOpen = false;
@@ -5277,12 +5342,13 @@
             renderResults();
             showResultsTab('overview');
 
-            const incorrectForRedoButton = originalAllQuestionsData.filter(q => q.isAnsweredCorrectly === false);
-            if (incorrectForRedoButton.length > 0) {
-                redoIncorrectBtnExt.classList.remove('hidden');
-            } else {
-                redoIncorrectBtnExt.classList.add('hidden');
-            }
+            updateRedoSuggestedBtn();
+        }
+
+        // Shown whenever there's something to redo: a suggestion or a marked question.
+        function updateRedoSuggestedBtn() {
+            const any = originalAllQuestionsData.some(q => isSuggested(q) || resultsMarked.has(q.id));
+            redoSuggestedBtnExt.classList.toggle('hidden', !any);
         }
 
         // --- Results screen -----------------------------------------------------------
@@ -5291,7 +5357,7 @@
         const RESULTS_SORTS = [
             ['Order', [['asc', 'Ascending'], ['desc', 'Descending'], ['recent', 'Recently completed']]],
             ['Time', [['fastest', 'Fastest first'], ['slowest', 'Slowest first']]],
-            ['Show first', [['incorrect', 'Incorrect'], ['correct', 'Correct'], ['revisited', 'Revisited'], ['redone', 'Redone']]],
+            ['Show first', [['incorrect', 'Incorrect'], ['correct', 'Correct'], ['revisited', 'Revisited'], ['redone', 'Redone'], ['marked', 'Marked for reset']]],
         ];
         // "Show first" sorts keep every question: the matching ones lead, then the rest
         // in ascending order.
@@ -5300,7 +5366,13 @@
             correct:   q => q.isAnsweredCorrectly === true,
             revisited: q => (q.revisits || 0) > 0,
             redone:    q => !!q.wasRetaken,
+            marked:    q => resultsMarked.has(q.id),
         };
+        // Worth another look, and what Redo Suggested resets on top of marked ones.
+        const isSuggested = q => q.isAnsweredCorrectly === false || (q.revisits || 0) > 0;
+        // Question ids marked for reset in Review. Marking changes nothing in the
+        // results; the questions are only reset when Redo Suggested starts the round.
+        const resultsMarked = new Set();
         // Sort names saved by earlier versions.
         const LEGACY_RESULTS_SORTS = { 'number': 'asc', 'time-desc': 'slowest', 'time-asc': 'fastest', 'unanswered': 'asc' };
         function savedResultsSort() {
@@ -5373,6 +5445,7 @@
             clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
             eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
             redo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>',
+            check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
         };
         const RS_FLAME = 'M12 1.5c.9 3.6 5.6 6.2 5.6 11.7a5.6 5.6 0 0 1-11.2 0c0-2.9 1.4-4.5 2.8-5.9.3 1.9 1.2 2.9 2.3 3.2C10.6 7.4 11 4.4 12 1.5Z';
         const RS_FLAME_CORE = 'M12 9.5c.4 1.7 2.8 3 2.8 5.6a2.8 2.8 0 0 1-5.6 0c0-1.5.7-2.3 1.4-3 .2 1 .6 1.4 1.1 1.6-.1-1.6.1-3 .3-4.2Z';
@@ -5480,9 +5553,9 @@
             }).join('');
 
             // Worth another look: wrong answers first, then ones you came back to.
-            const worth = st.qs.filter(q => q.isAnsweredCorrectly === false || (q.revisits || 0) > 0)
-                .sort((a, b) => ((a.isAnsweredCorrectly === false ? 0 : 1) - (b.isAnsweredCorrectly === false ? 0 : 1)) || (b.timeTakenMs || 0) - (a.timeTakenMs || 0))
-                .slice(0, 5);
+            const worth = st.qs.filter(isSuggested)
+                .sort((a, b) => ((a.isAnsweredCorrectly === false ? 0 : 1) - (b.isAnsweredCorrectly === false ? 0 : 1)) || (b.timeTakenMs || 0) - (a.timeTakenMs || 0));
+            document.getElementById('rs-worth-count').textContent = worth.length || '';
             const worthEl = document.getElementById('rs-worth');
             worthEl.innerHTML = worth.length
                 ? worth.map(q => `<div class="rs-row" data-rs-num="${resultNum(q)}"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span><span class="txt">${resultRowText(q)}</span><span class="side">${resultMetaHTML(q)}</span></div>`).join('')
@@ -5512,6 +5585,32 @@
                 ? ` You came back to <b>${st.revisited.length}</b> question${st.revisited.length === 1 ? '' : 's'} after answering (${st.extraViews} extra view${st.extraViews === 1 ? '' : 's'}).`
                 : ' You didn\'t go back to any questions after answering them.';
             document.getElementById('rs-timesplit').innerHTML = text;
+        }
+
+        function resultMarkHTML(q) {
+            if (isSuggested(q)) {
+                return `<span class="rs-mark auto" title="Already in Worth another look, so Redo Suggested resets it anyway">${RS_ICON.check}Suggested</span>`;
+            }
+            const on = resultsMarked.has(q.id);
+            return `<button class="rs-mark ${on ? 'on' : ''}" type="button" data-rs-mark title="Reset this question when you press Redo Suggested">${on ? RS_ICON.check : RS_ICON.redo}${on ? 'Marked for reset' : 'Mark for reset'}</button>`;
+        }
+        function toggleResultMark(num) {
+            const q = findResult(num);
+            if (!q || isSuggested(q)) return;
+            if (resultsMarked.has(q.id)) resultsMarked.delete(q.id); else resultsMarked.add(q.id);
+            // Only the row, the button and the counts change; the list keeps its order
+            // and the question's result stays as it is.
+            const row = document.querySelector(`#rs-list .rs-row[data-rs-num="${num}"]`);
+            if (row) {
+                row.outerHTML = resultListRowHTML(q);
+                const fresh = document.querySelector(`#rs-list .rs-row[data-rs-num="${num}"]`);
+                renderMath(fresh);
+                trimRowPreviews(fresh.parentElement);
+            }
+            const btn = document.querySelector('#rs-detail [data-rs-mark]');
+            if (btn) btn.outerHTML = resultMarkHTML(q);
+            renderResultsSortMenu();
+            updateRedoSuggestedBtn();
         }
 
         function resultDetailHTML(q) {
@@ -5546,10 +5645,23 @@
                     + (q.explanation ? `<div class="rs-expl"><b>Explanation:</b>${q.explanation}</div>` : '')
                     + (q.hint ? `<div class="rs-expl"><b>Hint:</b>${q.hint}</div>` : '');
             }
-            return `<div class="rs-d-head"><span class="rs-badge ${resultState(q)}">${n}</span><h3>Question ${n}</h3>${resultMetaHTML(q)}</div>`
+            return `<div class="rs-d-head"><span class="rs-badge ${resultState(q)}">${n}</span><h3>Question ${n}</h3>${resultMetaHTML(q)}${resultMarkHTML(q)}</div>`
                 + body
-                + `<div class="rs-d-foot"><button class="btn btn-main" data-rs-step="-1">&larr; Previous</button><span class="rs-kbd"><kbd>←</kbd> <kbd>→</kbd></span><button class="btn btn-main" data-rs-step="1">Next &rarr;</button></div>`;
+                + `<div class="rs-d-foot"><button class="btn btn-main" data-rs-step="-1">&larr; Previous</button><span class="rs-kbd"><kbd>←</kbd> <kbd>→</kbd> to move · <kbd>R</kbd> to mark for reset</span><button class="btn btn-main" data-rs-step="1">Next &rarr;</button></div>`;
         }
+
+        function renderResultsSortMenu() {
+            document.getElementById('rs-sort-menu').innerHTML = RESULTS_SORTS.map(([group, items]) =>
+                `<div class="rs-dd-group">${group}</div>` + items.map(([value, label]) => {
+                    const test = RESULTS_SHOW_FIRST[value];
+                    const count = test ? `<span class="n">${originalAllQuestionsData.filter(test).length}</span>` : '';
+                    return `<div class="rs-dd-opt ${value === resultsSortMode ? 'on' : ''}" data-rs-sort="${value}"><span>${label}</span>${count}</div>`;
+                }).join('')).join('');
+        }
+        const resultListRowHTML = q => {
+            const marked = resultsMarked.has(q.id);
+            return `<div class="rs-row ${resultNum(q) === resultsSelectedNum ? 'sel' : ''} ${marked ? 'marked' : ''}" data-rs-num="${resultNum(q)}"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span><span class="txt">${resultRowText(q)}</span><span class="side"><span class="rs-meta">${formatTime(q.timeTakenMs || 0)}</span>${q.revisits ? `<span class="rs-meta views">${RS_ICON.eye}×${q.revisits + 1}</span>` : ''}${q.wasRetaken ? `<span class="rs-meta retake">${RS_ICON.redo}</span>` : ''}${marked ? `<span class="rs-meta marked" title="Marked for reset">${RS_ICON.redo}Reset</span>` : ''}</span></div>`;
+        };
 
         function renderResultsReview() {
             const { list, split } = sortedResults(resultsSortMode);
@@ -5558,18 +5670,13 @@
 
             document.getElementById('rs-sort-value').textContent = resultsSortLabel(resultsSortMode);
             document.getElementById('rs-sort').classList.toggle('open', resultsSortOpen);
-            document.getElementById('rs-sort-menu').innerHTML = RESULTS_SORTS.map(([group, items]) =>
-                `<div class="rs-dd-group">${group}</div>` + items.map(([value, label]) => {
-                    const test = RESULTS_SHOW_FIRST[value];
-                    const count = test ? `<span class="n">${originalAllQuestionsData.filter(test).length}</span>` : '';
-                    return `<div class="rs-dd-opt ${value === resultsSortMode ? 'on' : ''}" data-rs-sort="${value}"><span>${label}</span>${count}</div>`;
-                }).join('')).join('');
+            renderResultsSortMenu();
 
             const listEl = document.getElementById('rs-list');
             listEl.innerHTML = list.map((q, i) =>
                 (split && i === 0 ? `<div class="rs-divider">${resultsSortLabel(resultsSortMode).replace(' first', '')}</div>` : '')
                 + (split !== undefined && i === split && split > 0 ? '<div class="rs-divider">Everything else · ascending</div>' : '')
-                + `<div class="rs-row ${resultNum(q) === resultsSelectedNum ? 'sel' : ''}" data-rs-num="${resultNum(q)}"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span><span class="txt">${resultRowText(q)}</span><span class="side"><span class="rs-meta">${formatTime(q.timeTakenMs || 0)}</span>${q.revisits ? `<span class="rs-meta views">${RS_ICON.eye}×${q.revisits + 1}</span>` : ''}${q.wasRetaken ? `<span class="rs-meta retake">${RS_ICON.redo}</span>` : ''}</span></div>`
+                + resultListRowHTML(q)
             ).join('');
             renderMath(listEl);
             if (resultsTab === 'review') trimRowPreviews(listEl);
@@ -5661,6 +5768,7 @@
             }
             const sortOpt = e.target.closest('[data-rs-sort]');
             if (sortOpt) { setResultsSort(sortOpt.dataset.rsSort); return; }
+            if (e.target.closest('[data-rs-mark]')) { toggleResultMark(resultsSelectedNum); return; }
             const stepBtn = e.target.closest('[data-rs-step]');
             if (stepBtn) { stepResult(+stepBtn.dataset.rsStep); return; }
             const item = e.target.closest('[data-rs-num]');
@@ -5697,11 +5805,12 @@
             if (resultsTab !== 'review' || !homeState.keyboardFunctions) return;
             if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); stepResult(1); }
             if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); stepResult(-1); }
+            if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && !e.metaKey && !e.altKey) toggleResultMark(resultsSelectedNum);
         });
 
 
         function hideExternalResultsButtons() {
-            redoIncorrectBtnExt.classList.add('hidden');
+            redoSuggestedBtnExt.classList.add('hidden');
             redoQuizBtnExt.classList.add('hidden');
             newQuizBtnExt.classList.add('hidden');
         }
@@ -6389,6 +6498,8 @@ Example Question Formatting:
             doubleClickToSubmitToggle.checked = localStorage.getItem('doubleClickToSubmit') === 'true';
             updateHideSubmitButtonState();
             hideSubmitButtonToggle.checked = localStorage.getItem('hideSubmitButton') === 'true';
+            autoResultsToggle.checked = localStorage.getItem('autoResults') === 'true';
+            updateAutoNextDurationState(homeState.autoNext);
 
         }
 
@@ -6413,7 +6524,7 @@ Example Question Formatting:
         }
 
         function updateAutoNextDurationState(type) {
-            const isDisabled = type === 'none';
+            const isDisabled = type === 'none' && !autoResultsToggle.checked;
             autoNextDurationItem.classList.toggle('disabled', isDisabled);
             autoNextDurationInput.disabled = isDisabled;
         }
@@ -6441,6 +6552,11 @@ Example Question Formatting:
         hideSubmitButtonToggle.addEventListener('change', (e) => {
             localStorage.setItem('hideSubmitButton', e.target.checked);
             applyHideSubmitButton();
+        });
+
+        autoResultsToggle.addEventListener('change', (e) => {
+            localStorage.setItem('autoResults', e.target.checked);
+            updateAutoNextDurationState(homeState.autoNext);
         });
 
         function setupNumberInput(prefix, storageKey, min, max, inputEl) {
@@ -6805,7 +6921,7 @@ Example Question Formatting:
                             'keyboardFunctions', 'autoNextType', 'autoNextDuration', 
                             'clickToSubmit', 'doubleClickToSubmit', 'hideSubmitButton', 
                             'randomiseQuestionOrder', 'randomiseAnswerOrder',
-                            'railInfo', 'railInfoOrder',
+                            'railInfo', 'railInfoOrder', 'autoResults',
                             'homeState'
                         ];
                         
