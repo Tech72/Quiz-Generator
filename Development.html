@@ -306,15 +306,19 @@
     }
 
     /* ================= Home screen (two columns) ================= */
+    /* Both columns scroll, which clips anything past their edges, so each gets
+       spare room inside (negative margin + matching padding) for outlines and
+       hover glows. Nothing moves on screen. */
     .home-left {
-        width: 40%;
+        width: calc(40% + 1.2rem);
         flex: none;
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
         min-width: 0;
         overflow-y: auto;
-        padding-right: 0.3rem;
+        margin: -0.75rem -0.45rem -0.75rem -0.75rem;
+        padding: 0.75rem;
     }
     .home-right {
         flex: 1;
@@ -323,6 +327,8 @@
         min-width: 0;
         min-height: 0;
         overflow-y: auto;
+        margin: -0.75rem -1.3rem -1.3rem -0.45rem;
+        padding: 0.75rem 1.3rem 1.3rem 0.45rem;
     }
     .home-right .textarea-container { min-height: 8rem; }
 
@@ -2475,6 +2481,240 @@
     .rs-kbd { font-size: 0.72rem; color: var(--text-secondary); }
     .rs-kbd kbd { font-family: inherit; font-size: 0.7rem; padding: 0.05rem 0.35rem; border-radius: 0.3rem; border: 1px solid var(--ui-main-fills); background-color: var(--ui-main-bg); }
 
+
+    /* ================= Gradient style (D) =================
+       Coloured fills run from the colour to a nearby one, top-left to
+       bottom-right, at the same see-through strength as before. Grey/main
+       stays flat. "html:root" gives these rules enough weight to beat the
+       base rules above without !important (except where the base uses it). */
+    :root {
+        /* green */
+        --grad-green-c1: 7, 177, 124; --grad-green-cm: 31, 188, 112; --grad-green-cn: 55, 200, 100;
+        --grad-green: linear-gradient(135deg, rgba(7, 177, 124, 0.3), rgba(55, 200, 100, 0.3));
+        --grad-green-h: linear-gradient(135deg, rgba(7, 177, 124, 0.4), rgba(55, 200, 100, 0.4));
+        --grad-green-solid: linear-gradient(135deg, rgb(5, 124, 87), rgb(55, 200, 100));
+        --grad-green-tab: linear-gradient(90deg, rgba(7, 177, 124, 0.5), rgba(55, 200, 100, 0.2) 60%, rgba(55, 200, 100, 0));
+        --grad-green-card: linear-gradient(135deg, rgba(7, 177, 124, 0.45) 0%, rgba(55, 200, 100, 0.06) 75%);
+        --grad-green-bar: linear-gradient(to top, rgba(7, 177, 124, 0.5) 0%, rgba(55, 200, 100, 0.15) 45%, rgba(55, 200, 100, 0) 70%);
+        /* red */
+        --grad-red-c1: 255, 71, 71; --grad-red-cm: 242, 86, 53; --grad-red-cn: 230, 100, 35;
+        --grad-red: linear-gradient(135deg, rgba(255, 71, 71, 0.3), rgba(230, 100, 35, 0.3));
+        --grad-red-h: linear-gradient(135deg, rgba(255, 71, 71, 0.4), rgba(230, 100, 35, 0.4));
+        --grad-red-solid: linear-gradient(135deg, rgb(178, 50, 50), rgb(230, 100, 35));
+        --grad-red-tab: linear-gradient(90deg, rgba(255, 71, 71, 0.5), rgba(230, 100, 35, 0.2) 60%, rgba(230, 100, 35, 0));
+        --grad-red-card: linear-gradient(135deg, rgba(255, 71, 71, 0.45) 0%, rgba(230, 100, 35, 0.06) 75%);
+        --grad-red-bar: linear-gradient(to top, rgba(255, 71, 71, 0.5) 0%, rgba(230, 100, 35, 0.15) 45%, rgba(230, 100, 35, 0) 70%);
+        /* blue */
+        --grad-blue-c1: 71, 141, 255; --grad-blue-cm: 58, 164, 255; --grad-blue-cn: 45, 188, 255;
+        --grad-blue: linear-gradient(135deg, rgba(71, 141, 255, 0.3), rgba(45, 188, 255, 0.3));
+        --grad-blue-h: linear-gradient(135deg, rgba(71, 141, 255, 0.4), rgba(45, 188, 255, 0.4));
+        --grad-blue-solid: linear-gradient(135deg, rgb(50, 99, 178), rgb(45, 188, 255));
+        --grad-blue-tab: linear-gradient(90deg, rgba(71, 141, 255, 0.5), rgba(45, 188, 255, 0.2) 60%, rgba(45, 188, 255, 0));
+        --grad-blue-card: linear-gradient(135deg, rgba(71, 141, 255, 0.45) 0%, rgba(45, 188, 255, 0.06) 75%);
+        --grad-blue-bar: linear-gradient(to top, rgba(71, 141, 255, 0.5) 0%, rgba(45, 188, 255, 0.15) 45%, rgba(45, 188, 255, 0) 70%);
+        /* amber */
+        --grad-amber-c1: 245, 176, 66; --grad-amber-cm: 250, 146, 60; --grad-amber-cn: 255, 115, 55;
+        --grad-amber: linear-gradient(135deg, rgba(245, 176, 66, 0.3), rgba(255, 115, 55, 0.3));
+        --grad-amber-h: linear-gradient(135deg, rgba(245, 176, 66, 0.4), rgba(255, 115, 55, 0.4));
+        --grad-amber-solid: linear-gradient(135deg, rgb(172, 123, 46), rgb(255, 115, 55));
+        --grad-amber-tab: linear-gradient(90deg, rgba(245, 176, 66, 0.5), rgba(255, 115, 55, 0.2) 60%, rgba(255, 115, 55, 0));
+        --grad-amber-card: linear-gradient(135deg, rgba(245, 176, 66, 0.45) 0%, rgba(255, 115, 55, 0.06) 75%);
+        --grad-amber-bar: linear-gradient(to top, rgba(245, 176, 66, 0.5) 0%, rgba(255, 115, 55, 0.15) 45%, rgba(255, 115, 55, 0) 70%);
+        /* pink */
+        --grad-pink-c1: 255, 92, 168; --grad-pink-cm: 238, 86, 196; --grad-pink-cn: 220, 80, 225;
+        --grad-pink: linear-gradient(135deg, rgba(255, 92, 168, 0.3), rgba(220, 80, 225, 0.3));
+        --grad-pink-h: linear-gradient(135deg, rgba(255, 92, 168, 0.4), rgba(220, 80, 225, 0.4));
+        --grad-pink-solid: linear-gradient(135deg, rgb(178, 64, 118), rgb(220, 80, 225));
+        --grad-pink-tab: linear-gradient(90deg, rgba(255, 92, 168, 0.5), rgba(220, 80, 225, 0.2) 60%, rgba(220, 80, 225, 0));
+        --grad-pink-card: linear-gradient(135deg, rgba(255, 92, 168, 0.45) 0%, rgba(220, 80, 225, 0.06) 75%);
+        --grad-pink-bar: linear-gradient(to top, rgba(255, 92, 168, 0.5) 0%, rgba(220, 80, 225, 0.15) 45%, rgba(220, 80, 225, 0) 70%);
+        /* forced */
+        --grad-forced-c1: 7, 177, 124; --grad-forced-cm: 39, 159, 190; --grad-forced-cn: 71, 141, 255;
+        --grad-forced: linear-gradient(135deg, rgba(7, 177, 124, 0.3), rgba(71, 141, 255, 0.3));
+        --grad-forced-h: linear-gradient(135deg, rgba(7, 177, 124, 0.4), rgba(71, 141, 255, 0.4));
+        --grad-forced-solid: linear-gradient(135deg, rgb(5, 124, 87), rgb(71, 141, 255));
+        --grad-forced-tab: linear-gradient(90deg, rgba(7, 177, 124, 0.5), rgba(71, 141, 255, 0.2) 60%, rgba(71, 141, 255, 0));
+        --grad-forced-card: linear-gradient(135deg, rgba(7, 177, 124, 0.45) 0%, rgba(71, 141, 255, 0.06) 75%);
+        --grad-forced-bar: linear-gradient(to top, rgba(7, 177, 124, 0.5) 0%, rgba(71, 141, 255, 0.15) 45%, rgba(71, 141, 255, 0) 70%);
+    }
+    /* Fills */
+    html:root .btn-green,
+    html:root .control-button.btn-green,
+    html:root .btn-option.correct,
+    html:root .timeline-circle.answered-correct,
+    html:root .rs-badge.ok,
+    html:root .rs-opt.correct,
+    html:root .blank-input.correct,
+    html:root .opt-chip.force-green.active,
+    html:root .palette-row.in-rotation:not(.is-current),
+    html:root .settings-pill.active.fill-in-the-blank,
+    html:root #settings-page-fill-in-the-blank .toggle-switch:has(input:checked),
+    html:root .option-card.tint-green .opt-chip.active,
+    html:root .toggle-card.tint-green.active {
+        background-color: transparent !important;
+        background-image: var(--grad-green) !important;
+    }
+    html:root .btn-red,
+    html:root .btn-option.incorrect,
+    html:root .timeline-circle.answered-incorrect,
+    html:root .rs-badge.bad,
+    html:root .rs-opt.wrong,
+    html:root .blank-input.incorrect,
+    html:root .opt-chip.force-red.active,
+    html:root .settings-pill.active.multiple-choice,
+    html:root #settings-page-multiple-choice .toggle-switch:has(input:checked),
+    html:root .rs-why.bad,
+    html:root .option-card.tint-red .opt-chip.active,
+    html:root .toggle-card.tint-red.active {
+        background-color: transparent !important;
+        background-image: var(--grad-red) !important;
+    }
+    html:root .btn-blue,
+    html:root .seg-btn.active,
+    html:root .rs-tab.active,
+    html:root .rs-dd-opt.on,
+    html:root .palette-row.is-current,
+    html:root .settings-pill.active.quiz,
+    html:root #settings-page-quiz .toggle-switch:has(input:checked),
+    html:root .blank-input.force-corrected,
+    html:root .rs-why.views,
+    html:root .step-num,
+    html:root .option-card:not(.tint-red):not(.tint-green) .opt-chip.active:not(.force-green):not(.force-red),
+    html:root .toggle-card:not(.tint-red):not(.tint-green).active {
+        background-color: transparent;
+        background-image: var(--grad-blue);
+    }
+    html:root .settings-pill.active.appearance,
+    html:root #settings-page-appearance .toggle-switch:has(input:checked),
+    html:root .latex-warning {
+        background-color: transparent;
+        background-image: var(--grad-amber);
+    }
+    html:root .rs-mark.on,
+    html:root .palette-mode-fav.active,
+    html:root .rs-why.marked {
+        background-color: transparent;
+        background-image: var(--grad-pink);
+    }
+    html:root .timeline-circle.force-corrected,
+    html:root .rs-badge.forced {
+        background-color: transparent;
+        background-image: var(--grad-forced);
+    }
+    /* Hover: a little stronger */
+    html:root .btn-green:hover,
+    html:root .control-button.btn-green:hover,
+    html:root #settings-page-fill-in-the-blank .toggle-switch:has(input:checked):hover {
+        background-color: transparent;
+        background-image: var(--grad-green-h);
+    }
+    html:root .btn-red:hover,
+    html:root #settings-page-multiple-choice .toggle-switch:has(input:checked):hover {
+        background-color: transparent;
+        background-image: var(--grad-red-h);
+    }
+    html:root .btn-blue:hover,
+    html:root #settings-page-quiz .toggle-switch:has(input:checked):hover {
+        background-color: transparent;
+        background-image: var(--grad-blue-h);
+    }
+    html:root #settings-page-appearance .toggle-switch:has(input:checked):hover {
+        background-color: transparent;
+        background-image: var(--grad-amber-h);
+    }
+    html:root .rs-mark.on:hover {
+        background-color: transparent;
+        background-image: var(--grad-pink-h);
+    }
+    /* Results stat tiles fade out to the bottom-right; chart bars fade out upwards */
+    html:root .rs-stat.quick {
+        background: var(--grad-green-card);
+    }
+    html:root .rs-stat.slow {
+        background: var(--grad-red-card);
+    }
+    html:root .rs-stat.blue {
+        background: var(--grad-blue-card);
+    }
+    html:root .rs-bar.ok,
+    html:root .rs-legend i[style*="7,177,124"] {
+        background: var(--grad-green-bar);
+    }
+    html:root .rs-bar.ok:hover,
+    html:root .rs-legend i[style*="7,177,124"]:hover {
+        background: var(--grad-green-bar);
+        filter: brightness(1.35);
+    }
+    html:root .rs-bar.bad,
+    html:root .rs-legend i[style*="255,71,71"] {
+        background: var(--grad-red-bar);
+    }
+    html:root .rs-bar.bad:hover,
+    html:root .rs-legend i[style*="255,71,71"]:hover {
+        background: var(--grad-red-bar);
+        filter: brightness(1.35);
+    }
+    html:root .rs-bar.forced,
+    html:root .rs-legend i[style*="71,141,255"] {
+        background: var(--grad-forced-bar);
+    }
+    html:root .rs-bar.forced:hover,
+    html:root .rs-legend i[style*="71,141,255"]:hover {
+        background: var(--grad-forced-bar);
+        filter: brightness(1.35);
+    }
+    /* Review: the big question badge and its tab */
+    html:root .qp-badge[data-state="ok"] {
+        background: var(--grad-green-solid);
+    }
+    html:root .qp-tab[data-state="ok"] {
+        background: var(--grad-green-tab);
+    }
+    html:root .qp-badge[data-state="bad"] {
+        background: var(--grad-red-solid);
+    }
+    html:root .qp-tab[data-state="bad"] {
+        background: var(--grad-red-tab);
+    }
+    html:root .qp-badge[data-state="forced"] {
+        background: var(--grad-forced-solid);
+    }
+    html:root .qp-tab[data-state="forced"] {
+        background: var(--grad-forced-tab);
+    }
+    /* Dot on the active home toggles */
+    html:root .toggle-card.active .toggle-dot {
+        background: var(--grad-blue-solid);
+    }
+    html:root .toggle-card.tint-red.active .toggle-dot {
+        background: var(--grad-red-solid);
+    }
+    html:root .toggle-card.tint-green.active .toggle-dot {
+        background: var(--grad-green-solid);
+    }
+    /* Hover glow follows the gradient: first colour up-left, the blend all
+       round, last colour down-right. Kept within 1.3rem so the home columns
+       have room for it. */
+    html:root body:not(.power-saving-mode) :is(.btn-green:hover, .control-button.btn-green:hover):not(:disabled) {
+        box-shadow: -0.3rem -0.25rem 1rem 0 rgb(var(--grad-green-c1)),
+                    0 0 0.9rem 0.1rem rgba(var(--grad-green-cm), 0.8),
+                    0.3rem 0.25rem 1rem 0 rgb(var(--grad-green-cn));
+    }
+    html:root body:not(.power-saving-mode) :is(.btn-red:hover):not(:disabled) {
+        box-shadow: -0.3rem -0.25rem 1rem 0 rgb(var(--grad-red-c1)),
+                    0 0 0.9rem 0.1rem rgba(var(--grad-red-cm), 0.8),
+                    0.3rem 0.25rem 1rem 0 rgb(var(--grad-red-cn));
+    }
+    html:root body:not(.power-saving-mode) :is(.btn-blue:hover):not(:disabled) {
+        box-shadow: -0.3rem -0.25rem 1rem 0 rgb(var(--grad-blue-c1)),
+                    0 0 0.9rem 0.1rem rgba(var(--grad-blue-cm), 0.8),
+                    0.3rem 0.25rem 1rem 0 rgb(var(--grad-blue-cn));
+    }
+    html:root body:not(.power-saving-mode) :is(.palette-mode-fav:hover):not(:disabled) {
+        box-shadow: -0.3rem -0.25rem 1rem 0 rgb(var(--grad-pink-c1)),
+                    0 0 0.9rem 0.1rem rgba(var(--grad-pink-cm), 0.8),
+                    0.3rem 0.25rem 1rem 0 rgb(var(--grad-pink-cn));
+    }
 </style>
 </head>
 <body>
@@ -2881,37 +3121,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="settings-section">
-                        <h3 class="settings-section-heading">Pace Colour Times</h3>
-                        <div class="setting-item">
-                            <div class="setting-text-container">
-                               <span class="setting-text">Gold Pace (s):</span>
-                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">Average seconds per question that colours the Total Time and Avg / Question tiles on the results screen. At or under the gold time is gold, the silver time is silver, and the bronze time or slower is bronze. Times in between blend from one to the next.</span></div>
-                            </div>
-                            <div class="number-input-container">
-                                <button class="number-input-btn pace-btn" data-input="gold-pace-input" data-action="minus">-</button>
-                                <input type="number" id="gold-pace-input" class="settings-number-input" min="1" max="600" step="1">
-                                <button class="number-input-btn pace-btn" data-input="gold-pace-input" data-action="plus">+</button>
-                            </div>
-                        </div>
-                        <div class="setting-item">
-                            <span class="setting-text">Silver Pace (s):</span>
-                            <div class="number-input-container">
-                                <button class="number-input-btn pace-btn" data-input="silver-pace-input" data-action="minus">-</button>
-                                <input type="number" id="silver-pace-input" class="settings-number-input" min="1" max="600" step="1">
-                                <button class="number-input-btn pace-btn" data-input="silver-pace-input" data-action="plus">+</button>
-                            </div>
-                        </div>
-                        <div class="setting-item">
-                            <span class="setting-text">Bronze Pace (s):</span>
-                            <div class="number-input-container">
-                                <button class="number-input-btn pace-btn" data-input="bronze-pace-input" data-action="minus">-</button>
-                                <input type="number" id="bronze-pace-input" class="settings-number-input" min="1" max="600" step="1">
-                                <button class="number-input-btn pace-btn" data-input="bronze-pace-input" data-action="plus">+</button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <div id="settings-page-multiple-choice" class="settings-page hidden">
@@ -2942,6 +3151,37 @@
                             </label>
                         </div>
                     </div>
+
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Pace Colour Times</h3>
+                        <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Gold Pace (s):</span>
+                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">Average seconds per question that colours the Total Time and Avg / Question tiles on the results screen for Multiple Choice quizzes. At or under the gold time is gold, the silver time is silver, and the bronze time or slower is bronze. Times in between blend from one to the next.</span></div>
+                            </div>
+                            <div class="number-input-container">
+                                <button class="number-input-btn pace-btn" data-input="mc-gold-pace-input" data-action="minus">-</button>
+                                <input type="number" id="mc-gold-pace-input" class="settings-number-input" min="1" max="600" step="1">
+                                <button class="number-input-btn pace-btn" data-input="mc-gold-pace-input" data-action="plus">+</button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <span class="setting-text">Silver Pace (s):</span>
+                            <div class="number-input-container">
+                                <button class="number-input-btn pace-btn" data-input="mc-silver-pace-input" data-action="minus">-</button>
+                                <input type="number" id="mc-silver-pace-input" class="settings-number-input" min="1" max="600" step="1">
+                                <button class="number-input-btn pace-btn" data-input="mc-silver-pace-input" data-action="plus">+</button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <span class="setting-text">Bronze Pace (s):</span>
+                            <div class="number-input-container">
+                                <button class="number-input-btn pace-btn" data-input="mc-bronze-pace-input" data-action="minus">-</button>
+                                <input type="number" id="mc-bronze-pace-input" class="settings-number-input" min="1" max="600" step="1">
+                                <button class="number-input-btn pace-btn" data-input="mc-bronze-pace-input" data-action="plus">+</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="settings-page-fill-in-the-blank" class="settings-page hidden">
@@ -2956,6 +3196,37 @@
                                 <button class="number-input-btn blanks-per-q-btn" data-action="minus">-</button>
                                 <input type="number" id="blanks-per-q-input" class="settings-number-input" min="1" max="10" value="2">
                                 <button class="number-input-btn blanks-per-q-btn" data-action="plus">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Pace Colour Times</h3>
+                        <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Gold Pace (s):</span>
+                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">Average seconds per question that colours the Total Time and Avg / Question tiles on the results screen for Fill in the Blank quizzes. At or under the gold time is gold, the silver time is silver, and the bronze time or slower is bronze. Times in between blend from one to the next.</span></div>
+                            </div>
+                            <div class="number-input-container">
+                                <button class="number-input-btn pace-btn" data-input="fitb-gold-pace-input" data-action="minus">-</button>
+                                <input type="number" id="fitb-gold-pace-input" class="settings-number-input" min="1" max="600" step="1">
+                                <button class="number-input-btn pace-btn" data-input="fitb-gold-pace-input" data-action="plus">+</button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <span class="setting-text">Silver Pace (s):</span>
+                            <div class="number-input-container">
+                                <button class="number-input-btn pace-btn" data-input="fitb-silver-pace-input" data-action="minus">-</button>
+                                <input type="number" id="fitb-silver-pace-input" class="settings-number-input" min="1" max="600" step="1">
+                                <button class="number-input-btn pace-btn" data-input="fitb-silver-pace-input" data-action="plus">+</button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <span class="setting-text">Bronze Pace (s):</span>
+                            <div class="number-input-container">
+                                <button class="number-input-btn pace-btn" data-input="fitb-bronze-pace-input" data-action="minus">-</button>
+                                <input type="number" id="fitb-bronze-pace-input" class="settings-number-input" min="1" max="600" step="1">
+                                <button class="number-input-btn pace-btn" data-input="fitb-bronze-pace-input" data-action="plus">+</button>
                             </div>
                         </div>
                     </div>
@@ -3147,7 +3418,7 @@
         const ANSWER_PATTERN_GLOBAL = /@@(.*?)@@/g;
 
         // Single source of truth for what the footer shows.
-        const APP_VERSION = 'v3.2.3 - Beta';
+        const APP_VERSION = 'v3.2.4 - Beta';
         const BUILD_DATE = '3rd November 2026';
 
         // DOM Elements
@@ -5086,10 +5357,11 @@
             return total;
         }
 
-        function startTimers() {
+        // resumeLeftMs carries on a time limit that was part-way through.
+        function startTimers(resumeLeftMs = null) {
             stopTimers(false);
             const limitSeconds = activeQuizSettings ? activeQuizSettings.timeLimitSeconds : effectiveTimeLimit();
-            questionDeadlineMs = limitSeconds > 0 ? Date.now() + limitSeconds * 1000 : 0;
+            questionDeadlineMs = limitSeconds > 0 ? Date.now() + (resumeLeftMs ?? limitSeconds * 1000) : 0;
             const updateTimerDisplay = () => {
                  if (isQuizPaused) return;
                 const question = getCurrentQuestionData();
@@ -5549,14 +5821,25 @@
         // Pace colour from the average time per question, in the medal colours (read
         // from the --medal-*-rgb variables): the gold time or faster is gold, the
         // silver time silver, the bronze time or slower bronze. The times are settings
-        // (Pace Colour Times). PACE_BLEND blends between them; set it to false to step
-        // between the three instead (each one covers the times nearest to it).
+        // (Pace Colour Times), kept separately for each quiz type since typing a blank
+        // takes longer than picking an option. PACE_BLEND blends between them; set it
+        // to false to step between the three instead (each one covers the times
+        // nearest to it).
         const PACE_BLEND = true;
-        const PACE_DEFAULTS = { gold: 20, silver: 30, bronze: 45 };
-        const PACE_KEYS = { gold: 'paceGold', silver: 'paceSilver', bronze: 'paceBronze' };
-        function paceSeconds(medal) {
-            const v = parseInt(localStorage.getItem(PACE_KEYS[medal]), 10);
-            return Number.isNaN(v) ? PACE_DEFAULTS[medal] : v;
+        const PACE_DEFAULTS = {
+            'multiple-choice':   { gold: 20, silver: 30, bronze: 45 },
+            'fill-in-the-blank': { gold: 30, silver: 45, bronze: 60 },
+        };
+        // Multiple Choice keeps the original keys so saved times carry over.
+        const PACE_KEYS = {
+            'multiple-choice':   { gold: 'paceGold', silver: 'paceSilver', bronze: 'paceBronze' },
+            'fill-in-the-blank': { gold: 'fitbPaceGold', silver: 'fitbPaceSilver', bronze: 'fitbPaceBronze' },
+        };
+        const PACE_PREFIX = { 'multiple-choice': 'mc', 'fill-in-the-blank': 'fitb' };
+        const paceInput = (type, medal) => document.getElementById(`${PACE_PREFIX[type]}-${medal}-pace-input`);
+        function paceSeconds(medal, type = currentQuizType) {
+            const v = parseInt(localStorage.getItem(PACE_KEYS[type][medal]), 10);
+            return Number.isNaN(v) ? PACE_DEFAULTS[type][medal] : v;
         }
         const medalRGB = name => getComputedStyle(document.documentElement)
             .getPropertyValue(`--medal-${name}-rgb`).split(',').map(Number);
@@ -6636,7 +6919,7 @@ Example Question Formatting:
             goldMedalInput.value = localStorage.getItem('goldMedal') || '89.5';
             silverMedalInput.value = localStorage.getItem('silverMedal') || '84.5';
             bronzeMedalInput.value = localStorage.getItem('bronzeMedal') || '79.5';
-            ['gold', 'silver', 'bronze'].forEach(medal => { document.getElementById(`${medal}-pace-input`).value = paceSeconds(medal); });
+            for (const type in PACE_KEYS) ['gold', 'silver', 'bronze'].forEach(medal => { paceInput(type, medal).value = paceSeconds(medal, type); });
 
             // MC Settings
             keyboardFunctionsToggle.checked = localStorage.getItem('keyboardFunctions') !== 'false';
@@ -6749,26 +7032,25 @@ Example Question Formatting:
         }
 
         const PACE_LIMITS = { gold: [1, 598], silver: [2, 599], bronze: [3, 600] };
-        const paceInput = medal => document.getElementById(`${medal}-pace-input`);
-        function setPaceTimes(changed, value) {
+        function setPaceTimes(type, changed, value) {
             const [lo, hi] = PACE_LIMITS[changed];
-            const t = { gold: paceSeconds('gold'), silver: paceSeconds('silver'), bronze: paceSeconds('bronze') };
+            const t = { gold: paceSeconds('gold', type), silver: paceSeconds('silver', type), bronze: paceSeconds('bronze', type) };
             t[changed] = Math.min(hi, Math.max(lo, Number.isNaN(value) ? t[changed] : Math.round(value)));
             if (changed === 'gold') { t.silver = Math.max(t.silver, t.gold + 1); t.bronze = Math.max(t.bronze, t.silver + 1); }
             if (changed === 'silver') { t.gold = Math.min(t.gold, t.silver - 1); t.bronze = Math.max(t.bronze, t.silver + 1); }
             if (changed === 'bronze') { t.silver = Math.min(t.silver, t.bronze - 1); t.gold = Math.min(t.gold, t.silver - 1); }
             for (const medal of ['gold', 'silver', 'bronze']) {
-                localStorage.setItem(PACE_KEYS[medal], t[medal]);
-                paceInput(medal).value = t[medal];
+                localStorage.setItem(PACE_KEYS[type][medal], t[medal]);
+                paceInput(type, medal).value = t[medal];
             }
-            // Recolour the tiles straight away if the results are showing.
-            if (!resultsScreen.classList.contains('hidden')) renderResultsOverview(computeResultStats());
+            // Recolour the tiles straight away if these results are showing.
+            if (type === currentQuizType && !resultsScreen.classList.contains('hidden')) renderResultsOverview(computeResultStats());
         }
-        ['gold', 'silver', 'bronze'].forEach(medal => {
-            const input = paceInput(medal);
-            input.addEventListener('change', () => setPaceTimes(medal, parseFloat(input.value)));
-            document.querySelectorAll(`.pace-btn[data-input="${medal}-pace-input"]`).forEach(btn => {
-                btn.addEventListener('click', () => setPaceTimes(medal, paceSeconds(medal) + (btn.dataset.action === 'plus' ? 1 : -1)));
+        for (const type in PACE_KEYS) ['gold', 'silver', 'bronze'].forEach(medal => {
+            const input = paceInput(type, medal);
+            input.addEventListener('change', () => setPaceTimes(type, medal, parseFloat(input.value)));
+            document.querySelectorAll(`.pace-btn[data-input="${PACE_PREFIX[type]}-${medal}-pace-input"]`).forEach(btn => {
+                btn.addEventListener('click', () => setPaceTimes(type, medal, paceSeconds(medal, type) + (btn.dataset.action === 'plus' ? 1 : -1)));
             });
         });
 
@@ -6880,10 +7162,38 @@ Example Question Formatting:
         const settingsRestartChanges = document.getElementById('settings-restart-changes');
         const restartUnansweredBtn = document.getElementById('restart-unanswered-btn');
 
+        // The quiz clock stands still while the settings menu is open mid-quiz, like
+        // the pause menu but without showing it. A time limit carries on where it was.
+        let heldForSettings = false;
+        let heldDeadlineLeftMs = 0;
+        function holdQuizForSettings() {
+            if (isQuizPaused) return;
+            const currentQ = getCurrentQuestionData();
+            if (currentQ && currentQ.isAnsweredCorrectly === null && questionSpecificTimerStartMs > 0) {
+                currentQ.timeTakenMs = (currentQ.timeTakenMs || 0) + (Date.now() - questionSpecificTimerStartMs);
+            }
+            questionSpecificTimerStartMs = 0;
+            heldDeadlineLeftMs = questionDeadlineMs > 0 ? Math.max(0, questionDeadlineMs - Date.now()) : 0;
+            stopTimers(true);
+            isQuizPaused = true;
+            heldForSettings = true;
+        }
+        function releaseQuizFromSettings() {
+            if (!heldForSettings) return;
+            heldForSettings = false;
+            isQuizPaused = false;
+            const currentQ = getCurrentQuestionData();
+            if (currentQ && currentQ.isAnsweredCorrectly === null) {
+                questionSpecificTimerStartMs = Date.now();
+                startTimers(heldDeadlineLeftMs || null);
+            }
+        }
+
         settingsBtn.addEventListener('click', () => {
             renderPaletteList();
             settingsOpenedMidQuiz = isQuizActive && !quizScreen.classList.contains('hidden');
             settingsStateAtOpen = settingsOpenedMidQuiz ? captureQuizSettings() : null;
+            if (settingsOpenedMidQuiz) holdQuizForSettings();
             settingsModal.classList.add('visible');
         });
 
@@ -6908,7 +7218,8 @@ Example Question Formatting:
             if (!settingsOpenedMidQuiz) return;
             settingsOpenedMidQuiz = false;
             const changes = describeQuizSettingChanges(settingsStateAtOpen, captureQuizSettings(), activeQuizSettings);
-            if (changes.length === 0) return;
+            // With changes to ask about, the clock stays stopped until a choice is made.
+            if (changes.length === 0) { releaseQuizFromSettings(); return; }
 
             settingsRestartChanges.innerHTML = '';
             changes.forEach(text => {
@@ -6975,16 +7286,19 @@ Example Question Formatting:
 
         document.getElementById('restart-entire-btn').addEventListener('click', () => {
             settingsRestartModal.classList.remove('visible');
+            releaseQuizFromSettings();
             handleRedoQuiz();
         });
         restartUnansweredBtn.addEventListener('click', () => {
             settingsRestartModal.classList.remove('visible');
+            releaseQuizFromSettings();
             restartUnansweredQuestions();
         });
         document.getElementById('restart-continue-btn').addEventListener('click', () => {
             // Nothing to do: the running quiz keeps its snapshot, and the next quiz
             // picks up the saved settings.
             settingsRestartModal.classList.remove('visible');
+            releaseQuizFromSettings();
         });
 
         settingsNavPills.forEach(pill => {
@@ -7087,6 +7401,7 @@ Example Question Formatting:
                             'backgroundType', 'selectedPalette', 'powerSaving',
                             'customPalettes', 'favouritePalettes', 'latexEnabled',
                             'goldMedal', 'silverMedal', 'bronzeMedal', 'paceGold', 'paceSilver', 'paceBronze',
+                            'fitbPaceGold', 'fitbPaceSilver', 'fitbPaceBronze',
                             'keyboardFunctions', 'autoNextType', 'autoNextDuration', 
                             'clickToSubmit', 'doubleClickToSubmit', 'hideSubmitButton', 
                             'randomiseQuestionOrder', 'randomiseAnswerOrder',
