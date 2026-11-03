@@ -2835,6 +2835,37 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Pace Colour Times</h3>
+                        <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Gold Pace (s):</span>
+                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">Average seconds per question that colours the Total Time and Avg / Question tiles on the results screen. At or under the gold time is gold, the silver time is silver, and the bronze time or slower is bronze. Times in between blend from one to the next.</span></div>
+                            </div>
+                            <div class="number-input-container">
+                                <button class="number-input-btn pace-btn" data-input="gold-pace-input" data-action="minus">-</button>
+                                <input type="number" id="gold-pace-input" class="settings-number-input" min="1" max="600" step="1">
+                                <button class="number-input-btn pace-btn" data-input="gold-pace-input" data-action="plus">+</button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <span class="setting-text">Silver Pace (s):</span>
+                            <div class="number-input-container">
+                                <button class="number-input-btn pace-btn" data-input="silver-pace-input" data-action="minus">-</button>
+                                <input type="number" id="silver-pace-input" class="settings-number-input" min="1" max="600" step="1">
+                                <button class="number-input-btn pace-btn" data-input="silver-pace-input" data-action="plus">+</button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <span class="setting-text">Bronze Pace (s):</span>
+                            <div class="number-input-container">
+                                <button class="number-input-btn pace-btn" data-input="bronze-pace-input" data-action="minus">-</button>
+                                <input type="number" id="bronze-pace-input" class="settings-number-input" min="1" max="600" step="1">
+                                <button class="number-input-btn pace-btn" data-input="bronze-pace-input" data-action="plus">+</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="settings-page-multiple-choice" class="settings-page hidden">
@@ -3069,7 +3100,7 @@
         const ANSWER_PATTERN_GLOBAL = /@@(.*?)@@/g;
 
         // Single source of truth for what the footer shows.
-        const APP_VERSION = 'v3.2.0 - Beta';
+        const APP_VERSION = 'v3.2.1 - Beta';
         const BUILD_DATE = '3rd November 2026';
 
         // DOM Elements
@@ -3337,10 +3368,12 @@
             if (now - lastFrameMs < (1000 / BG_TARGET_FPS)) return;
             lastFrameMs = now;
             smudgeCtx.clearRect(0, 0, smudgeBackgroundCanvas.width, smudgeBackgroundCanvas.height);
-            smudgeCtx.globalCompositeOperation = 'lighter';
+            // Normal blending, not additive ('lighter'). With ~10 blobs overlapping at
+            // any point, adding them clipped 13-33% of the screen to white on most
+            // palettes. Layered normally, nothing is ever brighter than the palette's
+            // own brightest colour, which is how the gradient background already works.
             for (const circle of smudgeCircles) { circle.update(); circle.draw(smudgeCtx); }
             smudgeCtx.globalAlpha = 1;
-            smudgeCtx.globalCompositeOperation = 'source-over';
         }
 
 
@@ -5418,14 +5451,21 @@
         }
 
         // Pace colour from the average time per question, in the medal colours (read
-        // from the --medal-*-rgb variables): 15s or faster is gold, 30s silver, 45s
-        // or slower bronze. PACE_BLEND blends between them; set it to false to step
+        // from the --medal-*-rgb variables): the gold time or faster is gold, the
+        // silver time silver, the bronze time or slower bronze. The times are settings
+        // (Pace Colour Times). PACE_BLEND blends between them; set it to false to step
         // between the three instead (each one covers the times nearest to it).
         const PACE_BLEND = true;
+        const PACE_DEFAULTS = { gold: 20, silver: 30, bronze: 45 };
+        const PACE_KEYS = { gold: 'paceGold', silver: 'paceSilver', bronze: 'paceBronze' };
+        function paceSeconds(medal) {
+            const v = parseInt(localStorage.getItem(PACE_KEYS[medal]), 10);
+            return Number.isNaN(v) ? PACE_DEFAULTS[medal] : v;
+        }
         const medalRGB = name => getComputedStyle(document.documentElement)
             .getPropertyValue(`--medal-${name}-rgb`).split(',').map(Number);
         function paceRGB(seconds) {
-            const PACE_STOPS = [[15, medalRGB('gold')], [30, medalRGB('silver')], [45, medalRGB('bronze')]];
+            const PACE_STOPS = ['gold', 'silver', 'bronze'].map(medal => [paceSeconds(medal), medalRGB(medal)]);
             if (!PACE_BLEND) {
                 const nearest = PACE_STOPS.reduce((a, b) => Math.abs(b[0] - seconds) < Math.abs(a[0] - seconds) ? b : a);
                 return nearest[1].join(',');
@@ -6492,6 +6532,7 @@ Example Question Formatting:
             goldMedalInput.value = localStorage.getItem('goldMedal') || '89.5';
             silverMedalInput.value = localStorage.getItem('silverMedal') || '84.5';
             bronzeMedalInput.value = localStorage.getItem('bronzeMedal') || '79.5';
+            ['gold', 'silver', 'bronze'].forEach(medal => { document.getElementById(`${medal}-pace-input`).value = paceSeconds(medal); });
 
             // MC Settings
             keyboardFunctionsToggle.checked = localStorage.getItem('keyboardFunctions') !== 'false';
@@ -6602,6 +6643,30 @@ Example Question Formatting:
             localStorage.setItem('silverMedal', silverMedalInput.value);
             localStorage.setItem('bronzeMedal', bronzeMedalInput.value);
         }
+
+        const PACE_LIMITS = { gold: [1, 598], silver: [2, 599], bronze: [3, 600] };
+        const paceInput = medal => document.getElementById(`${medal}-pace-input`);
+        function setPaceTimes(changed, value) {
+            const [lo, hi] = PACE_LIMITS[changed];
+            const t = { gold: paceSeconds('gold'), silver: paceSeconds('silver'), bronze: paceSeconds('bronze') };
+            t[changed] = Math.min(hi, Math.max(lo, Number.isNaN(value) ? t[changed] : Math.round(value)));
+            if (changed === 'gold') { t.silver = Math.max(t.silver, t.gold + 1); t.bronze = Math.max(t.bronze, t.silver + 1); }
+            if (changed === 'silver') { t.gold = Math.min(t.gold, t.silver - 1); t.bronze = Math.max(t.bronze, t.silver + 1); }
+            if (changed === 'bronze') { t.silver = Math.min(t.silver, t.bronze - 1); t.gold = Math.min(t.gold, t.silver - 1); }
+            for (const medal of ['gold', 'silver', 'bronze']) {
+                localStorage.setItem(PACE_KEYS[medal], t[medal]);
+                paceInput(medal).value = t[medal];
+            }
+            // Recolour the tiles straight away if the results are showing.
+            if (!resultsScreen.classList.contains('hidden')) renderResultsOverview(computeResultStats());
+        }
+        ['gold', 'silver', 'bronze'].forEach(medal => {
+            const input = paceInput(medal);
+            input.addEventListener('change', () => setPaceTimes(medal, parseFloat(input.value)));
+            document.querySelectorAll(`.pace-btn[data-input="${medal}-pace-input"]`).forEach(btn => {
+                btn.addEventListener('click', () => setPaceTimes(medal, paceSeconds(medal) + (btn.dataset.action === 'plus' ? 1 : -1)));
+            });
+        });
 
         ['gold', 'silver', 'bronze'].forEach(medal => {
             const input = document.getElementById(`${medal}-medal-input`);
@@ -6917,7 +6982,7 @@ Example Question Formatting:
                         const settingKeys = [
                             'backgroundType', 'selectedPalette', 'powerSaving',
                             'customPalettes', 'favouritePalettes', 'latexEnabled',
-                            'goldMedal', 'silverMedal', 'bronzeMedal', 
+                            'goldMedal', 'silverMedal', 'bronzeMedal', 'paceGold', 'paceSilver', 'paceBronze',
                             'keyboardFunctions', 'autoNextType', 'autoNextDuration', 
                             'clickToSubmit', 'doubleClickToSubmit', 'hideSubmitButton', 
                             'randomiseQuestionOrder', 'randomiseAnswerOrder',
