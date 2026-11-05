@@ -2432,6 +2432,7 @@
     .rs-meta.views { color: var(--ui-blue-fills); }
     .rs-meta.retake { color: var(--ui-amber-fills); }
     .rs-meta.forced { color: var(--ui-blue-fills); }
+    .rs-meta.hint { color: var(--ui-amber-fills); }
     .rs-meta.marked { color: var(--ui-pink-fills); }
     /* Marked for reset: a pink edge on the row. The badge keeps its result colour,
        since nothing changes until the redo starts. */
@@ -2518,6 +2519,17 @@
     .rs-row .txt .katex-display > .katex { display: inline; }
     .rs-mini .rs-row { background: transparent; padding: 0.4rem 0.3rem; margin: 0; }
     .rs-mini .rs-row:hover { background-color: var(--ui-main-bg-hover); }
+    .rs-remove {
+        flex: none; width: 1.7rem; height: 1.7rem; display: grid; place-items: center; cursor: pointer;
+        border-radius: 0.5rem; border: 0.12rem solid transparent; background-color: transparent; color: var(--text-secondary);
+        opacity: 0; transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    }
+    .rs-remove svg { width: 0.95rem; height: 0.95rem; }
+    .rs-row:hover .rs-remove, .rs-remove:focus-visible { opacity: 1; }
+    .rs-remove:hover { color: var(--text-primary); border-color: var(--ui-red-fills); background-color: var(--ui-red-bg); }
+    .rs-worth-removed { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; margin-top: 0.4rem; font-size: 0.78rem; color: var(--text-secondary); }
+    .rs-worth-removed button { font-weight: 600; color: var(--text-primary); text-decoration: underline; text-underline-offset: 0.15rem; cursor: pointer; }
+    .rs-worth-removed button:hover { color: var(--ui-green-fills); }
     .rs-divider { display: flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); margin: 0.6rem 0.2rem 0.45rem; }
     .rs-divider::after { content: ""; flex: 1; height: 1px; background: rgba(255, 255, 255, 0.08); }
 
@@ -3296,7 +3308,7 @@
                         <div class="setting-item">
                             <div class="setting-text-container">
                                <span class="setting-text">Question Reading (wpm):</span>
-                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">How fast you read the question itself. With Show Answers After Reading on, the answers appear on their own after the question's length at this speed, adjusted to how you're reading the current quiz.With learning on, it's measured whenever you press to show the answers on a first go.</span></div>
+                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">How fast you read the question itself. With Show Answers After Reading on, the answers appear on their own after the question's length at this speed, adjusted to how you're reading the current quiz. Fill in the blank uses it for question length when a quiz can't show how your time grows with length.With learning on, it's measured whenever you press to show the answers on a first go.</span></div>
                             </div>
                             <div class="number-input-container">
                                 <button class="number-input-btn question-wpm-btn" data-action="minus">-</button>
@@ -3629,7 +3641,7 @@
         const ANSWER_PATTERN_GLOBAL = /@@(.*?)@@/g;
 
         // Single source of truth for what the footer shows.
-        const APP_VERSION = 'v3.3.0 - Beta';
+        const APP_VERSION = 'v3.3.1 - Beta';
         const BUILD_DATE = '5th November 2026';
 
         // DOM Elements
@@ -4819,6 +4831,7 @@
             questionOrder.forEach((questionIndexInCurrent, displayIndex) => {
                 const question = currentQuizQuestions[questionIndexInCurrent];
                 if (isSuggested(question) || resultsMarked.has(question.id)) {
+                    resultsRemoved.delete(question.id);
                     question.wrongBefore = question.isAnsweredCorrectly === false;
                     // A question you got right (force-corrected included) starts its time
                     // again; a wrong one keeps adding to what it took.
@@ -4887,6 +4900,8 @@
             const rows = redo.map(q => {
                 const reasons = [
                     q.isAnsweredCorrectly === false && '<span class="rs-why bad">Incorrect</span>',
+                    q.wasForceCorrected && '<span class="rs-why views">Force-corrected</span>',
+                    usedHint(q) && '<span class="rs-why again">Hint used</span>',
                     rightAfterWrong(q) && '<span class="rs-why again">Wrong earlier</span>',
                     (q.revisits || 0) > 0 && `<span class="rs-why views">${RS_ICON.eye}Viewed ×${q.revisits + 1}</span>`,
                     isSlow(q) && `<span class="rs-why slow">${RS_ICON.clock}${slowReason(q).replace(/^./, c => c.toUpperCase())}</span>`,
@@ -4953,6 +4968,7 @@
             isQuizActive = true;
             lastRoundWasRedo = false;
             resultsMarked.clear();
+            resultsRemoved.clear();
             lastDisplayedIndex = null;
             hideExternalResultsButtons();
             currentQuizQuestions = JSON.parse(JSON.stringify(questionsToUse)); 
@@ -6116,8 +6132,8 @@
             resultsSortOpen = false;
             resultsSelectedNum = null;
             if (roundIsFirstGo) {
-                const measured = measureReadingWpm(originalAllQuestionsData);
-                const question = measureQuestionWpm(originalAllQuestionsData);
+                const measured = isFitbQuiz() ? null : measureReadingWpm(originalAllQuestionsData);
+                const question = isFitbQuiz() ? null : measureQuestionWpm(originalAllQuestionsData);
                 resultsReading = { state: measured || question ? 'measured' : 'unclear', measured, question };
                 learnReadingWpm(measured);
                 learnQuestionWpm(question);
@@ -6199,17 +6215,45 @@
         const answerWords = q => (q.options || []).reduce((n, o) => n + wordCount(o.text), 0);
         const splitTimed = q => !!q.revealedBy;
         const timedMs = q => (splitTimed(q) ? Math.max(0, (q.timeTakenMs || 0) - (q.readMs || 0)) : (q.timeTakenMs || 0));
+        // Fill in the blank: gold is for a typical-length question with one blank. Each word
+        // more or fewer moves the target by how much this quiz's time grew per word, and
+        // each extra blank adds time to think of the word and type it correctly.
+        // Set on the first go; a Retake or Redo Suggested keeps it, as they're the same questions.
+        const FITB_SECONDS_PER_BLANK = 3;
+        const FITB_MAX_SECONDS_PER_WORD = 1.5;
+        let fitbLength = { typicalWords: 0, perWord: 0, measured: false };
+        const fitbExtraBlanks = q => Math.max(0, (q.blanks || []).length - 1);
+        function measureFitbLength(questions) {
+            const typicalWords = medianOf(questions.map(questionWords));
+            const speed = storedWpm('readQuestionWpm');
+            const least = speed ? 60 / speed : 0;   // a word takes at least its reading time
+            const pts = questions.filter(q => q.isAnsweredCorrectly !== null && (q.timeTakenMs || 0) > 0)
+                .map(q => [questionWords(q), q.timeTakenMs / 1000 - fitbExtraBlanks(q) * FITB_SECONDS_PER_BLANK]);
+            const slopes = [];
+            for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+                const dw = pts[j][0] - pts[i][0];
+                if (Math.abs(dw) >= 5) slopes.push((pts[j][1] - pts[i][1]) / dw);
+            }
+            const measured = pts.length >= 6 && slopes.length >= 5;
+            return { typicalWords, measured, perWord: measured ? Math.min(FITB_MAX_SECONDS_PER_WORD, Math.max(least, medianOf(slopes))) : least };
+        }
         const goldTargetMs = q => {
-            const extraWords = splitTimed(q) ? answerWords(q) - TYPICAL_ANSWER_WORDS : questionWords(q) - TYPICAL_WORDS;
+            if (q.blanks) {
+                const gold = paceSeconds('gold');
+                const seconds = gold + (questionWords(q) - fitbLength.typicalWords) * fitbLength.perWord + fitbExtraBlanks(q) * FITB_SECONDS_PER_BLANK;
+                return Math.max(gold / 2, seconds) * 1000;
+            }
+            const extraWords =splitTimed(q) ? answerWords(q) - TYPICAL_ANSWER_WORDS : questionWords(q) - TYPICAL_WORDS;
             // No speed measured yet: nothing to work out extra reading time from.
-            const wpm = readingWpm();
-            return ((splitTimed(q) ? answerGoldSeconds() : paceSeconds('gold')) + (wpm ? Math.max(0, extraWords) * 60 / wpm : 0)) * 1000;
+            const wpm = goldWpm();
+            return ((splitTimed(q) ? answerGoldSeconds(): paceSeconds('gold')) + (wpm ? Math.max(0, extraWords) * 60 / wpm : 0)) * 1000;
         };
         const HARD_QUIZ_PACE = 1.3;      // usually this far over gold: gold isn't realistic for this quiz
         const MATHS_MIN_ANSWERS = 3;     // maths needs this many answers for a pace of its own
         let resultsSlow = { usualPace: 0, mathsPace: 0, goldOff: false };
         function computeSlowModel(questions) {
-            const answered = questions.filter(q => q.isAnsweredCorrectly !== null && timedMs(q) > 0);
+            if (isFitbQuiz() && (resultsReading.state !== 'seen' || !fitbLength.measured)) fitbLength = measureFitbLength(questions);
+            const answered =questions.filter(q => q.isAnsweredCorrectly !== null && timedMs(q) > 0);
             const paceOf = q => timedMs(q) / goldTargetMs(q);
             const maths = quizMathsMode ? answered.filter(hasMaths) : [];
             const mathsOwn = maths.length >= MATHS_MIN_ANSWERS;
@@ -6256,6 +6300,8 @@ const READING_WPM_LIMITS = [80, 500];
         // Answer reading (and whole questions when they aren't split-timed). Neither speed
         // has a default: they're null until measured or typed.
         const readingWpm = () => storedWpm('readAnswerWpm');
+        const isFitbQuiz = () => currentQuizType === 'fill-in-the-blank';
+        const goldWpm = () => (isFitbQuiz() ? storedWpm('readQuestionWpm') : readingWpm());
         // Question reading: how long the prompt waits before showing the answers.
         const questionWpm = () => storedWpm('readQuestionWpm');
         // Read straight off the prompt: only questions where you pressed to show the
@@ -6301,7 +6347,12 @@ const READING_WPM_LIMITS = [80, 500];
         let roundIsFirstGo = false;
         let resultsReading = { state: 'seen', measured: null, question: null };
         // Worth another look, and what Redo Suggested resets on top of marked ones.
-        const isSuggested = q => q.isAnsweredCorrectly === false || rightAfterWrong(q) || (q.revisits || 0) > 0 || isSlow(q);
+        // A question you've removed stays out until you put it back, the quiz is retaken,
+        // or you mark it in Review and redo it.
+        const resultsRemoved = new Set();
+        const usedHint = q => q.isAnsweredCorrectly !== null && !!q.hintShown;
+        const isSuggested = q => !resultsRemoved.has(q.id)
+            && (q.isAnsweredCorrectly === false || q.wasForceCorrected || usedHint(q) || rightAfterWrong(q) || (q.revisits || 0) > 0 || isSlow(q));
         // Question ids marked for reset in Review. Marking changes nothing in the
         // results; the questions are only reset when Redo Suggested starts the round.
         const resultsMarked = new Set();
@@ -6423,6 +6474,7 @@ const READING_WPM_LIMITS = [80, 500];
             + ((q.revisits || 0) > 0 ? `<span class="rs-meta views">${RS_ICON.eye}×${q.revisits + 1}</span>` : '')
             + (q.wasRetaken ? `<span class="rs-meta retake">${RS_ICON.redo}Redone</span>` : '')
             + (q.wasForceCorrected ? '<span class="rs-meta forced">Force-corrected</span>' : '')
+            + (usedHint(q) ? '<span class="rs-meta hint">Hint used</span>' : '')
             + (q.isAnsweredCorrectly === null ? '<span class="rs-meta">Not answered</span>' : '');
 
         function computeResultStats() {
@@ -6448,6 +6500,30 @@ const READING_WPM_LIMITS = [80, 500];
             return { qs, answered, totalMs, avgMs, medianMs, longest, quickest, revisited, extraViews, streak, streakStart, correct };
         }
 
+        // Worth another look: wrong answers first, then ones wrong before the redo, then
+        // the rest, slowest first.
+        function renderWorthList(st) {
+            const worthRank = q => (q.isAnsweredCorrectly === false ? 0 : rightAfterWrong(q) ? 1 : 2);
+            const worth = st.qs.filter(isSuggested)
+                .sort((a, b) => worthRank(a) - worthRank(b) || (b.timeTakenMs || 0) - (a.timeTakenMs || 0));
+            document.getElementById('rs-worth-count').textContent = worth.length ? `- ${worth.length} question${worth.length === 1 ? '' : 's'}` : '';
+            const removeBtn = q => `<button class="rs-remove" type="button" data-rs-remove="${q.id}" title="Remove from Worth another look, so Redo Suggested leaves it alone" aria-label="Remove question ${resultNum(q)} from Worth another look"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`;
+            const worthEl = document.getElementById('rs-worth');
+            const rows = worth.length
+                ? worth.map(q => `<div class="rs-row" data-rs-num="${resultNum(q)}"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span><span class="txt">${resultRowText(q)}</span><span class="side">${resultMetaHTML(q)}</span>${removeBtn(q)}</div>`).join('')
+                : resultsRemoved.size
+                    ? '<p class="rs-note">Nothing left to look at.</p>'
+                    : '<p class="rs-note">Nothing to flag: every answer was right, none were unusually slow and you didn\'t need to go back to any.</p>';
+            const removed = resultsRemoved.size ? `<div class="rs-worth-removed"><span>${resultsRemoved.size} removed</span><button type="button" data-rs-restore>Put back</button></div>` : '';
+            worthEl.innerHTML = rows + removed;
+            renderMath(worthEl);
+            if (resultsTab === 'overview') trimRowPreviews(worthEl);
+        }
+        function refreshAfterWorthChange() {
+            renderWorthList(computeResultStats());
+            renderResultsReview();
+            updateRedoSuggestedBtn();
+        }
         function renderResultsOverview(st) {
             // Score tile: medal tiers as before, now as a gradient with a medal watermark.
             const total = st.qs.length;
@@ -6528,17 +6604,14 @@ const READING_WPM_LIMITS = [80, 500];
                 return `<span>${n === 1 || n % step === 0 ? n : ''}</span>`;
             }).join('');
 
-            // Worth another look: wrong answers first, then ones wrong before the redo,
-            // then the rest, slowest first.
-            const worthRank = q => (q.isAnsweredCorrectly === false ? 0 : rightAfterWrong(q) ? 1 : 2);
-            const worth = st.qs.filter(isSuggested)
-                .sort((a, b) => worthRank(a) - worthRank(b) || (b.timeTakenMs || 0) - (a.timeTakenMs || 0));
-            document.getElementById('rs-worth-count').textContent = worth.length ? `- ${worth.length} question${worth.length === 1 ? '' : 's'}` : '';
+            renderWorthList(st);
             const cutEl = document.getElementById('rs-worth-cut');
             const mathsGoldSeconds = resultsSlow.mathsPace * (st.qs.some(splitTimed) ? answerGoldSeconds() : paceSeconds('gold'));
             const goldCut = st.qs.some(splitTimed)
                 ? `Gold ${answerGoldSeconds()}s for answering${storedWpm('readAnswerWpm') !== null ? ` · answers ${Math.round(readingWpm())} wpm` : ''}`
-                : `Gold ${paceSeconds('gold')}s${readingWpm() ? ` · reading ${Math.round(readingWpm())} wpm` : ''}`;
+                : isFitbQuiz()
+                    ? `Gold ${paceSeconds('gold')}s${fitbLength.perWord ? ` · ${paceTime(fitbLength.perWord * 1000)} a word` : ''} · ${FITB_SECONDS_PER_BLANK}s a blank`
+                    : `Gold ${paceSeconds('gold')}s${readingWpm() ? ` · reading ${Math.round(readingWpm())} wpm` : ''}`;
             const anyNotMaths= st.qs.some(q => !judgedAsMaths(q));
             cutEl.textContent = [
                 anyNotMaths && (resultsSlow.goldOff ? `Gold check off · ran ${paceX(resultsSlow.usualPace)} gold` : goldCut),
@@ -6546,16 +6619,10 @@ const READING_WPM_LIMITS = [80, 500];
             ].filter(Boolean).join(' · ');
             cutEl.title = st.qs.some(splitTimed)
                 ? `Slow means answering (after the question's reading time) from 85% of its target: ${answerGoldSeconds()}s, ${Math.round(answerGoldShare * 100)}% of gold (${answerShareMeasured ? 'the share of your time spent answering this round' : 'the usual share until a round has 5 answers'})${readingWpm() ? `, plus time at ${Math.round(readingWpm())} words a minute for answers longer than ${TYPICAL_ANSWER_WORDS} words` : ''}. Or 1.5× slower than your usual pace this round.`
-                : `Slow means from 85% of a question's gold target (${paceSeconds('gold')}s${readingWpm() ? `, plus reading time at ${Math.round(readingWpm())} words a minute for anything longer than a typical ${TYPICAL_WORDS}-word question` : ''}), or 1.5× slower than your usual pace this round.`;
-            if (resultsSlow.goldOff) cutEl.title += ` This round ran at ${paceX(resultsSlow.usualPace)} gold, over ${HARD_QUIZ_PACE}×, so only the usual-pace check applied.`;
+                : `Slow means from 85% of a question's gold target (${paceSeconds('gold')}s${goldWpm() ? `, plus reading time at ${Math.round(goldWpm())} words a minute for anything longer than a typical ${TYPICAL_WORDS}-word question` : ''}), or 1.5× slower than your usual pace this round.`;
+            if (isFitbQuiz()) cutEl.title = `Slow means from 85% of a question's target, or 1.5× slower than your usual pace this round. The target is ${paceSeconds('gold')}s for a ${Math.round(fitbLength.typicalWords)}-word question with one blank${fitbLength.perWord ? `, plus or minus ${paceTime(fitbLength.perWord * 1000)} for each word more or fewer` : ''}, plus ${FITB_SECONDS_PER_BLANK}s for each extra blank, and never under half of gold.`;
+            if (resultsSlow.goldOff) cutEl.title +=` This round ran at ${paceX(resultsSlow.usualPace)} gold, over ${HARD_QUIZ_PACE}×, so only the usual-pace check applied.`;
             if (resultsSlow.mathsPace) cutEl.title += ' Maths was judged only against 1.5× this quiz\'s maths gold.';
-            const worthEl = document.getElementById('rs-worth');
-            worthEl.innerHTML = worth.length
-                ? worth.map(q => `<div class="rs-row" data-rs-num="${resultNum(q)}"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span><span class="txt">${resultRowText(q)}</span><span class="side">${resultMetaHTML(q)}</span></div>`).join('')
-                : '<p class="rs-note">Nothing to flag: every answer was right, none were unusually slow and you didn\'t need to go back to any.</p>';
-            renderMath(worthEl);
-            if (resultsTab === 'overview') trimRowPreviews(worthEl);
-
             // Where the time went.
             const avgOf = list => list.length ? list.reduce((a, q) => a + (q.timeTakenMs || 0), 0) / list.length : 0;
             const right = st.answered.filter(q => q.isAnsweredCorrectly === true);
@@ -6594,7 +6661,10 @@ const READING_WPM_LIMITS = [80, 500];
                 question && `questions about <b>${Math.round(question.wpm)} wpm</b> (timed on ${question.from})`,
                 measured && `${split ? 'answers' : 'questions and answers'} about <b>${Math.round(measured.wpm)} wpm</b> (from ${measured.from})`,
             ].filter(Boolean).join(', ');
-            document.getElementById('rs-reading').innerHTML = {
+            const fitbReading = `Fill in the blank has no reading prompt, so reading speed isn't measured here and gold covers the whole question. ${fitbLength.perWord
+                ? `Gold ${paceSeconds('gold')}s is for a ${Math.round(fitbLength.typicalWords)}-word question with one blank. Each word more or fewer moves the target by <b>${paceTime(fitbLength.perWord * 1000)}</b>, ${fitbLength.measured ? 'how much your time grew per word on this quiz' : 'from your question speed'}, and each extra blank adds <b>${FITB_SECONDS_PER_BLANK}s</b>.`
+                : `Gold ${paceSeconds('gold')}s is for a question with one blank, and each extra blank adds <b>${FITB_SECONDS_PER_BLANK}s</b>. Question length isn't used yet: this quiz didn't have enough answers to show how your time grows with length.`}`;
+            document.getElementById('rs-reading').innerHTML = isFitbQuiz() ? fitbReading : {
                 measured: () => `Reading on this quiz: ${found}. ${using}`,
                 unclear: () => `Reading couldn't be measured this time: it needs a few questions where you pressed to show the answers, and six answers right first time (no maths) with a spread of lengths. ${using}`,
                 seen: () => `Reading isn't measured on a retake or redo, since you've read these questions before. ${using}`,
@@ -6616,7 +6686,7 @@ const READING_WPM_LIMITS = [80, 500];
             if (!paceKept && paceRead.length && quizMathsMode) paceRead.push('Your saved speeds only learn from text questions.');
             const paceAnswer = [];
             if (resultsSlow.goldOff) paceAnswer.push(`Your usual answering pace here was <b>${paceX(resultsSlow.usualPace)} gold</b>, so the gold check was off: a question counted as slow from 1.5× your usual pace here.`);
-            else if (resultsSlow.usualPace) paceAnswer.push(`Answering was judged against gold as usual: your usual pace here was <b>${paceX(resultsSlow.usualPace)} gold</b>.`);
+            else if (resultsSlow.usualPace) paceAnswer.push(`${isFitbQuiz() ? 'Time' : 'Answering'} was judged against gold as usual: your usual pace here was <b>${paceX(resultsSlow.usualPace)} gold</b>.`);
             if (resultsSlow.mathsPace) paceAnswer.push(`Maths answers were judged against this quiz's maths gold, <b>${paceTime(mathsGoldSeconds * 1000)}</b> (your usual maths pace here), slow from 1.5× that.`);
             else if (quizMathsMode) paceAnswer.push('There were too few maths answers for a pace of their own, so they were judged like text.');
             [['rs-pace-reading', paceRead], ['rs-pace-answering', paceAnswer]].forEach(([id, lines]) => {
@@ -6825,6 +6895,19 @@ const READING_WPM_LIMITS = [80, 500];
             const sortOpt = e.target.closest('[data-rs-sort]');
             if (sortOpt) { setResultsSort(sortOpt.dataset.rsSort); return; }
             if (e.target.closest('[data-rs-mark]')) { toggleResultMark(resultsSelectedNum); return; }
+            const removeBtn = e.target.closest('[data-rs-remove]');
+            if (removeBtn) {
+                resultsRemoved.add(+removeBtn.dataset.rsRemove);
+                refreshAfterWorthChange();
+                return;
+            }
+            if (e.target.closest('[data-rs-restore]')) {
+                // Back to being suggested, so a mark made while it was out isn't needed.
+                resultsRemoved.forEach(id => resultsMarked.delete(id));
+                resultsRemoved.clear();
+                refreshAfterWorthChange();
+                return;
+            }
             const item = e.target.closest('[data-rs-num]');
             if (item) { selectResult(+item.dataset.rsNum); return; }
             const jump = e.target.closest('[data-rs-jump]');
@@ -6881,15 +6964,21 @@ const READING_WPM_LIMITS = [80, 500];
                 quizType: currentQuizType,
                 round,
                 goldSeconds: paceSeconds('gold'),
-                answeringGoldSeconds: answerGoldSeconds(),
-                answeringGoldShare: Math.round(answerGoldShare * 1000) / 1000,
-                readingWpmUsed: readingWpm() ? Math.round(readingWpm()) : null,
+                answeringGoldSeconds: originalAllQuestionsData.some(splitTimed) ? answerGoldSeconds() : null,
+                answeringGoldShare: originalAllQuestionsData.some(splitTimed) ? Math.round(answerGoldShare * 1000) / 1000 : null,
+                readingWpmUsed: goldWpm() ? Math.round(goldWpm()) : null,
                 readingLearns: readingLearns(),
                 readingWpmMeasured: resultsReading.measured ? Math.round(resultsReading.measured.wpm) : null,
                 questionWpmUsed: questionWpmKnown() ? Math.round(questionWpm()) : null,
                 answerWpmMeasuredYet: storedWpm('readAnswerWpm') !== null,
                 questionWpmMeasured: resultsReading.question ? Math.round(resultsReading.question.wpm) : null,
-                answersAfterReading: revealsAnswers(),
+                answersAfterReading: !isFitbQuiz() && revealsAnswers(),
+                fitbTarget: isFitbQuiz() ? {
+                    typicalWords: fitbLength.typicalWords,
+                    secondsPerWord: Math.round(fitbLength.perWord * 1000) / 1000,
+                    fromThisQuiz: fitbLength.measured,
+                    secondsPerExtraBlank: FITB_SECONDS_PER_BLANK,
+                } : null,
                 mathsMode: quizMathsMode,
                 goldCheckOff: resultsSlow.goldOff,
                 usualPace: resultsSlow.usualPace || null,
@@ -6920,6 +7009,8 @@ const READING_WPM_LIMITS = [80, 500];
                     views: (q.revisits || 0) + 1,
                     redone: !!q.wasRetaken,
                     wrongEarlier: !!q.wrongBefore,
+                    removedFromWorthAnotherLook: resultsRemoved.has(q.id),
+                    hintUsed: usedHint(q),
                     goldTargetMs: Math.round(goldTargetMs(q)),
                     slowFromMs: Number.isFinite(slowFromMs(q)) ? Math.round(slowFromMs(q)) : null,
                     slow: slowReason(q),
