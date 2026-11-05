@@ -2476,7 +2476,70 @@
     /* Reading part of a bar on the results chart. */
     .rs-bar .rs-read { position: absolute; left: 0; right: 0; bottom: 0; pointer-events: none; border-radius: 0 0 0.1rem 0.1rem;
         background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0 3px, transparent 3px 6px); }
-    .rs-note.rs-reading { margin-top: 0.5rem; }
+    /* Where the time went */
+    .tw-lead { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 0.3rem 0.8rem; }
+    .tw-lead h5 { margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary); }
+    .tw-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .tw-chip { display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 700; line-height: 1.25; padding: 0.2rem 0.42rem; border-radius: 0.4rem; color: var(--text-secondary); background-color: rgba(255, 255, 255, 0.08); }
+    .tw-chip.nowrap { white-space: nowrap; }
+    .tw-chip.good { color: rgb(90, 220, 170); background-color: var(--ui-green-bg); }
+    .tw-chip.down, .tw-chip.warn { color: rgb(250, 200, 110); background-color: var(--ui-amber-bg); }
+    .tw-chip.new { color: rgb(150, 190, 255); background-color: var(--ui-blue-bg); }
+    .tw-track { position: relative; margin: 1.25rem 0 0.35rem; }
+    .tw-band { position: absolute; top: 0; bottom: 0; background-color: rgba(245, 176, 66, 0.16); }
+    .tw-bar { position: relative; display: flex; height: 1.55rem; border-radius: 0.5rem; overflow: hidden; background-color: rgba(255, 255, 255, 0.06); }
+    .tw-seg { position: relative; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; white-space: nowrap; overflow: hidden; color: var(--text-primary); }
+    .tw-seg.read { background-image: linear-gradient(135deg, rgba(71, 141, 255, 0.55), rgba(45, 188, 255, 0.4)); }
+    .tw-seg.ans { background-image: linear-gradient(135deg, rgba(7, 177, 124, 0.55), rgba(55, 200, 100, 0.4)); }
+    .tw-gold { position: absolute; top: -0.25rem; bottom: -0.25rem; width: 0.14rem; background-color: var(--ui-amber-fills); transform: translateX(-50%); }
+    .tw-gold span { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); font-size: 0.66rem; font-weight: 700; color: rgb(250, 200, 110); white-space: nowrap; line-height: 1.2; padding-bottom: 0.1rem; }
+    .tw-gold.right span { left: auto; right: 0; transform: none; }
+    .tw-keys { display: flex; flex-wrap: wrap; gap: 0.25rem 0.9rem; font-size: 0.72rem; color: var(--text-secondary); }
+    .tw-keys i { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 0.15rem; margin-right: 0.3rem; vertical-align: -0.02rem; }
+    .tw-keys i.read { background-color: var(--ui-blue-fills); }
+    .tw-keys i.ans { background-color: var(--ui-green-fills); }
+    .tw-keys i.gold { background-color: rgba(245, 176, 66, 0.45); }
+    .tw-line { margin: 0.6rem 0 0; font-size: 0.82rem; line-height: 1.5; color: var(--text-secondary); }
+    .tw-line b { font-weight: 600; color: var(--text-primary); }
+    .tw-line strong { font-weight: 700; color: var(--text-primary); }
+    .tw-grid { display: grid; gap: 0.6rem; margin-top: 0.75rem; }
+    .tw-card { display: flex; flex-direction: column; min-width: 0; padding: 0.6rem 0.7rem; border-radius: 0.8rem; border: 0.12rem solid rgba(100, 100, 100, 0.35); background-color: var(--inner-panel-bg); }
+    .tw-kick-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.15rem 0.4rem; }
+    .tw-kick { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: rgb(150, 190, 255); }
+    .tw-kick.good { color: rgb(90, 220, 170); }
+    .tw-kick.bad { color: rgb(255, 140, 140); }
+    .tw-kick.hint { color: rgb(250, 200, 110); }
+    .tw-big { margin-top: 0.15rem; font-size: 0.92rem; font-weight: 700; line-height: 1.3; color: var(--text-primary); }
+    .tw-note { margin-top: auto; padding-top: 0.4rem; font-size: 0.74rem; line-height: 1.45; color: var(--text-secondary); }
+    .tw-note b { font-weight: 600; color: var(--text-primary); }
+    .tw-rows { flex: 1 0 auto; display: grid; grid-template-columns: max-content minmax(1rem, 1fr) max-content; align-items: center; align-content: space-evenly; gap: 0.3rem 0.45rem; margin-top: 0.5rem; font-size: 0.74rem; color: var(--text-secondary); }
+    .tw-rows .n { color: rgb(150, 148, 158); }
+    .tw-rows .t { font-weight: 700; color: var(--text-primary); }
+    .tw-rows .bar { height: 0.55rem; border-radius: 0.3rem; overflow: hidden; background-color: rgba(255, 255, 255, 0.07); }
+    .tw-rows .bar i { display: block; height: 100%; }
+    .tw-rows .bar i { border-radius: 0.3rem; }
+    .tw-fill-good { background-image: linear-gradient(90deg, rgba(7, 177, 124, 0.55), var(--ui-green-fills)); }
+    .tw-fill-bad { background-image: linear-gradient(90deg, rgba(255, 71, 71, 0.55), var(--ui-red-fills)); }
+    .tw-fill-forced { background-image: linear-gradient(90deg, rgba(71, 141, 255, 0.55), var(--ui-blue-fills)); }
+    .tw-fill-hint { background-image: linear-gradient(90deg, rgba(245, 176, 66, 0.55), var(--ui-amber-fills)); }
+    .tw-fill-plain { background-image: linear-gradient(90deg, rgba(200, 200, 200, 0.25), rgba(200, 200, 200, 0.6)); }
+    .tw-rule { flex: 1 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) max-content; align-content: space-evenly; gap: 0.3rem 0.6rem; margin-top: 0.5rem; font-size: 0.74rem; color: var(--text-secondary); }
+    .tw-rule b { font-weight: 700; color: var(--text-primary); text-align: right; }
+    .tw-speeds.side { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem 0.8rem; margin-block: auto; }
+    .tw-speeds { display: grid; gap: 0.5rem; margin-top: 0.4rem; }
+    .tw-speed .name { display: block; font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); }
+    .tw-speed .vals { display: flex; flex-wrap: wrap; align-items: center; gap: 0.15rem 0.35rem; }
+    .tw-speed .num { font-size: 0.92rem; font-weight: 700; white-space: nowrap; color: var(--text-primary); }
+    .tw-speed .num s { text-decoration: none; font-weight: 600; color: rgb(150, 148, 158); }
+    .tw-speed .num small { font-size: 0.7rem; font-weight: 500; color: rgb(150, 148, 158); }
+    .tw-speed .num.none { color: rgb(150, 148, 158); }
+    .tw-speed .why { font-size: 0.72rem; line-height: 1.35; color: rgb(150, 148, 158); }
+    .tw-scale { position: relative; height: 0.5rem; margin: 0.65rem 0 0.2rem; border-radius: 0.3rem; background-color: rgba(255, 255, 255, 0.09); }
+    .tw-scale .range { position: absolute; top: 0; bottom: 0; background-color: var(--ui-blue-bg); }
+    .tw-scale .mid { position: absolute; top: -0.2rem; bottom: -0.2rem; left: 50%; width: 0.12rem; transform: translateX(-50%); background-color: var(--text-secondary); }
+    .tw-scale .dot { position: absolute; top: 50%; width: 0.85rem; height: 0.85rem; border-radius: 50%; transform: translate(-50%, -50%); background-color: var(--ui-blue-fills); border: 0.14rem solid var(--text-primary); }
+    .tw-scale-key { display: flex; justify-content: space-between; font-size: 0.66rem; color: rgb(150, 148, 158); }
+    .tw-scale-key b { font-weight: 600; color: var(--text-secondary); }
     .rs-mark {
         display: inline-flex;
         align-items: center;
@@ -2519,18 +2582,22 @@
     .rs-row .txt .katex-display > .katex { display: inline; }
     .rs-mini .rs-row { background: transparent; padding: 0.4rem 0.3rem; margin: 0; }
     .rs-mini .rs-row:hover { background-color: var(--ui-main-bg-hover); }
+    /* Remove sits in its own strip on the right edge of the row, like the letter on an
+       answer. Red as soon as the row is hovered; no glow, even when it's hovered itself. */
+    #rs-worth .rs-row { position: relative; overflow: hidden; border: 0; padding: 0.52rem 0 0.52rem 0.42rem; }
     .rs-remove {
-        flex: none; width: 1.7rem; height: 1.7rem; display: grid; place-items: center; cursor: pointer;
-        border-radius: 0.5rem; border: 0.12rem solid transparent; background-color: transparent; color: var(--text-secondary);
-        opacity: 0; transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+        flex: none; width: 2rem; align-self: stretch; margin: -0.52rem 0; display: flex; align-items: center; justify-content: center; cursor: pointer;
+        border-left: 0.12rem solid var(--ui-red-fills); background-image: var(--grad-red); color: var(--ui-red-fills);
+        opacity: 0; transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
     }
     .rs-remove svg { width: 0.95rem; height: 0.95rem; }
     .rs-row:hover .rs-remove, .rs-remove:focus-visible { opacity: 1; }
-    .rs-remove:hover { color: var(--text-primary); border-color: var(--ui-red-fills); background-color: var(--ui-red-bg); }
-    .rs-worth-removed { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; margin-top: 0.4rem; font-size: 0.78rem; color: var(--text-secondary); }
-    .rs-worth-removed button { font-weight: 600; color: var(--text-primary); text-decoration: underline; text-underline-offset: 0.15rem; cursor: pointer; }
-    .rs-worth-removed button:hover { color: var(--ui-green-fills); }
-    .rs-divider { display: flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); margin: 0.6rem 0.2rem 0.45rem; }
+    .rs-remove:hover { color: var(--text-primary); border-left-color: var(--ui-red-fills-hover); background-image: var(--grad-red-h); }
+    .rs-remove.undo { border-left-color: var(--ui-green-fills); background-image: var(--grad-green); color: var(--ui-green-fills); }
+    .rs-remove.undo:hover { color: var(--text-primary); border-left-color: var(--ui-green-fills-hover); background-image: var(--grad-green-h); }
+    .rs-divider.center { margin: 0.6rem 0.2rem 0.35rem; }
+    .rs-divider.center::before { content: ""; flex: 1; height: 1px; background: rgba(255, 255, 255, 0.08); }
+    .rs-divider {display: flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); margin: 0.6rem 0.2rem 0.45rem; }
     .rs-divider::after { content: ""; flex: 1; height: 1px; background: rgba(255, 255, 255, 0.08); }
 
     .rs-review {
@@ -3092,8 +3159,8 @@
                         <span><span class="rs-ring"></span>Viewed more than once</span>
                     </div>
                 </div>
+                <div class="rs-card"><h4>Where the time went</h4><div id="rs-timewent"></div></div>
                 <div class="rs-card"><h4>Worth another look<span id="rs-worth-count" class="n"></span><span id="rs-worth-cut" class="rs-cut"></span></h4><div id="rs-worth" class="rs-mini"></div></div>
-                <div class="rs-card"><h4>Where the time went</h4><p id="rs-timesplit" class="rs-note"></p><p id="rs-reading" class="rs-note rs-reading"></p><p id="rs-pace-reading" class="rs-note rs-reading"></p><p id="rs-pace-answering" class="rs-note rs-reading"></p></div>
             </div>
             <div id="rs-review" class="rs-review hidden">
                 <div class="rs-left">
@@ -3297,7 +3364,7 @@
                         <div class="setting-item">
                             <div class="setting-text-container">
                                <span class="setting-text">Answer Reading (wpm):</span>
-                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">How fast you read the answer choices. Answers of about 50 words are judged against the share of gold that answering took this round (the whole of gold for a question of about 30 words when the answers aren't held back). Once this speed is known, longer ones get extra time to read at it before they count as slow.With learning on, changing it sets where learning carries on from.</span></div>
+                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">How fast you read the answer choices. Answers of about 50 words have a target to answer in: the share of your gold pace that answering took this round (the whole gold pace for a question of about 30 words when the answers aren't held back). Once this speed is known, longer ones get extra time to read at it before they count as slow.With learning on, changing it sets where learning carries on from.</span></div>
                             </div>
                             <div class="number-input-container">
                                 <button class="number-input-btn reading-btn" data-action="minus">-</button>
@@ -3331,7 +3398,7 @@
                         <div class="setting-item">
                             <div class="setting-text-container">
                                <span class="setting-text">Show Answers After Reading</span>
-                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">Each question shows on its own first. Press Space (or click the prompt) when you've read it, or, after the first 3 questions of a new quiz, the answers appear by themselves, timed to how you're reading it. A Retake or Redo Suggested keeps that timing.Trying to recall the answer before seeing the choices helps it stick, and the reading time is kept apart, so answering is judged against its own share of gold.</span></div>
+                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">Each question shows on its own first. Press Space (or click the prompt) when you've read it, or, after the first 3 questions of a new quiz, the answers appear by themselves, timed to how you're reading it. A Retake or Redo Suggested keeps that timing.Trying to recall the answer before seeing the choices helps it stick, and the reading time is kept apart, so answering has its own target.</span></div>
                             </div>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="reveal-after-reading-toggle">
@@ -3641,7 +3708,7 @@
         const ANSWER_PATTERN_GLOBAL = /@@(.*?)@@/g;
 
         // Single source of truth for what the footer shows.
-        const APP_VERSION = 'v3.3.1 - Beta';
+        const APP_VERSION = 'v3.4.0 - Beta';
         const BUILD_DATE = '5th November 2026';
 
         // DOM Elements
@@ -5057,7 +5124,12 @@
         // The prompt is up on the current question (turning the setting off mid-question leaves it).
         const gateShown = () => !!(currentQuestionDOM && currentQuestionDOM.querySelector('.reveal-gate'));
         const REVEAL_MARGIN = 1.1;
-        const paceX = v => `${(Math.round(v * 10) / 10).toFixed(1)}×`;
+        // "20% less time": how a reading time compares with your usual one.
+        const paceCompared = factor => {
+            const pct = Math.round(Math.abs(1 - factor) * 100);
+            return pct < 5 ? null : `${pct}% ${factor < 1 ? 'less' : 'more'} time`;
+        };
+        const paceComparedHTML = factor => (paceCompared(factor) ? `<b>${paceCompared(factor)}</b> than usual` : '<b>about your usual time</b>');
         const paceTime = ms => `${(Math.round(ms / 100) / 10).toFixed(1)}s`;
         const readingKind = q => (quizMathsMode && textHasMaths(q.questionText) ? 'maths' : 'text');
         const usualReadMs = q => wordCount(q.questionText) * 60000 / questionWpm();
@@ -5070,7 +5142,7 @@
             const kind = readingKind(q);
             if (kind === 'text' && !questionWpmKnown()) return { kind, mode: 'wait' };
             const pace = roundPace[kind];
-            const soFar = kind === 'text' ? `<b>${paceX(roundTextFactor())}</b> your usual` : `about <b>${paceTime(roundMathsReadMs())}</b> to read`;
+            const soFar = kind === 'text' ? paceComparedHTML(roundTextFactor()) : `about <b>${paceTime(roundMathsReadMs())}</b> to read`;
             if (roundIsFirstGo && pace.warmed < WARM_UPS) {
                 return { kind, mode: 'warm', step: pace.warmed + 1, caption: pace.points.length ? `So far: ${soFar}` : '' };
             }
@@ -6135,8 +6207,15 @@
                 const measured = isFitbQuiz() ? null : measureReadingWpm(originalAllQuestionsData);
                 const question = isFitbQuiz() ? null : measureQuestionWpm(originalAllQuestionsData);
                 resultsReading = { state: measured || question ? 'measured' : 'unclear', measured, question };
+                const questionBefore = storedWpm('readQuestionWpm'), answerBefore = storedWpm('readAnswerWpm');
+                const paceWpm = questionWpmKnown() ? questionWpm() : null;
                 learnReadingWpm(measured);
                 learnQuestionWpm(question);
+                speedChange = {
+                    question: { before: questionBefore, after: storedWpm('readQuestionWpm'), measured: question },
+                    answer: { before: answerBefore, after: storedWpm('readAnswerWpm'), measured },
+                    paceWpm,
+                };
                 roundIsFirstGo = false;
             } else {
                 resultsReading = { state: 'seen', measured: null, question: null };
@@ -6279,7 +6358,7 @@ const usualPace = rest.length >= SLOW_MIN_ANSWERED ? medianOf(rest.map(paceOf)) 
             // Its time includes the wrong try, so it's not judged as slow.
             if (q.isAnsweredCorrectly === null || rightAfterWrong(q)) return null;
             const ms = timedMs(q);
-            if (goldChecked(q) && ms >= NEAR_GOLD * goldTargetMs(q)) return ms >= goldTargetMs(q) ? 'over gold' : 'near gold';
+            if (goldChecked(q) && ms >= NEAR_GOLD * goldTargetMs(q)) return ms >= goldTargetMs(q) ? 'over target' : 'near target';
             if (ms >= usualLineMs(q)) return 'slower than usual';
             return null;
         }
@@ -6346,6 +6425,8 @@ const READING_WPM_LIMITS = [80, 500];
         // Only a first go measures reading: on a retake or redo you've read them before.
         let roundIsFirstGo = false;
         let resultsReading = { state: 'seen', measured: null, question: null };
+        // What this quiz's first go did to the saved speeds. Redos and retakes show it unchanged.
+        let speedChange = null;
         // Worth another look, and what Redo Suggested resets on top of marked ones.
         // A question you've removed stays out until you put it back, the quiz is retaken,
         // or you mark it in Review and redo it.
@@ -6464,7 +6545,7 @@ const READING_WPM_LIMITS = [80, 500];
         // Short, single-line text for list rows (blanks shown as underscores).
         const resultRowText = q => q.questionText || '';
         const resultMetaHTML = q =>
-            `<span class="rs-meta ${isSlow(q) ? 'slow' : ''}">${RS_ICON.clock}${formatTime(q.timeTakenMs || 0)}${isSlow(q) ? ` · ${slowReason(q)}` : ''}</span>`
+            `<span class="rs-meta ${isSlow(q) || q.isAnsweredCorrectly === false ? 'slow' : ''}">${RS_ICON.clock}${formatTime(q.timeTakenMs || 0)}${q.isAnsweredCorrectly === false ? ' · incorrect' : ''}${isSlow(q) ? ` · ${slowReason(q)}` : ''}</span>`
             // Whole seconds on both sides, so the two parts add up to the total shown.
             + ((q.priorTimeMs || 0) > 0 && (q.timeTakenMs || 0) > q.priorTimeMs
                 ? `<span class="rs-meta split">${formatTime(q.priorTimeMs)} earlier + ${formatTime(wholeSeconds(q.timeTakenMs) - wholeSeconds(q.priorTimeMs))} this try</span>` : '')
@@ -6500,22 +6581,22 @@ const READING_WPM_LIMITS = [80, 500];
             return { qs, answered, totalMs, avgMs, medianMs, longest, quickest, revisited, extraViews, streak, streakStart, correct };
         }
 
-        // Worth another look: wrong answers first, then ones wrong before the redo, then
-        // the rest, slowest first.
+        // Worth another look: in question order, like the Redo Suggested confirm.
         function renderWorthList(st) {
-            const worthRank = q => (q.isAnsweredCorrectly === false ? 0 : rightAfterWrong(q) ? 1 : 2);
-            const worth = st.qs.filter(isSuggested)
-                .sort((a, b) => worthRank(a) - worthRank(b) || (b.timeTakenMs || 0) - (a.timeTakenMs || 0));
+            const worth = st.qs.filter(isSuggested).sort(byResultNum);
             document.getElementById('rs-worth-count').textContent = worth.length ? `- ${worth.length} question${worth.length === 1 ? '' : 's'}` : '';
             const removeBtn = q => `<button class="rs-remove" type="button" data-rs-remove="${q.id}" title="Remove from Worth another look, so Redo Suggested leaves it alone" aria-label="Remove question ${resultNum(q)} from Worth another look"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`;
+            const undoBtn = q => `<button class="rs-remove undo" type="button" data-rs-restore="${q.id}" title="Put back in Worth another look" aria-label="Put question ${resultNum(q)} back in Worth another look"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>`;
+            const row = (q, btn) => `<div class="rs-row" data-rs-num="${resultNum(q)}"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span><span class="txt">${resultRowText(q)}</span><span class="side">${resultMetaHTML(q)}</span>${btn(q)}</div>`;
+            const excluded = st.qs.filter(q => resultsRemoved.has(q.id)).sort(byResultNum);
             const worthEl = document.getElementById('rs-worth');
             const rows = worth.length
-                ? worth.map(q => `<div class="rs-row" data-rs-num="${resultNum(q)}"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span><span class="txt">${resultRowText(q)}</span><span class="side">${resultMetaHTML(q)}</span>${removeBtn(q)}</div>`).join('')
-                : resultsRemoved.size
+                ? worth.map(q => row(q, removeBtn)).join('')
+                : excluded.length
                     ? '<p class="rs-note">Nothing left to look at.</p>'
                     : '<p class="rs-note">Nothing to flag: every answer was right, none were unusually slow and you didn\'t need to go back to any.</p>';
-            const removed = resultsRemoved.size ? `<div class="rs-worth-removed"><span>${resultsRemoved.size} removed</span><button type="button" data-rs-restore>Put back</button></div>` : '';
-            worthEl.innerHTML = rows + removed;
+            const excludedRows = excluded.length ? `<div class="rs-divider center" role="separator">Excluded</div>${excluded.map(q => row(q, undoBtn)).join('')}` : '';
+            worthEl.innerHTML = rows + excludedRows;
             renderMath(worthEl);
             if (resultsTab === 'overview') trimRowPreviews(worthEl);
         }
@@ -6608,92 +6689,206 @@ const READING_WPM_LIMITS = [80, 500];
             const cutEl = document.getElementById('rs-worth-cut');
             const mathsGoldSeconds = resultsSlow.mathsPace * (st.qs.some(splitTimed) ? answerGoldSeconds() : paceSeconds('gold'));
             const goldCut = st.qs.some(splitTimed)
-                ? `Gold ${answerGoldSeconds()}s for answering${storedWpm('readAnswerWpm') !== null ? ` · answers ${Math.round(readingWpm())} wpm` : ''}`
+                ? `Target ${answerGoldSeconds()}s to answer${storedWpm('readAnswerWpm') !== null ? ` · answers read at ${Math.round(readingWpm())} wpm` : ''}`
                 : isFitbQuiz()
-                    ? `Gold ${paceSeconds('gold')}s${fitbLength.perWord ? ` · ${paceTime(fitbLength.perWord * 1000)} a word` : ''} · ${FITB_SECONDS_PER_BLANK}s a blank`
-                    : `Gold ${paceSeconds('gold')}s${readingWpm() ? ` · reading ${Math.round(readingWpm())} wpm` : ''}`;
+                    ? `Target ${paceSeconds('gold')}s${fitbLength.perWord ? ` · ${paceTime(fitbLength.perWord * 1000)} a word` : ''} · ${FITB_SECONDS_PER_BLANK}s a blank`
+                    : `Target ${paceSeconds('gold')}s${readingWpm() ? ` · reading ${Math.round(readingWpm())} wpm` : ''}`;
             const anyNotMaths= st.qs.some(q => !judgedAsMaths(q));
             cutEl.textContent = [
-                anyNotMaths && (resultsSlow.goldOff ? `Gold check off · ran ${paceX(resultsSlow.usualPace)} gold` : goldCut),
-                resultsSlow.mathsPace && `${anyNotMaths ? 'maths' : 'Maths gold'} ${paceTime(mathsGoldSeconds * 1000)}`,
+                anyNotMaths && (resultsSlow.goldOff ? 'Slow judged on your usual pace' : goldCut),
+                resultsSlow.mathsPace && `${anyNotMaths ? 'maths target' : 'Maths target'} ${paceTime(mathsGoldSeconds * 1000)}`,
             ].filter(Boolean).join(' · ');
             cutEl.title = st.qs.some(splitTimed)
-                ? `Slow means answering (after the question's reading time) from 85% of its target: ${answerGoldSeconds()}s, ${Math.round(answerGoldShare * 100)}% of gold (${answerShareMeasured ? 'the share of your time spent answering this round' : 'the usual share until a round has 5 answers'})${readingWpm() ? `, plus time at ${Math.round(readingWpm())} words a minute for answers longer than ${TYPICAL_ANSWER_WORDS} words` : ''}. Or 1.5× slower than your usual pace this round.`
-                : `Slow means from 85% of a question's gold target (${paceSeconds('gold')}s${goldWpm() ? `, plus reading time at ${Math.round(goldWpm())} words a minute for anything longer than a typical ${TYPICAL_WORDS}-word question` : ''}), or 1.5× slower than your usual pace this round.`;
-            if (isFitbQuiz()) cutEl.title = `Slow means from 85% of a question's target, or 1.5× slower than your usual pace this round. The target is ${paceSeconds('gold')}s for a ${Math.round(fitbLength.typicalWords)}-word question with one blank${fitbLength.perWord ? `, plus or minus ${paceTime(fitbLength.perWord * 1000)} for each word more or fewer` : ''}, plus ${FITB_SECONDS_PER_BLANK}s for each extra blank, and never under half of gold.`;
-            if (resultsSlow.goldOff) cutEl.title +=` This round ran at ${paceX(resultsSlow.usualPace)} gold, over ${HARD_QUIZ_PACE}×, so only the usual-pace check applied.`;
-            if (resultsSlow.mathsPace) cutEl.title += ' Maths was judged only against 1.5× this quiz\'s maths gold.';
-            // Where the time went.
-            const avgOf = list => list.length ? list.reduce((a, q) => a + (q.timeTakenMs || 0), 0) / list.length : 0;
-            const right = st.answered.filter(q => q.isAnsweredCorrectly === true);
-            const wrong = st.answered.filter(q => q.isAnsweredCorrectly === false);
-            let text;
-            if (!st.answered.length) {
-                text = 'No questions were answered.';
-            } else if (!wrong.length) {
-                text = `Every answer was correct, at <b>${formatTime(avgOf(right))}</b> a question on average.`;
-            } else if (!right.length) {
-                text = `No answers were correct. They took <b>${formatTime(avgOf(wrong))}</b> each on average.`;
-            } else {
-                const r = avgOf(wrong) / Math.max(1, avgOf(right));
-                const reading = r > 1.2 ? 'so you were stuck on the ones you missed rather than guessing.'
-                    : r < 0.8 ? 'so the ones you missed were quicker answers, which can mean rushed or guessed.'
-                    : 'so you took about as long whether you were right or not.';
-                text = `Incorrect answers averaged <b>${formatTime(avgOf(wrong))}</b> against <b>${formatTime(avgOf(right))}</b> for correct ones, ${reading}`;
-            }
-            text += st.revisited.length
-                ? ` You came back to <b>${st.revisited.length}</b> question${st.revisited.length === 1 ? '' : 's'} after answering (${st.extraViews} extra view${st.extraViews === 1 ? '' : 's'}).`
-                : ' You didn\'t go back to any questions after answering them.';
-            document.getElementById('rs-timesplit').innerHTML = text;
-            const split = st.qs.some(splitTimed);
-            const qFrom = learnedFrom('readQuestionWpm');
-            const qUse = questionWpmKnown()
-                ? `<b>${Math.round(questionWpm())} wpm</b> for questions`
-                : `no question speed yet, so the answers wait for you (it's set after ${READING_KNOWN_FROM} questions where you pressed to show them; ${Math.min(qFrom, READING_KNOWN_FROM)} so far)`;
-            const aUse = storedWpm('readAnswerWpm') !== null
-                ? `<b>${Math.round(readingWpm())} wpm</b> for ${split ? 'answers' : 'reading'}`
-                : `no ${split ? 'answer' : 'reading'} speed yet, so long ${split ? 'answers get' : 'questions get'} no extra time`;
-            const using = split
-                ? `Now using ${qUse}, and ${aUse}. Answering is judged against ${answerGoldSeconds()}s, ${Math.round(answerGoldShare * 100)}% of gold: ${answerShareMeasured ? 'the share of your time it took this round' : 'the usual share until a round has 5 answers'}, since reading the question takes the rest.`
-                : `Gold targets use ${aUse}.`;
-            const { measured, question } = resultsReading;
-            const found = [
-                question && `questions about <b>${Math.round(question.wpm)} wpm</b> (timed on ${question.from})`,
-                measured && `${split ? 'answers' : 'questions and answers'} about <b>${Math.round(measured.wpm)} wpm</b> (from ${measured.from})`,
-            ].filter(Boolean).join(', ');
-            const fitbReading = `Fill in the blank has no reading prompt, so reading speed isn't measured here and gold covers the whole question. ${fitbLength.perWord
-                ? `Gold ${paceSeconds('gold')}s is for a ${Math.round(fitbLength.typicalWords)}-word question with one blank. Each word more or fewer moves the target by <b>${paceTime(fitbLength.perWord * 1000)}</b>, ${fitbLength.measured ? 'how much your time grew per word on this quiz' : 'from your question speed'}, and each extra blank adds <b>${FITB_SECONDS_PER_BLANK}s</b>.`
-                : `Gold ${paceSeconds('gold')}s is for a question with one blank, and each extra blank adds <b>${FITB_SECONDS_PER_BLANK}s</b>. Question length isn't used yet: this quiz didn't have enough answers to show how your time grows with length.`}`;
-            document.getElementById('rs-reading').innerHTML = isFitbQuiz() ? fitbReading : {
-                measured: () => `Reading on this quiz: ${found}. ${using}`,
-                unclear: () => `Reading couldn't be measured this time: it needs a few questions where you pressed to show the answers, and six answers right first time (no maths) with a spread of lengths. ${using}`,
-                seen: () => `Reading isn't measured on a retake or redo, since you've read these questions before. ${using}`,
-            }[resultsReading.state]();
+                ? `Slow means answering, after the question's reading time, from 85% of its target, or 50% over your usual pace this round. The target is ${answerGoldSeconds()}s, ${Math.round(answerGoldShare * 100)}% of your ${paceSeconds('gold')}s gold pace (${answerShareMeasured ? 'the share of your time spent answering this round' : 'the usual share until a round has 5 answers'})${readingWpm() ? `, plus time at ${Math.round(readingWpm())} words a minute for answers longer than ${TYPICAL_ANSWER_WORDS} words` : ''}.`
+                : `Slow means from 85% of a question's target, or 50% over your usual pace this round. The target is your ${paceSeconds('gold')}s gold pace${goldWpm() ? `, plus reading time at ${Math.round(goldWpm())} words a minute for anything longer than a typical ${TYPICAL_WORDS}-word question` : ''}.`;
+            if (isFitbQuiz()) cutEl.title = `Slow means from 85% of a question's target, or 50% over your usual pace this round. The target is your ${paceSeconds('gold')}s gold pace for a ${Math.round(fitbLength.typicalWords)}-word question with one blank${fitbLength.perWord ? `, plus or minus ${paceTime(fitbLength.perWord * 1000)} for each word more or fewer` : ''}, plus ${FITB_SECONDS_PER_BLANK}s for each extra blank, and never under ${twSec(paceSeconds('gold') / 2)}.`;
+            if (resultsSlow.goldOff) cutEl.title += ` Answers here usually ran ${Math.round((resultsSlow.usualPace - 1) * 100)}% over the target, past the ${Math.round((HARD_QUIZ_PACE - 1) * 100)}% limit, so only your usual pace was used.`;
+            if (resultsSlow.mathsPace) cutEl.title += ' Maths was judged only on being 50% over this quiz\'s maths target.';
+            renderTimeWent(st, mathsGoldSeconds);
+        }
 
-            // This quiz's own pace.
-            const paceRead = [];
-            const paceKept = resultsReading.state === 'seen';
-            if (paceKept) {
-                if (roundPace.text.points.length) paceRead.push(`The countdowns kept the pace from your first go: <b>${paceX(roundTextFactor())}</b> your usual.`);
-                if (roundPace.maths.points.length) paceRead.push(`Maths countdowns kept theirs, from about <b>${paceTime(roundMathsReadMs())}</b> to read.`);
+        // --- Where the time went ---------------------------------------------------------
+        // One bar for an average question, a line on how answering compared with gold, then
+        // only the cards this round has something to say in, sharing the row between them.
+        const twSec = seconds => `${+(Math.round(seconds * 10) / 10).toFixed(1)}s`;
+        const twPlural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+        const twAvg = list => (list.length ? list.reduce((a, q) => a + (q.timeTakenMs || 0), 0) / list.length / 1000 : 0);
+        const twCard = (kicker, kind, inner, beside = '') => `<div class="tw-card"><div class="tw-kick-row"><div class="tw-kick ${kind}">${kicker}</div>${beside}</div>${inner}</div>`;
+        const twRows = rows => {
+            const max = Math.max(...rows.map(r => r.seconds), 0.001);
+            return `<div class="tw-rows">${rows.map(r => `<span>${r.label} <span class="n">${r.n}</span></span><div class="bar"><i class="${r.fill}" style="width:${r.seconds / max * 100}%"></i></div><span class="t">${twSec(r.seconds)}</span>`).join('')}</div>`;
+        };
+
+        function twAnswersCard(st) {
+            const forced = st.answered.filter(q => q.wasForceCorrected);
+            const right = st.answered.filter(q => q.isAnsweredCorrectly === true && !q.wasForceCorrected);
+            const wrong = st.answered.filter(q => q.isAnsweredCorrectly === false && !q.wasForceCorrected);
+            if (!wrong.length && !forced.length) return '';
+            const avgRight = twAvg(right), avgWrong = twAvg(wrong), ratio = avgWrong / Math.max(0.001, avgRight);
+            const compare = !wrong.length || !right.length ? null : ratio > 1.2 ? 'stuck' : ratio < 0.8 ? 'rushed' : 'same';
+            const head = !wrong.length ? `${right.length} right, ${forced.length} force-corrected`
+                : !right.length ? (forced.length ? `${wrong.length} wrong, ${forced.length} force-corrected` : `None right, ${twSec(avgWrong)} each`)
+                : { stuck: 'Stuck on the ones you missed', rushed: 'Quicker on the ones you missed', same: 'Same pace, right or wrong' }[compare];
+            const sentence = !wrong.length ? `Nothing was left wrong. The force-corrected ones took ${twSec(twAvg(forced))} each.`
+                : compare === 'stuck' ? 'You spent longer on the ones you missed, so you were stuck rather than guessing.'
+                : compare === 'rushed' ? 'The ones you missed were quicker, which can mean rushed or guessed.'
+                : compare === 'same' ? 'You took about as long whether you were right or not.' : '';
+            const rows = [
+                right.length && { label: 'Right', n: right.length, seconds: avgRight, fill: 'tw-fill-good' },
+                forced.length && { label: 'Force-corrected', n: forced.length, seconds: twAvg(forced), fill: 'tw-fill-forced' },
+                wrong.length && { label: 'Wrong', n: wrong.length, seconds: avgWrong, fill: 'tw-fill-bad' },
+            ].filter(Boolean);
+            const note = sentence;
+            return twCard(forced.length ? 'How answers went' : 'Right vs wrong', wrong.length ? 'bad' : 'good',
+                `<div class="tw-big">${head}</div>${twRows(rows)}${note ? `<div class="tw-note">${note}</div>` : ''}`);
+        }
+
+        function twHintCard(st) {
+            const used = st.answered.filter(usedHint);
+            if (!used.length) return '';
+            const others = st.answered.filter(q => !usedHint(q));
+            const withHint = twAvg(used), without = twAvg(others), ratio = withHint / Math.max(0.001, without);
+            const head = !others.length ? `Used on all ${used.length} questions`
+                : ratio > 1.1 ? 'Slower with a hint' : ratio < 0.9 ? 'Quicker with a hint' : 'Same pace with a hint';
+            const results = [
+                [used.filter(q => q.isAnsweredCorrectly === true && !q.wasForceCorrected).length, 'right'],
+                [used.filter(q => q.wasForceCorrected).length, 'force-corrected'],
+                [used.filter(q => q.isAnsweredCorrectly === false && !q.wasForceCorrected).length, 'wrong'],
+            ].filter(r => r[0] > 0).map(r => `${r[0]} ${r[1]}`).join(', ');
+            const rows = [{ label: 'With a hint', n: used.length, seconds: withHint, fill: 'tw-fill-hint' }];
+            if (others.length) rows.push({ label: 'Without', n: others.length, seconds: without, fill: 'tw-fill-plain' });
+            return twCard('Hints', 'hint', `<div class="tw-big">${head}</div>${twRows(rows)}<div class="tw-note">The hint ${used.length === 1 ? 'question ended' : 'questions ended'} ${results}. They're counted in the answers too.</div>`);
+        }
+
+        function twTargetCard() {
+            const gold = paceSeconds('gold');
+            const rows = [[fitbLength.perWord ? `${Math.round(fitbLength.typicalWords)} words, one blank` : 'One blank', `${gold}s`]];
+            if (fitbLength.perWord) rows.push(['Each word more or fewer', `±${twSec(fitbLength.perWord)}`]);
+            rows.push(['Each extra blank', `+${FITB_SECONDS_PER_BLANK}s`]);
+            const notes = [`Never under ${twSec(gold / 2)}.`];
+            if (!fitbLength.perWord) notes.push('Too few answers to show how your time grows with length.');
+            else if (!fitbLength.measured) notes.push('Words use your question speed.');
+            if (resultsReading.state === 'seen') notes.push('Kept from your first go.');
+            return twCard('Each question\'s target', '', `<div class="tw-big">${gold}s, adjusted per question</div><div class="tw-rule">${rows.map(r => `<span>${r[0]}</span><b>${r[1]}</b>`).join('')}</div><div class="tw-note">${notes.join(' ')}</div>`);
+        }
+
+        function twSpeedRow(name, key, change, emptyWhy) {
+            const now = storedWpm(key);
+            const label = `<span class="name">${name}</span>`;
+            if (now === null) return `<div class="tw-speed">${label}<div class="vals"><span class="num none">Not set yet</span></div><div class="why">${emptyWhy}</div></div>`;
+            const nowShown = Math.round(now);
+            const notYet = key === 'readQuestionWpm' && !questionWpmKnown()
+                ? ` ${Math.min(learnedFrom(key), READING_KNOWN_FROM)} of ${READING_KNOWN_FROM} questions before countdowns start.` : '';
+            const plain = (chip, why) => `<div class="tw-speed">${label}<div class="vals"><span class="num">${nowShown} <small>wpm</small></span>${chip}</div><div class="why">${why}${notYet}</div></div>`;
+            const same = '<span class="tw-chip nowrap">No change</span>';
+            if (!change || change.after === null || Math.round(change.after) !== nowShown) return plain(same, change ? 'Changed in settings since this quiz.' : 'Not measured on this quiz.');
+            if (!change.measured) return plain(same, 'Too little to measure on this quiz.');
+            const measuredText = `This quiz measured ${Math.round(change.measured.wpm)} wpm.`;
+            if (change.before === null) return plain('<span class="tw-chip new nowrap">New</span>', `Your first measurement.`);
+            const beforeShown = Math.round(change.before);
+            if (beforeShown === nowShown) return plain(same, readingLearns() ? measuredText : `${measuredText} Learning is off in settings.`);
+            const pct = (now - change.before) / change.before * 100;
+            const pctText = Math.abs(pct) < 1 ? 'under 1%' : `${Math.round(Math.abs(pct))}%`;
+            return `<div class="tw-speed">${label}<div class="vals"><span class="num"><s>${beforeShown}</s> → ${nowShown} <small>wpm</small></span><span class="tw-chip ${pct > 0 ? 'good' : 'down'} nowrap">${pct > 0 ? '+' : '−'}${pctText}</span></div><div class="why">${measuredText}${notYet}</div></div>`;
+        }
+        function twSpeedCard(st, sideBySide) {
+            const split = st.qs.some(splitTimed);
+            const rows = twSpeedRow('Questions', 'readQuestionWpm', speedChange && speedChange.question, `${Math.min(learnedFrom('readQuestionWpm'), READING_KNOWN_FROM)} of ${READING_KNOWN_FROM} questions timed so far.`)
+                + twSpeedRow(split ? 'Answers' : 'Reading', 'readAnswerWpm', speedChange && speedChange.answer, 'Set once a quiz can measure it.');
+            const kept = resultsReading.state === 'seen'
+                ? '<span class="tw-chip nowrap" title="Redos and retakes don\'t change your speeds, so this is what your first go did.">From first go</span>' : '';
+            return twCard('Reading speed', '', `<div class="tw-speeds ${sideBySide ? 'side' : ''}">${rows}</div>`, kept);
+        }
+
+        function twPaceCard(st) {
+            const kept = resultsReading.state === 'seen';
+            const hasText = roundPace.text.points.length > 0, hasMathsPace = roundPace.maths.points.length > 0;
+            if (!hasText && !hasMathsPace) return '';
+            const notes = [];
+            let head, scale = '';
+            if (hasText) {
+                const factor = roundTextFactor(), compared = paceCompared(factor);
+                head = compared ? `Reading took ${compared} than usual` : 'Reading took about your usual time';
+                const pos = Math.max(4, Math.min(96, 50 + (factor - 1) * 100));
+                scale = `<div class="tw-scale"><div class="range" style="left:${Math.min(pos, 50)}%;width:${Math.abs(pos - 50)}%"></div><div class="mid"></div><div class="dot" style="left:${pos}%"></div></div><div class="tw-scale-key"><span>Less time</span><b>Your usual</b><span>More time</span></div>`;
+                const wpm = speedChange && speedChange.paceWpm;
+                if (wpm) {
+                    const words = Math.round(medianOf(st.qs.map(q => wordCount(q.questionText))));
+                    const usual = words * 60 / wpm;
+                    notes.push(`A ${words}-word question: <b>${paceTime(usual * 1000)}</b> usually, <b>${paceTime(usual * factor * 1000)}</b> here.`);
+                }
+                const started = roundPace.text.first;
+                if (!kept && started !== null && Math.abs(factor - started) >= 0.05) {
+                    const then = paceCompared(started);
+                    notes.push(`It started at ${then ? then.replace(' time', '') : 'about your usual'}.`);
+                }
+                notes.push(kept ? 'Countdowns kept this from your first go.' : 'Countdowns were timed to match.');
+            } else head = `Maths took about ${paceTime(roundMathsReadMs())} to read`;
+            if (hasText && hasMathsPace) notes.push(`Maths questions took about <b>${paceTime(roundMathsReadMs())}</b> to read.`);
+            if (!hasText && kept) notes.push('Countdowns kept this from your first go.');
+            return twCard('Reading pace', '', `<div class="tw-big">${head}</div>${scale}<div class="tw-note">${notes.join(' ')}</div>`);
+        }
+
+        function twAnswerLine(st, split, answer, mathsGoldSeconds) {
+            const gold = paceSeconds('gold');
+            const target = split ? answerGoldSeconds() : gold;
+            const compared = `<strong>${split ? 'You averaged' : 'Each question averaged'} ${twSec(answer)}${split ? ' to answer' : ''}. The target is ${twSec(target)}.</strong>`;
+            const typical = split ? 'answer' : 'question';
+            const parts = [];
+            if (resultsSlow.usualPace) {
+                const usual = resultsSlow.usualPace * target;
+                parts.push(compared);
+                if (resultsSlow.goldOff) parts.push(`Your typical ${typical} took <b>${twSec(usual)}</b>, well over the target, so the target wasn't realistic for this quiz. Instead, ${split ? 'an answer' : 'a question'} counted as slow from <b>${twSec(usual * USUAL_PACE_X)}</b>, ${Math.round((USUAL_PACE_X - 1) * 100)}% over your typical one.`);
+                else if (resultsSlow.usualPace > 1) parts.push(`Your typical ${typical} ran a little over it.`);
+                else if (resultsSlow.usualPace < 0.7) parts.push('Well inside it.');
+                else parts.push('Close to it.');
+            } else if (!resultsSlow.mathsPace) {
+                parts.push(`${compared} There were too few answers to work out your typical pace.`);
             }
-            if (!paceKept && roundPace.text.first !== null) {
-                const end = roundTextFactor();
-                paceRead.push(`This round's warm-ups took <b>${paceX(roundPace.text.first)}</b> your usual time for their length, so the countdowns were timed to match${Math.abs(end - roundPace.text.first) >= 0.05 ? `, <b>${paceX(end)}</b> by the end` : ''}.`);
-            }
-            if (!paceKept && roundPace.maths.first !== null) paceRead.push(`Maths questions took about <b>${paceTime(roundMathsReadMs())}</b> each to read.`);
-            if (!paceKept && roundPace.runOuts) paceRead.push(`The countdown ran out before you pressed on ${roundPace.runOuts} question${roundPace.runOuts === 1 ? '' : 's'}, so it got longer each time.`);
-            if (!paceKept && paceRead.length && quizMathsMode) paceRead.push('Your saved speeds only learn from text questions.');
-            const paceAnswer = [];
-            if (resultsSlow.goldOff) paceAnswer.push(`Your usual answering pace here was <b>${paceX(resultsSlow.usualPace)} gold</b>, so the gold check was off: a question counted as slow from 1.5× your usual pace here.`);
-            else if (resultsSlow.usualPace) paceAnswer.push(`${isFitbQuiz() ? 'Time' : 'Answering'} was judged against gold as usual: your usual pace here was <b>${paceX(resultsSlow.usualPace)} gold</b>.`);
-            if (resultsSlow.mathsPace) paceAnswer.push(`Maths answers were judged against this quiz's maths gold, <b>${paceTime(mathsGoldSeconds * 1000)}</b> (your usual maths pace here), slow from 1.5× that.`);
-            else if (quizMathsMode) paceAnswer.push('There were too few maths answers for a pace of their own, so they were judged like text.');
-            [['rs-pace-reading', paceRead], ['rs-pace-answering', paceAnswer]].forEach(([id, lines]) => {
-                const el = document.getElementById(id);
-                el.innerHTML = lines.join(' ');
-                el.classList.toggle('hidden', !lines.length);
-            });
+            if (split) parts.push(answerShareMeasured
+                ? `Your ${gold}s gold pace covers a whole question, and you spent ${Math.round(answerGoldShare * 100)}% of your time answering this round, so that's the share the target gets.`
+                : `Your ${gold}s gold pace covers a whole question, and the target gets the usual ${Math.round(answerGoldShare * 100)}% until a round has 5 answers.`);
+            if (resultsSlow.mathsPace) parts.push(`Maths had its own target of <b>${twSec(mathsGoldSeconds)}</b>, from your maths answers, and counted as slow from <b>${twSec(mathsGoldSeconds * USUAL_PACE_X)}</b>.`);
+            else if (quizMathsMode) parts.push('There were too few maths answers for a target of their own, so they were judged like the rest.');
+            const helped = [st.answered.some(q => q.wasForceCorrected) && 'Force-corrected', st.answered.some(usedHint) && 'hint'].filter(Boolean);
+            if (helped.length) parts.push(`${helped.join(' and ')} questions are suggested for a redo.`.replace(/^h/, 'H'));
+            if (isFitbQuiz()) parts.push('There\'s no reading prompt here, so your speeds don\'t change.');
+            else if (resultsReading.state === 'unclear') parts.push('Reading couldn\'t be measured: it needs a few questions where you pressed to show the answers, and six right first time with a spread of lengths.');
+            else if (resultsReading.state === 'measured' && quizMathsMode) parts.push('Only text questions count towards your speeds.');
+            return parts.join(' ');
+        }
+
+        function renderTimeWent(st, mathsGoldSeconds) {
+            const el = document.getElementById('rs-timewent');
+            if (!st.answered.length) { el.innerHTML = '<p class="rs-note">No questions were answered.</p>'; return; }
+            const split = st.answered.some(splitTimed);
+            const avg = st.avgMs / 1000;
+            const read = split ? st.answered.reduce((a, q) => a + (splitTimed(q) ? (q.readMs || 0) : 0), 0) / st.answered.length / 1000 : 0;
+            const answer = Math.max(0, avg - read);
+            const gold = paceSeconds('gold');
+            const goldShown = split ? answerGoldSeconds() : gold;
+            const goldEnd = split ? read + goldShown : gold;
+            const max = Math.max(avg, goldEnd) * 1.08;
+            const seg = (cls, seconds) => `<div class="tw-seg ${cls}" style="width:${seconds / max * 100}%">${seconds / max > 0.07 ? twSec(seconds) : ''}</div>`;
+            const goldPos = goldEnd / max * 100;
+            const allRight = st.answered.length === st.qs.length && st.answered.every(q => q.isAnsweredCorrectly === true && !q.wasForceCorrected);
+            const chips = [
+                allRight ? `<span class="tw-chip good nowrap">All ${st.qs.length} right</span>` : '',
+                resultsReading.state !== 'seen' && !isFitbQuiz() && roundPace.runOuts ? `<span class="tw-chip warn nowrap">Countdown ran out on ${twPlural(roundPace.runOuts, 'question')}, so it got longer</span>` : '',
+                `<span class="tw-chip nowrap">${st.revisited.length ? `Came back to ${twPlural(st.revisited.length, 'question')} · ${twPlural(st.extraViews, 'extra view')}` : 'No going back after answering'}</span>`,
+            ].join('');
+            const keys = split
+                ? '<span><i class="read"></i>Reading the question</span><span><i class="ans"></i>Answering</span><span><i class="gold"></i>Target time to answer</span>'
+                : `<span><i class="ans"></i>${isFitbQuiz() ? 'Thinking and typing' : 'Reading and answering'}</span>`;
+            const answersCard = twAnswersCard(st), hintCard = twHintCard(st), paceCard = isFitbQuiz() ? '' : twPaceCard(st);
+            const cards = (isFitbQuiz()
+                ? [answersCard, hintCard, twTargetCard()]
+                : [answersCard, hintCard, twSpeedCard(st, !answersCard && !hintCard && !!paceCard), paceCard]).filter(Boolean);
+            el.innerHTML = `<div class="tw-lead"><h5>An average question took ${twSec(avg)}</h5><div class="tw-chips">${chips}</div></div>`
+                + `<div class="tw-track"><div class="tw-bar">${split ? `<div class="tw-band" style="left:${read / max * 100}%;width:${goldShown / max * 100}%"></div>${seg('read', read)}` : ''}${seg('ans', answer)}</div><div class="tw-gold ${goldPos > 85 ? 'right' : ''}" style="left:${goldPos}%"><span>${split ? 'Answer target' : 'Target'} ${twSec(goldShown)}</span></div></div>`
+                + `<div class="tw-keys">${keys}</div>`
+                + `<p class="tw-line">${twAnswerLine(st, split, answer, mathsGoldSeconds)}</p>`
+                + `<div class="tw-grid" style="grid-template-columns:repeat(${cards.length === 4 ? 2 : cards.length},minmax(0,1fr))">${cards.join('')}</div>`;
         }
 
         function resultMarkHTML(q) {
@@ -6901,10 +7096,11 @@ const READING_WPM_LIMITS = [80, 500];
                 refreshAfterWorthChange();
                 return;
             }
-            if (e.target.closest('[data-rs-restore]')) {
+            const undoBtn = e.target.closest('[data-rs-restore]');
+            if (undoBtn) {
                 // Back to being suggested, so a mark made while it was out isn't needed.
-                resultsRemoved.forEach(id => resultsMarked.delete(id));
-                resultsRemoved.clear();
+                resultsRemoved.delete(+undoBtn.dataset.rsRestore);
+                resultsMarked.delete(+undoBtn.dataset.rsRestore);
                 refreshAfterWorthChange();
                 return;
             }
@@ -6972,6 +7168,10 @@ const READING_WPM_LIMITS = [80, 500];
                 questionWpmUsed: questionWpmKnown() ? Math.round(questionWpm()) : null,
                 answerWpmMeasuredYet: storedWpm('readAnswerWpm') !== null,
                 questionWpmMeasured: resultsReading.question ? Math.round(resultsReading.question.wpm) : null,
+                speedChangeOnFirstGo: speedChange ? {
+                    question: { before: speedChange.question.before, after: speedChange.question.after, measured: speedChange.question.measured ? speedChange.question.measured.wpm : null },
+                    answer: { before: speedChange.answer.before, after: speedChange.answer.after, measured: speedChange.answer.measured ? speedChange.answer.measured.wpm : null },
+                } : null,
                 answersAfterReading: !isFitbQuiz() && revealsAnswers(),
                 fitbTarget: isFitbQuiz() ? {
                     typicalWords: fitbLength.typicalWords,
