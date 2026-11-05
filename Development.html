@@ -45,6 +45,9 @@
         --layout-background-power-saving: rgba(10, 10, 10, 0.45);
         --main-content-bg: rgba(25, 25, 25, 0.5);
         --secondary-content-bg: rgba(10, 10, 10, 0.6);
+        /* Panels inside the main box (the rail, the review box, answer feedback):
+           lighter, since the box behind them is already tinted. */
+        --inner-panel-bg: rgba(10, 10, 10, 0.3);
         --text-primary: rgb(240, 240, 240);
         --text-secondary: rgb(200, 200, 200);
         --text-shadow: rgba(200, 200, 200, 0.4);
@@ -319,6 +322,8 @@
         overflow-y: auto;
         margin: -0.75rem -0.45rem -0.75rem -0.75rem;
         padding: 0.75rem;
+        position: relative;
+        z-index: 1;
     }
     .home-right {
         flex: 1;
@@ -327,8 +332,8 @@
         min-width: 0;
         min-height: 0;
         overflow-y: auto;
-        margin: -0.75rem -1.3rem -1.3rem -0.45rem;
-        padding: 0.75rem 1.3rem 1.3rem 0.45rem;
+        margin: -0.75rem -1.3rem -1.3rem;
+        padding: 0.75rem 1.3rem 1.3rem;
     }
     .home-right .textarea-container { min-height: 8rem; }
 
@@ -878,6 +883,31 @@
     .btn-option.user-selected-option {
         border-color: var(--ui-main-fills-hover);
     }
+    /* The letter sits in its own strip on the left edge of the answer. Every
+       transition but min-height, which balanceAnswerHeights sets. */
+    .btn-option {
+        padding: 0 1rem 0 0;
+        overflow: hidden;
+        align-items: stretch;
+        transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out, transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+    }
+    .btn-option .opt-l {
+        flex: none;
+        width: 3rem;
+        margin-right: 0.95rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: var(--text-secondary);
+        background-color: rgba(255, 255, 255, 0.04);
+        border-right: 0.12rem solid var(--ui-main-fills);
+    }
+    .btn-option .opt-t { min-width: 0; align-self: center; padding: 0.75rem 0; }
+    .btn-option.user-selected-option .opt-l,
+    .btn-option:not(:disabled):hover .opt-l { color: var(--text-primary); border-right-color: var(--ui-main-fills-hover); }
+    .btn-option.correct .opt-l { color: #fff; border-right-color: var(--ui-green-fills); background-color: rgba(7, 177, 124, 0.3); }
+    .btn-option.incorrect .opt-l { color: #fff; border-right-color: var(--ui-red-fills); background-color: rgba(255, 71, 71, 0.3); }
 
     body:not(.power-saving-mode) .btn-option.correct:hover, 
     body:not(.power-saving-mode) .btn-option.incorrect:hover {
@@ -894,17 +924,17 @@
         border-width: 0.15rem;
     }
     .feedback-correct {
-        background-color: var(--secondary-content-bg);
+        background-color: var(--inner-panel-bg);
         color: var(--text-primary);
         border-color: var(--ui-green-fills);
     }
     .feedback-incorrect {
-        background-color: var(--secondary-content-bg);
+        background-color: var(--inner-panel-bg);
         color: var(--text-primary);
         border-color: var(--ui-red-fills);
     }
     .feedback-neutral {
-    background-color: var(--secondary-content-bg);
+    background-color: var(--inner-panel-bg);
     color: var(--text-primary);
     border-color: var(--ui-main-fills);
     }
@@ -1280,6 +1310,9 @@
     .rs-why.views { color: rgb(150, 190, 255); background-color: var(--ui-blue-bg); }
     .rs-why.slow { color: rgb(255, 140, 140); background-color: transparent; }
     .rs-why.marked { color: var(--ui-pink-fills-hover); background-color: var(--ui-pink-bg); }
+    .rs-why.again { color: rgb(250, 200, 110); background-color: var(--ui-amber-bg); }
+    .rs-meta.again { color: rgb(250, 200, 110); font-weight: 600; }
+    html:root .rs-why.again { background-color: transparent; background-image: var(--grad-amber); }
     .rs-redo-row .time { flex: none; display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
     .rs-redo-row .time .t { font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
     .rs-redo-row .time .what { font-size: 0.66rem; color: var(--text-secondary); white-space: nowrap; }
@@ -1345,6 +1378,25 @@
         color: var(--text-primary);
     }
     .latex-warning-text strong { color: var(--ui-amber-fills); }
+    .latex-warning.stacked { flex-direction: column; align-items: stretch; }
+    .latex-warning-head { display: flex; align-items: center; gap: 0.75rem; }
+    .parse-report-content { max-height: 92vh; overflow-y: auto; }
+    .maths-notice { margin-top: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 0.75rem; border: 0.15rem solid var(--ui-main-fills); display: flex; align-items: center; gap: 0.75rem; text-align: left; }
+    .maths-notice.on { border-color: var(--ui-pink-fills); background-image: var(--grad-pink); }
+    .maths-notice .t { flex: 1; font-size: 0.875rem; line-height: 1.4; color: var(--text-primary); }
+    .maths-notice .t strong { font-weight: 700; }
+    .maths-notice.on .t strong { color: var(--ui-pink-fills-hover); }
+    .maths-notice.done { border-color: var(--ui-green-fills); background-color: rgba(7, 177, 124, 0.08); }
+    .maths-switch { flex: none; display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; }
+    .maths-switch .track { width: 2.3rem; height: 1.3rem; border-radius: 1rem; border: 0.12rem solid var(--ui-main-fills); position: relative; background-color: var(--ui-main-bg); transition: background-color 0.2s ease, border-color 0.2s ease; }
+    .maths-switch .track::after { content: ''; position: absolute; top: 0.12rem; left: 0.14rem; width: 0.82rem; height: 0.82rem; border-radius: 50%; background-color: var(--text-secondary); transition: left 0.2s ease; }
+    .maths-switch[aria-checked="true"] .track { border-color: var(--ui-pink-fills); background-image: var(--grad-pink); }
+    .maths-switch[aria-checked="true"] .track::after { left: 1.1rem; background-color: #fff; }
+    .maths-issues { max-height: 11rem; border-radius: 0.6rem; background-color: var(--secondary-content-bg); padding: 0.4rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    .maths-issue { flex: none; border-left: 0.2rem solid var(--ui-amber-fills); border-radius: 0.5rem; background-color: var(--main-content-bg); padding: 0.4rem 0.65rem; }
+    .maths-issue .r { font-size: 0.75rem; font-weight: 600; color: var(--ui-amber-fills); }
+    .maths-issue .r em { font-style: normal; color: var(--ui-green-fills); margin-left: 0.35rem; }
+    .maths-issue code { display: block; margin-top: 0.15rem; font-size: 0.8rem; color: var(--text-secondary); white-space: pre-wrap; word-break: break-word; }
     .latex-warning .btn {
         flex: none;
         padding: 0.45rem 0.8rem;
@@ -1396,7 +1448,7 @@
         bottom: 0.9rem;
         width: 3.9rem;
         border-radius: 1rem;
-        background-color: var(--secondary-content-bg);
+        background-color: var(--inner-panel-bg);
         overflow: hidden;
         z-index: 1;
     }
@@ -1533,7 +1585,7 @@
         font-weight: 800;
         color: #fff;
         border: 0.18rem solid #fff;
-        background: rgb(30, 30, 30);
+        background: rgba(20, 20, 20, 0.65);
         z-index: 2;
         box-shadow: 0 0 0 0.3rem rgba(10, 10, 10, 0.55), 0 0 1.1rem 0.1rem rgba(var(--c), 0.55);
     }
@@ -1548,6 +1600,8 @@
         height: 2.3rem;
         border-radius: 0 1.2rem 1.2rem 0;
         background: linear-gradient(90deg, rgba(var(--c), 0.5), rgba(var(--c), 0));
+        -webkit-mask: radial-gradient(circle at 0 50%, transparent 1.3rem, #000 1.32rem);
+        mask: radial-gradient(circle at 0 50%, transparent 1.3rem, #000 1.32rem);
     }
     .qp-body {
         position: absolute;
@@ -2298,7 +2352,7 @@
     .rs-note b { color: var(--text-primary); font-weight: 600; }
 
     /* Time-per-question bars follow the button style: solid border, see-through fill. */
-    .rs-bars { display: flex; align-items: flex-end; gap: 3px; height: 8.5rem; padding-top: 0.9rem; position: relative; }
+    .rs-bars { display: flex; align-items: flex-end; gap: 3px; height: 8.5rem; padding-top: 0.9rem; position: relative; margin: 0 2.4rem; }
     .rs-bar {
         --c: 100, 100, 100;
         flex: 1;
@@ -2317,14 +2371,45 @@
     .rs-ring { display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 50%;
         background: radial-gradient(circle, transparent 30%, rgba(71, 141, 255, 0.35) 50%, rgb(71, 141, 255) 72%); }
     .rs-bar .rs-ring { position: absolute; top: -1rem; left: 50%; transform: translateX(-50%); }
-    .rs-avg { position: absolute; left: 0; right: 0; border-top: 1px dashed rgba(240, 240, 240, 0.5); pointer-events: none; }
-    .rs-avg span { position: absolute; right: 0; top: -1rem; font-size: 0.66rem; color: var(--text-secondary); }
-    .rs-axis { display: flex; gap: 3px; margin-top: 0.25rem; }
+    /* The lines' layer covers only the bars' area (not the padding above), so a
+       line at 40% lines up with a bar at 40%. */
+    .rs-lines { position: absolute; left: 0; right: 0; top: 0.9rem; bottom: 0; pointer-events: none; }
+    .rs-line { position: absolute; left: 0; right: 0; border-top: 1px dashed rgba(240, 240, 240, 0.5); }
+    .rs-line.median { border-top: 2px dotted rgba(71, 141, 255, 0.85); }
+    .rs-line span { position: absolute; top: 0; transform: translateY(-50%); font-size: 0.68rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .rs-line.avg span { right: calc(100% + 0.4rem); color: rgba(240, 240, 240, 0.8); }
+    .rs-line.median span { left: calc(100% + 0.4rem); color: rgb(150, 190, 255); }
+    .rs-slow-tick { position: absolute; height: 0; border-top: 2px solid rgba(255, 140, 140, 0.9); }
+    .rs-bar-tip {
+        display: none;
+        position: absolute;
+        z-index: 6;
+        transform: translateX(-50%);
+        padding: 0.3rem 0.55rem;
+        border-radius: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        color: var(--text-primary);
+        background-color: rgba(20, 20, 20, 0.95);
+        border: 0.1rem solid var(--ui-main-fills);
+        pointer-events: none;
+    }
+    .rs-bar-tip.on { display: block; }
+    .rs-lk { display: inline-block; width: 1.1rem; margin-right: 0.35rem; vertical-align: middle; border-top: 1px dashed rgba(240, 240, 240, 0.5); }
+    .rs-lk.median { border-top: 2px dotted rgba(71, 141, 255, 0.85); }
+    .rs-lk.slow { width: 0.75rem; border-top: 2px solid rgba(255, 140, 140, 0.9); }
+    .rs-lk.read { width: 0.7rem; height: 0.8rem; border: none; border-radius: 0.15rem; vertical-align: -2px;
+        background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0 3px, transparent 3px 6px); }
+    .rs-axis { display: flex; gap: 3px; margin: 0.25rem 2.4rem 0; }
     .rs-axis span { flex: 1; min-width: 0; text-align: center; font-size: 0.6rem; color: var(--text-secondary); }
     .rs-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.5rem; align-items: center; }
     .rs-legend i { display: inline-block; width: 0.65rem; height: 0.8rem; margin-right: 0.3rem; vertical-align: -2px;
         border-radius: 0.2rem 0.2rem 0.1rem 0.1rem; border: 0.1rem solid rgb(var(--c)); background: linear-gradient(to top, rgba(var(--c), 0.5), rgba(var(--c), 0) 80%); }
     .rs-legend .rs-ring { margin-right: 0.3rem; vertical-align: -1px; }
+    .rs-chart-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .rs-chart-head .rs-legend { margin: 0; gap: 0.9rem; text-transform: none; letter-spacing: 0; font-weight: 500; }
+    .rs-legend-bars { justify-content: space-between; }
 
     .rs-badge {
         flex: none;
@@ -2354,6 +2439,43 @@
     .rs-card h4 .n { margin-left: 0.35rem; color: var(--text-primary); }
     .rs-card h4 .rs-cut { float: right; text-transform: none; letter-spacing: 0; font-weight: 600; cursor: help; }
     .rs-meta.slow { color: rgb(255, 140, 140); }
+    .rs-meta.split { color: var(--text-secondary); font-weight: 600; }
+    /* Reading prompt before the answers show. */
+    .reveal-gate {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 1.1rem 1rem 1rem;
+        border-radius: 0.75rem;
+        border: 0.12rem dashed var(--ui-main-fills);
+        background-color: var(--inner-panel-bg);
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s ease, color 0.2s ease;
+    }
+    .reveal-gate:hover { border-color: var(--ui-main-fills-hover); color: var(--text-primary); }
+    .reveal-gate kbd { font-family: inherit; font-size: 0.82rem; padding: 0.05rem 0.4rem; border-radius: 0.3rem; border: 1px solid var(--ui-main-fills); background-color: var(--ui-main-bg); }
+    .warm-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ui-amber-fills); }
+    .warm-tag.maths { color: var(--ui-pink-fills); }
+    .warm-dots { display: inline-flex; gap: 0.25rem; margin-left: 0.4rem; vertical-align: 1px; }
+    .warm-dots i { width: 0.42rem; height: 0.42rem; border-radius: 50%; border: 1px solid currentColor; }
+    .warm-dots i.done { background-color: currentColor; }
+    .pace-cap { font-size: 0.72rem; margin-top: -0.25rem; }
+    .pace-cap b { color: var(--text-primary); font-weight: 600; }
+    .reveal-bar { width: min(14rem, 60%); height: 3px;border-radius: 2px; overflow: hidden; background-color: rgba(255, 255, 255, 0.08); }
+    .reveal-bar i { display: block; height: 100%; background: linear-gradient(90deg, rgb(71, 141, 255), rgb(45, 188, 255)); transform-origin: left; transform: scaleX(0); }
+    body.power-saving-mode .reveal-bar { display: none; }
+    @keyframes revealFill { to { transform: scaleX(1); } }
+    .answers-hidden { display: none; }
+    .answers-arriving { animation: answersArrive 0.28s ease-out; }
+    @keyframes answersArrive { from { opacity: 0; transform: translateY(0.4rem); } }
+    /* Reading part of a bar on the results chart. */
+    .rs-bar .rs-read { position: absolute; left: 0; right: 0; bottom: 0; pointer-events: none; border-radius: 0 0 0.1rem 0.1rem;
+        background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0 3px, transparent 3px 6px); }
+    .rs-note.rs-reading { margin-top: 0.5rem; }
     .rs-mark {
         display: inline-flex;
         align-items: center;
@@ -2406,7 +2528,7 @@
         grid-template-columns: 20rem 1fr;
         margin: 0 1.4rem 1.4rem;
         border-radius: 1rem;
-        background-color: var(--secondary-content-bg);
+        background-color: var(--inner-panel-bg);
         overflow: hidden;
     }
     .rs-review.hidden { display: none !important; }
@@ -2470,16 +2592,32 @@
         border: 0.12rem solid transparent;
         color: var(--text-secondary);
     }
-    .rs-opt .l { font-weight: 700; flex: none; }
+    .rs-opt { padding-left: 0; overflow: hidden; }
+    /* Letter and text sit in the middle of the row's height. */
+    .rs-opt .l {
+        font-weight: 700;
+        flex: none;
+        width: 2.2rem;
+        margin: -0.55rem 0.2rem -0.55rem 0;
+        padding: 0.55rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(255, 255, 255, 0.04);
+        border-right: 0.12rem solid rgba(255, 255, 255, 0.08);
+    }
+    .rs-opt .t { align-self: center; }
+    .rs-opt.correct .l { border-right-color: var(--ui-green-fills); }
+    .rs-opt.wrong .l { border-right-color: var(--ui-red-fills); }
     .rs-opt.correct { background-color: var(--ui-green-bg); color: var(--text-primary); border-color: var(--ui-green-fills); }
     .rs-opt.wrong { background-color: var(--ui-red-bg); color: var(--text-primary); border-color: var(--ui-red-fills); }
     .rs-opt .tagline { margin-left: auto; flex: none; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.9; align-self: center; }
     .rs-expl { margin-top: 0.8rem; background-color: var(--main-content-bg); border-radius: 0.7rem; padding: 0.7rem 0.85rem; font-size: 0.88rem; line-height: 1.55; }
     .rs-expl b { display: block; font-size: 0.8rem; margin-bottom: 0.2rem; }
-    .rs-d-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 0.9rem; }
-    .rs-d-foot .btn { padding: 0.5rem 0.9rem; font-size: 0.85rem; }
-    .rs-kbd { font-size: 0.72rem; color: var(--text-secondary); }
-    .rs-kbd kbd { font-family: inherit; font-size: 0.7rem; padding: 0.05rem 0.35rem; border-radius: 0.3rem; border: 1px solid var(--ui-main-fills); background-color: var(--ui-main-bg); }
+    .rs-d-foot { display: flex; justify-content: center; margin-top: 1.1rem; }
+    .rs-kbd { display: flex; align-items: center; gap: 1rem; font-size: 0.78rem; color: var(--text-secondary); }
+    .rs-kbd > span { white-space: nowrap; }
+    .rs-kbd kbd { font-family: inherit; font-size: 0.76rem; padding: 0.1rem 0.45rem; border-radius: 0.3rem; border: 1px solid var(--ui-main-fills); background-color: var(--ui-main-bg); }
 
 
     /* ================= Gradient style (D) =================
@@ -2493,6 +2631,7 @@
         --grad-green: linear-gradient(135deg, rgba(7, 177, 124, 0.3), rgba(55, 200, 100, 0.3));
         --grad-green-h: linear-gradient(135deg, rgba(7, 177, 124, 0.4), rgba(55, 200, 100, 0.4));
         --grad-green-solid: linear-gradient(135deg, rgb(5, 124, 87), rgb(55, 200, 100));
+        --grad-green-badge: linear-gradient(135deg, rgba(5, 124, 87, 0.65), rgba(55, 200, 100, 0.65));
         --grad-green-tab: linear-gradient(90deg, rgba(7, 177, 124, 0.5), rgba(55, 200, 100, 0.2) 60%, rgba(55, 200, 100, 0));
         --grad-green-card: linear-gradient(135deg, rgba(7, 177, 124, 0.45) 0%, rgba(55, 200, 100, 0.06) 75%);
         --grad-green-bar: linear-gradient(to top, rgba(7, 177, 124, 0.5) 0%, rgba(55, 200, 100, 0.15) 45%, rgba(55, 200, 100, 0) 70%);
@@ -2501,6 +2640,7 @@
         --grad-red: linear-gradient(135deg, rgba(255, 71, 71, 0.3), rgba(230, 100, 35, 0.3));
         --grad-red-h: linear-gradient(135deg, rgba(255, 71, 71, 0.4), rgba(230, 100, 35, 0.4));
         --grad-red-solid: linear-gradient(135deg, rgb(178, 50, 50), rgb(230, 100, 35));
+        --grad-red-badge: linear-gradient(135deg, rgba(178, 50, 50, 0.65), rgba(230, 100, 35, 0.65));
         --grad-red-tab: linear-gradient(90deg, rgba(255, 71, 71, 0.5), rgba(230, 100, 35, 0.2) 60%, rgba(230, 100, 35, 0));
         --grad-red-card: linear-gradient(135deg, rgba(255, 71, 71, 0.45) 0%, rgba(230, 100, 35, 0.06) 75%);
         --grad-red-bar: linear-gradient(to top, rgba(255, 71, 71, 0.5) 0%, rgba(230, 100, 35, 0.15) 45%, rgba(230, 100, 35, 0) 70%);
@@ -2533,6 +2673,7 @@
         --grad-forced: linear-gradient(135deg, rgba(7, 177, 124, 0.3), rgba(71, 141, 255, 0.3));
         --grad-forced-h: linear-gradient(135deg, rgba(7, 177, 124, 0.4), rgba(71, 141, 255, 0.4));
         --grad-forced-solid: linear-gradient(135deg, rgb(5, 124, 87), rgb(71, 141, 255));
+        --grad-forced-badge: linear-gradient(135deg, rgba(5, 124, 87, 0.65), rgba(71, 141, 255, 0.65));
         --grad-forced-tab: linear-gradient(90deg, rgba(7, 177, 124, 0.5), rgba(71, 141, 255, 0.2) 60%, rgba(71, 141, 255, 0));
         --grad-forced-card: linear-gradient(135deg, rgba(7, 177, 124, 0.45) 0%, rgba(71, 141, 255, 0.06) 75%);
         --grad-forced-bar: linear-gradient(to top, rgba(7, 177, 124, 0.5) 0%, rgba(71, 141, 255, 0.15) 45%, rgba(71, 141, 255, 0) 70%);
@@ -2663,21 +2804,21 @@
         background: var(--grad-forced-bar);
         filter: brightness(1.35);
     }
-    /* Review: the big question badge and its tab */
+    /* Quiz screen: the current question's badge and its tab */
     html:root .qp-badge[data-state="ok"] {
-        background: var(--grad-green-solid);
+        background: var(--grad-green-badge);
     }
     html:root .qp-tab[data-state="ok"] {
         background: var(--grad-green-tab);
     }
     html:root .qp-badge[data-state="bad"] {
-        background: var(--grad-red-solid);
+        background: var(--grad-red-badge);
     }
     html:root .qp-tab[data-state="bad"] {
         background: var(--grad-red-tab);
     }
     html:root .qp-badge[data-state="forced"] {
-        background: var(--grad-forced-solid);
+        background: var(--grad-forced-badge);
     }
     html:root .qp-tab[data-state="forced"] {
         background: var(--grad-forced-tab);
@@ -2745,6 +2886,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-6-13.5v13.5" /></svg>
             </button>
             
+            <button id="export-results-btn-ext" class="external-quiz-action-btn btn btn-main hidden">Export</button>
             <button id="redo-suggested-btn-ext" class="external-quiz-action-btn btn btn-green hidden">Redo Suggested</button>
             <button id="redo-quiz-btn-ext" class="external-quiz-action-btn btn btn-blue hidden">Retake Quiz</button>
             <button id="new-quiz-btn-ext" class="external-quiz-action-btn btn btn-red hidden">New Quiz</button>
@@ -2921,19 +3063,25 @@
                     <div id="rs-tiles" class="rs-tiles"></div>
                 </div>
                 <div class="rs-card">
-                    <h4>Time per question</h4>
+                    <h4 class="rs-chart-head">Time per question
+                        <span class="rs-legend">
+                            <span><b class="rs-lk"></b>Average</span>
+                            <span><b class="rs-lk median"></b>Median</span>
+                            <span title="Where each question would start counting as slow"><b class="rs-lk slow"></b>Slow mark</span>
+                        </span>
+                    </h4>
                     <div id="rs-bars" class="rs-bars"></div>
                     <div id="rs-axis" class="rs-axis"></div>
-                    <div class="rs-legend">
+                    <div class="rs-legend rs-legend-bars">
                         <span><i style="--c:7,177,124"></i>Correct</span>
                         <span><i style="--c:255,71,71"></i>Incorrect</span>
                         <span><i style="--c:71,141,255"></i>Force-corrected</span>
+                        <span><b class="rs-lk read"></b>Reading the question</span>
                         <span><span class="rs-ring"></span>Viewed more than once</span>
-                        <span>- - - average</span>
                     </div>
                 </div>
                 <div class="rs-card"><h4>Worth another look<span id="rs-worth-count" class="n"></span><span id="rs-worth-cut" class="rs-cut"></span></h4><div id="rs-worth" class="rs-mini"></div></div>
-                <div class="rs-card"><h4>Where the time went</h4><p id="rs-timesplit" class="rs-note"></p></div>
+                <div class="rs-card"><h4>Where the time went</h4><p id="rs-timesplit" class="rs-note"></p><p id="rs-reading" class="rs-note rs-reading"></p><p id="rs-pace-reading" class="rs-note rs-reading"></p><p id="rs-pace-answering" class="rs-note rs-reading"></p></div>
             </div>
             <div id="rs-review" class="rs-review hidden">
                 <div class="rs-left">
@@ -3121,9 +3269,64 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Reading Speed</h3>
+                        <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Learn From My Quizzes</span>
+                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">Each first go at a quiz measures how much longer you take on longer questions and moves the speed below towards it. Retakes, redo rounds, maths questions, wrong answers and questions you went back to aren't used.</span></div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="reading-learn-toggle">
+                                <span class="toggle-switch-circle"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Answer Reading (wpm):</span>
+                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">How fast you read the answer choices. Answers of about 50 words are judged against the share of gold that answering took this round (the whole of gold for a question of about 30 words when the answers aren't held back). Once this speed is known, longer ones get extra time to read at it before they count as slow.With learning on, changing it sets where learning carries on from.</span></div>
+                            </div>
+                            <div class="number-input-container">
+                                <button class="number-input-btn reading-btn" data-action="minus">-</button>
+                                <input type="number" id="reading-wpm-input" class="settings-number-input" min="80" max="500" step="10" placeholder="–" title="Not measured yet">
+                                <button class="number-input-btn reading-btn" data-action="plus">+</button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Question Reading (wpm):</span>
+                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">How fast you read the question itself. With Show Answers After Reading on, the answers appear on their own after the question's length at this speed, adjusted to how you're reading the current quiz.With learning on, it's measured whenever you press to show the answers on a first go.</span></div>
+                            </div>
+                            <div class="number-input-container">
+                                <button class="number-input-btn question-wpm-btn" data-action="minus">-</button>
+                                <input type="number" id="question-wpm-input" class="settings-number-input" min="80" max="800" step="10" placeholder="–" title="Not measured yet">
+                                <button class="number-input-btn question-wpm-btn" data-action="plus">+</button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Reset Reading Speeds</span>
+                            </div>
+                            <button id="reset-reading-btn" class="btn btn-red">Reset Speeds</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="settings-page-multiple-choice" class="settings-page hidden">
+                    <div class="settings-section">
+                        <h3 class="settings-section-heading">Reading</h3>
+                        <div class="setting-item">
+                            <div class="setting-text-container">
+                               <span class="setting-text">Show Answers After Reading</span>
+                               <div class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg><span class="tooltip-text">Each question shows on its own first. Press Space (or click the prompt) when you've read it, or, after the first 3 questions of a new quiz, the answers appear by themselves, timed to how you're reading it. A Retake or Redo Suggested keeps that timing.Trying to recall the answer before seeing the choices helps it stick, and the reading time is kept apart, so answering is judged against its own share of gold.</span></div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="reveal-after-reading-toggle">
+                                <span class="toggle-switch-circle"></span>
+                            </label>
+                        </div>
+                    </div>
                     <div class="settings-section">
                         <h3 class="settings-section-heading">Submission</h3>
                         <div class="setting-item">
@@ -3394,10 +3597,18 @@
             <h3 id="parse-report-title">Parsed 0 of 0 questions</h3>
             <p id="parse-report-message" class="text-left"></p>
             <div id="parse-report-list" class="parse-report-list scrollable-content text-left"></div>
+            <div id="parse-report-maths" class="maths-notice hidden">
+                <div id="parse-report-maths-text" class="t"></div>
+                <button id="parse-report-maths-switch" class="maths-switch" type="button" role="switch" aria-checked="false"><span class="track"></span>Maths mode</button>
+            </div>
+            <div id="parse-report-ask" class="latex-warning hidden">
+                <div class="latex-warning-text"><strong>Ask For LaTeX Maths is off.</strong> This is a maths quiz, so turn it on, copy the prompt again and generate this quiz again.</div>
+            </div>
             <div id="parse-report-latex-warning" class="latex-warning hidden">
                 <div id="parse-report-latex-text" class="latex-warning-text"></div>
                 <button id="parse-report-latex-btn" class="btn btn-blue hidden">Turn On</button>
             </div>
+            <div id="parse-report-check"></div>
             <div class="modal-buttons mt-6">
                 <button id="parse-report-start-btn" class="btn btn-green">Start Quiz</button>
                 <button id="parse-report-back-btn" class="btn btn-main">Edit</button>
@@ -3418,8 +3629,8 @@
         const ANSWER_PATTERN_GLOBAL = /@@(.*?)@@/g;
 
         // Single source of truth for what the footer shows.
-        const APP_VERSION = 'v3.2.4 - Beta';
-        const BUILD_DATE = '3rd November 2026';
+        const APP_VERSION = 'v3.3.0 - Beta';
+        const BUILD_DATE = '5th November 2026';
 
         // DOM Elements
         const docHtml = document.documentElement;
@@ -3509,6 +3720,7 @@
 
         const redoSuggestedBtnExt = document.getElementById('redo-suggested-btn-ext');
         const redoQuizBtnExt = document.getElementById('redo-quiz-btn-ext');
+        const exportResultsBtnExt = document.getElementById('export-results-btn-ext');
         const newQuizBtnExt = document.getElementById('new-quiz-btn-ext');
         
         // Settings Panel Elements (General)
@@ -4373,6 +4585,10 @@
         // and braces reach the DOM untouched and KaTeX can pick them up. Inputs and the
         // paste box are excluded so a typed answer is never treated as maths.
         let latexEnabled = localStorage.getItem('latexEnabled') !== 'false';
+        // A maths quiz shows its maths whatever the setting says. The setting itself is
+        // never changed, so the next quiz goes back to it.
+        let quizMathsMode = false;
+        const showsMaths = () => latexEnabled || quizMathsMode;
 
         const LATEX_DELIMITERS = [
             { left: '$$', right: '$$', display: true },
@@ -4381,15 +4597,16 @@
             // No single-$ delimiter: a lone $ is a currency amount in these quizzes.
         ];
 
+        const typesetMath = (element, errorColor = 'var(--ui-red-fills)') => window.renderMathInElement(element, {
+            delimiters: LATEX_DELIMITERS,
+            throwOnError: false,
+            errorColor,
+            ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option', 'input'],
+        });
         function renderMath(element) {
-            if (!latexEnabled || !element || typeof window.renderMathInElement !== 'function') return;
+            if (!showsMaths() || !element || typeof window.renderMathInElement !== 'function') return;
             try {
-                window.renderMathInElement(element, {
-                    delimiters: LATEX_DELIMITERS,
-                    throwOnError: false,
-                    errorColor: 'var(--ui-red-fills)',
-                    ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option', 'input'],
-                });
+                typesetMath(element);
             } catch (e) { /* leave the source text as-is */ }
         }
 
@@ -4591,6 +4808,7 @@
         // ones you went back to) plus anything marked for reset in Review.
         function handleRedoSuggested() {
             let firstIncorrectDisplayIndex = -1;
+            roundIsFirstGo = false;
             // The previous quiz is over, so any settings changed meanwhile apply now.
             activeQuizSettings = captureQuizSettings();
             
@@ -4601,10 +4819,14 @@
             questionOrder.forEach((questionIndexInCurrent, displayIndex) => {
                 const question = currentQuizQuestions[questionIndexInCurrent];
                 if (isSuggested(question) || resultsMarked.has(question.id)) {
-                    // A question you got right starts its time again; a wrong one
-                    // (force-corrected included) keeps adding to what it took.
-                    if (question.isAnsweredCorrectly === true && !question.wasForceCorrected) question.timeTakenMs = 0;
-                    // Slow is judged on the new attempt alone.
+                    question.wrongBefore = question.isAnsweredCorrectly === false;
+                    // A question you got right (force-corrected included) starts its time
+                    // again; a wrong one keeps adding to what it took.
+                    if (question.isAnsweredCorrectly === true) { question.timeTakenMs = 0; question.readMs = 0; }
+                    question.revealed = false;
+                    question.revealedBy = null;
+                    question.priorReadMs = question.readMs || 0;
+                    // What it took before this redo, to show the split in results.
                     question.priorTimeMs = question.timeTakenMs || 0;
                     question.isAnsweredCorrectly = null;
                     // Start the view count again so a question that's right this time
@@ -4617,6 +4839,7 @@
                         question.userSelectedOptionLetter = null;
                         question.pendingOptionLetter = null;
                         if (activeQuizSettings.randomiseAnswers) shuffleOptionsForQuestion(question);
+                        else restoreOptionOrder(question);
                     } else if (currentQuizType === 'fill-in-the-blank') {
                         question.blanks.forEach(b => b.userAnswer = '');
                         question.hintShown = false; // Reset hint
@@ -4642,6 +4865,7 @@
         }
 
         function handleRedoQuiz() {
+            roundIsFirstGo = false;
             if (originalAllQuestionsData && Array.isArray(originalAllQuestionsData) && originalAllQuestionsData.length > 0) {
                 let shuffleQuestions;
                 if(currentQuizType === 'multiple-choice') {
@@ -4663,11 +4887,12 @@
             const rows = redo.map(q => {
                 const reasons = [
                     q.isAnsweredCorrectly === false && '<span class="rs-why bad">Incorrect</span>',
+                    rightAfterWrong(q) && '<span class="rs-why again">Wrong earlier</span>',
                     (q.revisits || 0) > 0 && `<span class="rs-why views">${RS_ICON.eye}Viewed ×${q.revisits + 1}</span>`,
-                    isSlow(q) && `<span class="rs-why slow">${RS_ICON.clock}Slow</span>`,
+                    isSlow(q) && `<span class="rs-why slow">${RS_ICON.clock}${slowReason(q).replace(/^./, c => c.toUpperCase())}</span>`,
                     !isSuggested(q) && `<span class="rs-why marked">${RS_ICON.redo}Marked</span>`,
                 ].filter(Boolean).join('');
-                const keepsTime = !(q.isAnsweredCorrectly === true && !q.wasForceCorrected);
+                const keepsTime = q.isAnsweredCorrectly !== true;
                 const time = formatTime(q.timeTakenMs || 0);
                 const timeCell = keepsTime
                     ? `<span class="t">${time}</span><span class="what">Time kept</span>`
@@ -4718,6 +4943,7 @@
         }
 
         function initializeQuiz(questionsToUse, shuffleQ = true, shuffleA = true, isContinuation = false) {
+            bankReading();
             activeQuizSettings = captureQuizSettings();
             stopTimers(true); 
             clearTimeout(autoAdvanceTimeout);
@@ -4735,7 +4961,8 @@
                 isQuizActive = false;
                 return;
             }
-            if (!isContinuation) { 
+            if (!isContinuation) {
+                if (roundIsFirstGo) roundPace = freshRoundPace();
                 currentQuizQuestions.forEach(q => {
                     q.isAnsweredCorrectly = null;
                     q.timeTakenMs = 0;
@@ -4745,10 +4972,16 @@
                     q.pendingOptionLetter = null;
                     q.revisits = 0;         // times navigated back to after answering
                     q.priorTimeMs = 0;      // time from earlier attempts (set by Redo Suggested)
+                    q.wrongBefore = false;  // wrong before its latest redo
+                    q.readMs = 0;           // time spent reading before the answers showed
+                    q.priorReadMs = 0;      // the part of readMs from before its latest redo
+                    q.revealed = false;
+                    q.revealedBy = null;    // 'press' or 'auto'
                     q.answeredAt = null;    // for "Recently completed"
                     if (currentQuizType === 'multiple-choice') {
                         q.userSelectedOptionLetter = null;
                         if (shuffleA) shuffleOptionsForQuestion(q);
+                        else restoreOptionOrder(q);
                     } else {
                         if (q.blanks) q.blanks.forEach(b => b.userAnswer = '');
                         q.hintShown = false; // Reset hint
@@ -4775,6 +5008,164 @@
             return currentQuizQuestions[questionIndexInCurrentArray]; 
         }
         
+        // --- Answers after reading (multiple choice) ----------------------------------
+        // The question shows on its own first. Its answers appear when you press Space
+        // (or Show Answers, or the prompt), or once the countdown ends, whichever comes
+        // first. That reading time is kept on its own (q.readMs): gold applies to the
+        // answering part only.
+        //
+        // Each new quiz learns its own reading pace on its first go, and a Retake or Redo
+        // Suggested keeps it. The first few questions of each kind have no countdown: you
+        // press when you've read them.For text that gives this
+        // quiz's factor (time taken / what your saved speed expects). For maths, where
+        // words say little, it gives plain seconds, and maths only counts as its own kind
+        // in maths mode. After the warm-ups an early press adds your real time, and a
+        // countdown that runs out adds a bit more than it waited.
+        const revealsAnswers = () => localStorage.getItem('revealAfterReading') !== 'false';
+        const REVEAL_LIMITS_MS = [1500, 40000];
+        const WARM_UPS = 3;
+        const PACE_FACTOR_LIMITS = [0.6, 4];
+        const RUN_OUT_STEP = 1.1;
+        const PACE_MIN_WORDS = 5;   // a very short question says little about reading pace
+        const freshRoundPace = () => ({
+            text: { points: [], warmed: 0, first: null },
+            maths: { points: [], warmed: 0, first: null },
+            runOuts: 0,
+        });
+        let roundPace = freshRoundPace();
+        let readingStartMs = 0;
+        let revealTimer = null;
+        const REVEAL_GUARD_MS = 800;
+        let revealGuardUntil = 0;
+        const answersHidden = q => currentQuizType === 'multiple-choice' && revealsAnswers() && !!q && q.isAnsweredCorrectly === null && !q.revealed;
+        // The prompt is up on the current question (turning the setting off mid-question leaves it).
+        const gateShown = () => !!(currentQuestionDOM && currentQuestionDOM.querySelector('.reveal-gate'));
+        const REVEAL_MARGIN = 1.1;
+        const paceX = v => `${(Math.round(v * 10) / 10).toFixed(1)}×`;
+        const paceTime = ms => `${(Math.round(ms / 100) / 10).toFixed(1)}s`;
+        const readingKind = q => (quizMathsMode && textHasMaths(q.questionText) ? 'maths' : 'text');
+        const usualReadMs = q => wordCount(q.questionText) * 60000 / questionWpm();
+        const roundTextFactor = () => (roundPace.text.points.length
+            ? Math.min(PACE_FACTOR_LIMITS[1], Math.max(PACE_FACTOR_LIMITS[0], medianOf(roundPace.text.points))) : 1);
+        const roundMathsReadMs = () => (roundPace.maths.points.length ? medianOf(roundPace.maths.points) : 0);
+        const readThisRound = q => Math.max(0, (q.readMs || 0) - (q.priorReadMs || 0));
+        // What the prompt does on this question: wait until the speed is known, a warm-up, or a countdown.
+        function readingPlan(q) {
+            const kind = readingKind(q);
+            if (kind === 'text' && !questionWpmKnown()) return { kind, mode: 'wait' };
+            const pace = roundPace[kind];
+            const soFar = kind === 'text' ? `<b>${paceX(roundTextFactor())}</b> your usual` : `about <b>${paceTime(roundMathsReadMs())}</b> to read`;
+            if (roundIsFirstGo && pace.warmed < WARM_UPS) {
+                return { kind, mode: 'warm', step: pace.warmed + 1, caption: pace.points.length ? `So far: ${soFar}` : '' };
+            }
+            // A first go that never reached any maths leaves nothing to time maths by.
+            if (kind === 'maths' && !pace.points.length) return { kind, mode: 'wait' };
+            const wanted= kind === 'text' ? roundTextFactor() * usualReadMs(q) : roundMathsReadMs();
+            const delay = Math.min(REVEAL_LIMITS_MS[1], Math.max(REVEAL_LIMITS_MS[0], REVEAL_MARGIN * wanted));
+            return { kind, mode: 'countdown', delay,
+                caption: !pace.points.length ? '' : kind === 'text' ? `Timed for this quiz: ${soFar}` : `Timed for this quiz's maths: about <b>${paceTime(delay)}</b>` };
+        }
+        function noteRoundReading(q, by, plan) {
+            if (plan.mode === 'wait' || !roundIsFirstGo) return;
+            const pace = roundPace[plan.kind], read = readThisRound(q);
+            const counts = plan.kind === 'maths' || wordCount(q.questionText) >= PACE_MIN_WORDS;
+            const point = ms => (plan.kind === 'text' ? ms / usualReadMs(q) : ms);
+            if (by === 'press') {
+                if (counts && read >= 400) pace.points.push(point(read));
+                if (plan.mode === 'warm' && ++pace.warmed === WARM_UPS) {
+                    pace.first = plan.kind === 'text' ? roundTextFactor() : roundMathsReadMs();
+                }
+            } else if (plan.mode === 'countdown' && read >= plan.delay - 100) {
+                // The countdown ended first (not a time limit): you needed at least that long.
+                if (counts) pace.points.push(point(plan.delay * RUN_OUT_STEP));
+                roundPace.runOuts++;
+            }
+        }
+        // Adds the reading so far to the current question and stops its countdown.
+        function bankReading(discard = false) {
+            clearTimeout(revealTimer);
+            revealTimer = null;
+            const q = getCurrentQuestionData();
+            if (readingStartMs && q && !discard) q.readMs = (q.readMs || 0) + (Date.now() - readingStartMs);
+            readingStartMs = 0;
+        }
+        // Starts, or carries on, the current question's reading countdown.
+        function startReading() {
+            const q = getCurrentQuestionData();
+            if (!q || !gateShown() || isQuizPaused) return;
+            clearTimeout(revealTimer);
+            readingStartMs = Date.now();
+            const plan = readingPlan(q);
+            if (plan.mode !== 'countdown') return;   // waits for you
+            const delay = plan.delay, read = readThisRound(q);
+            revealTimer = setTimeout(() => revealAnswers('auto'), Math.max(0, delay - read));
+            const fill = currentQuestionDOM.querySelector('.reveal-bar i');
+            if (fill) {
+                fill.style.animation = 'none';
+                void fill.offsetWidth;
+                fill.style.animation = `revealFill ${delay}ms linear ${-read}ms forwards`;
+            }
+        }
+        function revealAnswers(by) {
+            const q = getCurrentQuestionData();
+            if (!q || !gateShown() || (by === 'press' && Date.now() < revealGuardUntil)) return;
+            bankReading();
+            noteRoundReading(q, by, readingPlan(q));
+            q.revealed = true;
+            q.revealedBy = by;
+            const opts = currentQuestionDOM.querySelector('[id$="-opts"]');
+            currentQuestionDOM.querySelector('.reveal-gate')?.remove();
+            opts.classList.remove('answers-hidden');
+            if (!document.body.classList.contains('power-saving-mode')) opts.classList.add('answers-arriving');
+            balanceAnswerHeights(opts.querySelectorAll('.btn-option'));
+            submitAnswerBtn.textContent = 'Submit Answer';
+            submitAnswerBtn.disabled = !selectedOptionLetter;
+        }
+        // Hides the answers behind the reading prompt, for a question not yet revealed.
+        function gateAnswers(question) {
+            if (!answersHidden(question)) return;
+            const opts = currentQuestionDOM.querySelector('[id$="-opts"]');
+            opts.classList.add('answers-hidden');
+            const gate = document.createElement('div');
+            gate.className = 'reveal-gate';
+            const how = homeState.keyboardFunctions ? 'press <kbd>Space</kbd>' : 'click here';
+            const plan = readingPlan(question);
+            const dots = Array.from({ length: WARM_UPS }, (_, i) => `<i class="${i < plan.step ? 'done' : ''}"></i>`).join('');
+            gate.innerHTML = (plan.mode === 'warm' ? `<span class="warm-tag ${plan.kind}">${plan.kind === 'maths' ? 'Maths warm-up' : 'Warm-up'}<span class="warm-dots">${dots}</span></span>` : '')
+                + (plan.mode === 'wait' ? `<span class="reveal-text">When you're ready, ${how} to show the answers</span>` : `<span class="reveal-text">Read the question, then ${how} to show the answers</span>`)
+                + (plan.mode === 'countdown' ? '<span class="reveal-bar"><i></i></span>' : '')
+                + (plan.caption ? `<span class="pace-cap">${plan.caption}</span>` : '');
+            gate.addEventListener('click', () => revealAnswers('press'));
+            revealGuardUntil = Date.now() + REVEAL_GUARD_MS;
+            opts.before(gate);
+            submitAnswerBtn.textContent = 'Show Answers';
+            submitAnswerBtn.disabled = false;
+        }
+
+        // Shorter answers grow halfway towards the tallest answer in the same question,
+        // so a list of mixed lengths reads more evenly. Measuring means clearing the
+        // heights for a moment, which shortens the list, so scroll positions are kept.
+        const ANSWER_HEIGHT_PULL = 0.5;
+        function balanceAnswerHeights(answers) {
+            const els = [...answers];
+            if (els.length < 2 || !els[0].offsetParent) return;
+            const scrollers = [quizScrollable, document.getElementById('rs-detail')];
+            const tops = scrollers.map(el => el.scrollTop);
+            els.forEach(el => { el.style.minHeight = ''; });
+            const heights = els.map(el => el.getBoundingClientRect().height);
+            const tallest = Math.max(...heights);
+            els.forEach((el, i) => {
+                if (heights[i] < tallest) el.style.minHeight = `${heights[i] + ANSWER_HEIGHT_PULL * (tallest - heights[i])}px`;
+            });
+            scrollers.forEach((el, i) => { el.scrollTop = tops[i]; });
+        }
+        function rebalanceAnswerHeights() {
+            if (currentQuestionDOM) balanceAnswerHeights(currentQuestionDOM.querySelectorAll('.btn-option'));
+            balanceAnswerHeights(document.querySelectorAll('#rs-detail .rs-opt'));
+        }
+        window.addEventListener('resize', rebalanceAnswerHeights);
+        if (document.fonts) document.fonts.ready.then(rebalanceAnswerHeights);
+
         function buildMCQuestionDOM(question) {
             const questionDiv = document.createElement('div');
             questionDiv.className = 'question-instance min-w-full flex-shrink-0 box-border max-w-full';
@@ -4786,7 +5177,7 @@
             question.options.forEach(option => {
                 const button = document.createElement('button');
                 button.className = 'btn btn-main btn-option';
-                button.innerHTML = `${option.letter}. ${option.text}`;
+                button.innerHTML = `<span class="opt-l">${option.letter}</span><span class="opt-t">${option.text}</span>`;
                 button.dataset.letter = option.letter;
                 
                 button.addEventListener('click', () => {
@@ -4982,6 +5373,9 @@
 
                 renderMath(stickyQuestionText);
                 renderMath(currentQuestionDOM);
+                balanceAnswerHeights(currentQuestionDOM.querySelectorAll('.btn-option'));
+                gateAnswers(question);
+                startReading();
 
                 const currentFeedbackContainer = currentQuestionDOM.querySelector(`[id$="-feedback"]`);
                 if (question.isAnsweredCorrectly !== null) { 
@@ -5280,9 +5674,10 @@
         }
 
 
-        function handleNextAction() { 
+        function handleNextAction() {
             clearTimeout(autoAdvanceTimeout);
             const question = getCurrentQuestionData();
+            if (gateShown()) { revealAnswers('press'); return; }
             if(question && question.isAnsweredCorrectly === null) { handleSubmitAnswer(); return; }
 
             const allAnswered = currentQuizQuestions.every(q => q.isAnsweredCorrectly !== null);
@@ -5308,6 +5703,7 @@
         let questionDeadlineMs = 0;
 
         function handleTimeLimitExpiry() {
+            revealAnswers('auto');
             const question = getCurrentQuestionData();
             if (!question || question.isAnsweredCorrectly !== null || isQuizPaused) return;
             if (currentQuizType === 'multiple-choice' && !selectedOptionLetter) {
@@ -5386,9 +5782,13 @@
             questionDeadlineMs = 0;
             currentQuestionTimerDisplay.classList.remove('time-low');
         }
+        const FLICK_MS = 2000;
         function navigateToQuestion(displayOrderIndex, isInitial = false) {
             const oldQuestion = getCurrentQuestionData();
-            if (oldQuestion && oldQuestion.isAnsweredCorrectly === null && questionSpecificTimerStartMs > 0) {
+            const briefVisit = !!oldQuestion && oldQuestion.isAnsweredCorrectly === null
+                && questionSpecificTimerStartMs > 0 && Date.now() - questionSpecificTimerStartMs < FLICK_MS;
+            bankReading(briefVisit);
+            if (oldQuestion && oldQuestion.isAnsweredCorrectly === null && questionSpecificTimerStartMs > 0 && !briefVisit) {
                  const timeElapsed = Date.now() - questionSpecificTimerStartMs;
                  oldQuestion.timeTakenMs = (oldQuestion.timeTakenMs || 0) + timeElapsed;
             }
@@ -5598,7 +5998,8 @@
         quizRail.addEventListener('mouseenter', () => clearTimeout(railSnapTimer));
 
         function pauseQuiz() {
-            if (isQuizPaused) return; 
+            if (isQuizPaused) return;
+            bankReading();
             isQuizPaused = true; 
             stopTimers(true); 
             const currentQ = getCurrentQuestionData();
@@ -5625,8 +6026,9 @@
             pauseModal.classList.remove('visible');
             const currentQ = getCurrentQuestionData();
             if (currentQ && currentQ.isAnsweredCorrectly === null) { 
-                questionSpecificTimerStartMs = Date.now(); 
+                questionSpecificTimerStartMs = Date.now();
                 startTimers();
+                startReading();
             } else if (currentQ) {
                  showQuestionTime(currentQ.timeTakenMs || 0, false);
             }
@@ -5681,6 +6083,7 @@
         endQuizEarlyBtn.addEventListener('click', () => showConfirmationModal("End Quiz?", "Are you sure you want to end the quiz now? Your current progress will be shown.", endQuizPrematurelyAction, 'btn-red')); 
         
         function showResults(isPrematureEnd = false) {
+            bankReading();
             isQuizActive = false; stopTimers(true); isQuizPaused = true;
             quizScreen.classList.add('hidden');
             resultsScreen.classList.remove('hidden');
@@ -5688,6 +6091,7 @@
             explanationBtn.classList.add('hidden');
 
             redoQuizBtnExt.classList.remove('hidden');
+            exportResultsBtnExt.classList.remove('hidden');
             newQuizBtnExt.classList.remove('hidden');
 
             resultsTitle.textContent = isPrematureEnd ? "Quiz Submitted Early" : "Quiz Complete!";
@@ -5711,10 +6115,19 @@
             resultsSortMode = lastRoundWasRedo ? 'redone' : savedResultsSort();
             resultsSortOpen = false;
             resultsSelectedNum = null;
-            // The slow line comes from the full attempt and stays put through redo
-            // rounds; otherwise quick redo answers would pull it down and flag
-            // questions you didn't redo.
-            if (!lastRoundWasRedo) resultsSlow = computeSlowCut(originalAllQuestionsData);
+            if (roundIsFirstGo) {
+                const measured = measureReadingWpm(originalAllQuestionsData);
+                const question = measureQuestionWpm(originalAllQuestionsData);
+                resultsReading = { state: measured || question ? 'measured' : 'unclear', measured, question };
+                learnReadingWpm(measured);
+                learnQuestionWpm(question);
+                roundIsFirstGo = false;
+            } else {
+                resultsReading = { state: 'seen', measured: null, question: null };
+            }
+            // Worked out again after every round, redo rounds included: a slow question
+            // that's reset comes back quicker, its pace drops, and the next slowest come up.
+            resultsSlow = computeSlowModel(originalAllQuestionsData);
             renderResults();
             showResultsTab('overview');
 
@@ -5745,32 +6158,150 @@
             slow:      q => isSlow(q),
             marked:    q => resultsMarked.has(q.id),
         };
-        // Slow: the latest attempt took longer than the median + 1.5 × MAD of every
-        // answered question's latest attempt. MAD (median distance from the median,
-        // scaled by 1.4826 to read like a standard deviation) isn't pulled up by the
-        // slow questions themselves the way the mean and SD are, so a few very slow
-        // ones can't lift the line past each other. Fixed strength; needs at least
-        // five answers to mean anything.
-        const SLOW_K = 1.5;
-        const SLOW_MIN_ANSWERED = 5;
-        // A redone wrong answer keeps its earlier time (priorTimeMs), so only the
-        // time since the redo counts here.
-        const attemptMs = q => Math.max(0, (q.timeTakenMs || 0) - (q.priorTimeMs || 0));
+        // Slow: each question gets its own gold target, the gold pace plus the reading
+        // time of whatever it has beyond a typical question (question and answers
+        // together). It's slow from 85% of that target, or when its pace (time ÷
+        // target) is 1.5× your usual pace this round - but never under half its target,
+        // so a quick round doesn't flag a 7s answer. Judged on the whole time: a wrong
+        // answer redone keeps its earlier time, so a slow wrong-then-right one comes up again.
+        const SLOW_MIN_ANSWERED = 5;     // "usual pace" needs this many answers
+        const TYPICAL_WORDS = 30;        // gold is the target for a question about this long
+        const NEAR_GOLD = 0.85;
+        const USUAL_PACE_X = 1.5;
+        const USUAL_MIN_SHARE = 0.5;
+        const wholeSeconds = ms => Math.floor(ms / 1000) * 1000;
         const medianOf = list => {
             const a = [...list].sort((x, y) => x - y), m = a.length >> 1;
             return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
         };
-        let resultsSlow = { cutMs: Infinity, medianMs: 0, madMs: 0 };
-        function computeSlowCut(questions) {
-            const times = questions.filter(q => q.isAnsweredCorrectly !== null).map(attemptMs).filter(ms => ms > 0);
-            if (times.length < SLOW_MIN_ANSWERED) return { cutMs: Infinity, medianMs: 0, madMs: 0 };
-            const medianMs = medianOf(times);
-            const madMs = 1.4826 * medianOf(times.map(t => Math.abs(t - medianMs)));
-            return { cutMs: medianMs + SLOW_K * madMs, medianMs, madMs };
+        const wordCount = html => (html || '').replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length;
+        const questionWords = q => wordCount(q.questionText) + (q.options || []).reduce((n, o) => n + wordCount(o.text), 0);
+        const textHasMaths = text => LATEX_SOURCE_PATTERN.test(text || '') || SINGLE_DOLLAR_MATHS.test(text || '');
+        const hasMaths = q => textHasMaths([q.questionText, ...(q.options || []).map(o => o.text)].join(' '));
+        // Split-timed: the answers waited behind the reading prompt, so reading the
+        // question is timed on its own and gold covers answering. Otherwise (fill in the
+        // blank, or the prompt turned off) gold covers the whole question.
+        const TYPICAL_ANSWER_WORDS = 50;  // answering gold is for answers about this long
+        // Answering gets the share of gold that answering took of your time this round;
+        // reading the question takes the rest.
+        const ANSWER_SHARE_USUAL = 0.6;   // until a round has enough answers to measure it
+        const ANSWER_SHARE_LIMITS = [0.3, 0.9];
+        let answerGoldShare = ANSWER_SHARE_USUAL;
+        let answerShareMeasured = false;
+        const answerGoldSeconds = () => Math.round(paceSeconds('gold') * answerGoldShare * 10) / 10;
+        function measureAnswerShare(questions) {
+            const split = questions.filter(q => splitTimed(q) && (q.timeTakenMs || 0) > 0);
+            answerShareMeasured = split.length >= SLOW_MIN_ANSWERED;
+            if (!answerShareMeasured) return ANSWER_SHARE_USUAL;
+            const share = 1 - medianOf(split.map(q => (q.readMs || 0) / q.timeTakenMs));
+            return Math.min(ANSWER_SHARE_LIMITS[1], Math.max(ANSWER_SHARE_LIMITS[0], share));
         }
-        const isSlow = q => q.isAnsweredCorrectly !== null && attemptMs(q) > resultsSlow.cutMs;
+        const answerWords = q => (q.options || []).reduce((n, o) => n + wordCount(o.text), 0);
+        const splitTimed = q => !!q.revealedBy;
+        const timedMs = q => (splitTimed(q) ? Math.max(0, (q.timeTakenMs || 0) - (q.readMs || 0)) : (q.timeTakenMs || 0));
+        const goldTargetMs = q => {
+            const extraWords = splitTimed(q) ? answerWords(q) - TYPICAL_ANSWER_WORDS : questionWords(q) - TYPICAL_WORDS;
+            // No speed measured yet: nothing to work out extra reading time from.
+            const wpm = readingWpm();
+            return ((splitTimed(q) ? answerGoldSeconds() : paceSeconds('gold')) + (wpm ? Math.max(0, extraWords) * 60 / wpm : 0)) * 1000;
+        };
+        const HARD_QUIZ_PACE = 1.3;      // usually this far over gold: gold isn't realistic for this quiz
+        const MATHS_MIN_ANSWERS = 3;     // maths needs this many answers for a pace of its own
+        let resultsSlow = { usualPace: 0, mathsPace: 0, goldOff: false };
+        function computeSlowModel(questions) {
+            const answered = questions.filter(q => q.isAnsweredCorrectly !== null && timedMs(q) > 0);
+            const paceOf = q => timedMs(q) / goldTargetMs(q);
+            const maths = quizMathsMode ? answered.filter(hasMaths) : [];
+            const mathsOwn = maths.length >= MATHS_MIN_ANSWERS;
+            const rest = mathsOwn ? answered.filter(q => !hasMaths(q)) : answered;
+            // Worked out first: every target below depends on it.
+            answerGoldShare = measureAnswerShare(rest.length >= SLOW_MIN_ANSWERED ? rest : answered);
+const usualPace = rest.length >= SLOW_MIN_ANSWERED ? medianOf(rest.map(paceOf)) : 0;
+            return { usualPace, mathsPace: mathsOwn ? medianOf(maths.map(paceOf)) : 0, goldOff: usualPace > HARD_QUIZ_PACE };
+        }
+        // In maths mode with enough answers, maths is judged against this quiz's maths gold.
+        const judgedAsMaths = q => resultsSlow.mathsPace > 0 && hasMaths(q);
+        const goldChecked = q => !judgedAsMaths(q) && !resultsSlow.goldOff;
+        const usualLineMs = q => {
+            const pace = judgedAsMaths(q) ? resultsSlow.mathsPace : resultsSlow.usualPace;
+            return pace ? Math.max(USUAL_PACE_X * pace, USUAL_MIN_SHARE) * goldTargetMs(q) : Infinity;
+        };
+        // Where a question starts counting as slow: the lower of the two lines, or just
+        // the usual-pace line when gold isn't being checked.
+        const slowFromMs = q => (goldChecked(q) ? Math.min(NEAR_GOLD * goldTargetMs(q), usualLineMs(q)) : usualLineMs(q));
+        // Wrong before the latest redo and right now: one more go helps it stick.
+        const rightAfterWrong = q => q.isAnsweredCorrectly === true && !!q.wrongBefore;
+        function slowReason(q) {
+            // Its time includes the wrong try, so it's not judged as slow.
+            if (q.isAnsweredCorrectly === null || rightAfterWrong(q)) return null;
+            const ms = timedMs(q);
+            if (goldChecked(q) && ms >= NEAR_GOLD * goldTargetMs(q)) return ms >= goldTargetMs(q) ? 'over gold' : 'near gold';
+            if (ms >= usualLineMs(q)) return 'slower than usual';
+            return null;
+        }
+        const isSlow = q => slowReason(q) !== null;
+
+        // --- Reading speed --------------------------------------------------------
+        // Used for the gold targets above: learned from your quizzes, or a number you
+        // set. A first go at a quiz measures how much longer you take per extra word -
+        // the middle of the slopes between every pair of questions, so a few hard ones
+        // can't swing it - and nudges the learned speed towards it. Maths questions,
+        // wrong or force-corrected answers and ones you went back to are left out.
+const READING_WPM_LIMITS = [80, 500];
+        const readingLearns = () => localStorage.getItem('readingLearn') !== 'false';
+        const READING_KNOWN_FROM = 10;
+        const storedWpm = key => { const v = parseFloat(localStorage.getItem(key)); return Number.isFinite(v) ? v : null; };
+        const learnedFrom = key => parseInt(localStorage.getItem(`${key}From`), 10) || 0;
+        const questionWpmKnown = () => storedWpm('readQuestionWpm') !== null && learnedFrom('readQuestionWpm') >= READING_KNOWN_FROM;
+        // Answer reading (and whole questions when they aren't split-timed). Neither speed
+        // has a default: they're null until measured or typed.
+        const readingWpm = () => storedWpm('readAnswerWpm');
+        // Question reading: how long the prompt waits before showing the answers.
+        const questionWpm = () => storedWpm('readQuestionWpm');
+        // Read straight off the prompt: only questions where you pressed to show the
+        // answers (waiting for them says nothing about your speed), no maths.
+        function measureQuestionWpm(questions) {
+            const each = questions
+                .filter(q => q.revealedBy === 'press' && (q.readMs || 0) >= 400 && wordCount(q.questionText) >= 5 && !hasMaths(q))
+                .map(q => wordCount(q.questionText) / (q.readMs / 60000));
+            if (each.length < 5) return null;
+            const wpm = medianOf(each);
+            return wpm >= READING_WPM_LIMITS[0] && wpm <= 800 ? { wpm, from: each.length } : null;
+        }
+        function measureReadingWpm(questions) {
+            const pts = questions
+                .filter(q => q.isAnsweredCorrectly === true && !q.wasForceCorrected && !(q.revisits > 0) && (q.timeTakenMs || 0) > 0 && !hasMaths(q))
+                .map(q => [splitTimed(q) ? answerWords(q) : questionWords(q), timedMs(q) / 1000]);
+            if (pts.length < 6) return null;
+            const words = pts.map(p => p[0]);
+            const [fewest, most] = [Math.min(...words), Math.max(...words)];
+            if (most < 1.5 * fewest || most - fewest < 15) return null;
+            const slopes = [];
+            for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+                const dw = pts[j][0] - pts[i][0];
+                if (Math.abs(dw) >= 5) slopes.push((pts[j][1] - pts[i][1]) / dw);
+            }
+            if (slopes.length < 5) return null;
+            const secPerWord = medianOf(slopes);
+            const wpm = secPerWord > 0 ? 60 / secPerWord : Infinity;
+            return wpm >= READING_WPM_LIMITS[0] && wpm <= READING_WPM_LIMITS[1] ? { wpm, from: pts.length } : null;
+        }
+        // A bigger quiz moves the learned speed further, but at most halfway.
+        const learnedStep = (now, measured) => now + Math.min(0.5, measured.from / (measured.from + 30)) * (measured.wpm - now);
+        // The first measurement is taken as it is; later ones move it part of the way.
+        function learnWpm(key, measured) {
+            if (!measured || !readingLearns()) return;
+            const now = storedWpm(key);
+            localStorage.setItem(`${key}From`, learnedFrom(key) + measured.from);
+            storeWpm(key, now === null ? measured.wpm : learnedStep(now, measured));
+        }
+        const learnReadingWpm = measured => learnWpm('readAnswerWpm', measured);
+        const learnQuestionWpm = measured => learnWpm('readQuestionWpm', measured);
+        // Only a first go measures reading: on a retake or redo you've read them before.
+        let roundIsFirstGo = false;
+        let resultsReading = { state: 'seen', measured: null, question: null };
         // Worth another look, and what Redo Suggested resets on top of marked ones.
-        const isSuggested = q => q.isAnsweredCorrectly === false || (q.revisits || 0) > 0 || isSlow(q);
+        const isSuggested = q => q.isAnsweredCorrectly === false || rightAfterWrong(q) || (q.revisits || 0) > 0 || isSlow(q);
         // Question ids marked for reset in Review. Marking changes nothing in the
         // results; the questions are only reset when Redo Suggested starts the round.
         const resultsMarked = new Set();
@@ -5882,7 +6413,13 @@
         // Short, single-line text for list rows (blanks shown as underscores).
         const resultRowText = q => q.questionText || '';
         const resultMetaHTML = q =>
-            `<span class="rs-meta ${isSlow(q) ? 'slow' : ''}">${RS_ICON.clock}${formatTime(q.timeTakenMs || 0)}${isSlow(q) ? ' · slow' : ''}</span>`
+            `<span class="rs-meta ${isSlow(q) ? 'slow' : ''}">${RS_ICON.clock}${formatTime(q.timeTakenMs || 0)}${isSlow(q) ? ` · ${slowReason(q)}` : ''}</span>`
+            // Whole seconds on both sides, so the two parts add up to the total shown.
+            + ((q.priorTimeMs || 0) > 0 && (q.timeTakenMs || 0) > q.priorTimeMs
+                ? `<span class="rs-meta split">${formatTime(q.priorTimeMs)} earlier + ${formatTime(wholeSeconds(q.timeTakenMs) - wholeSeconds(q.priorTimeMs))} this try</span>` : '')
+            + (splitTimed(q) && !((q.priorTimeMs || 0) > 0) && (q.readMs || 0) > 0
+                ? `<span class="rs-meta split">${formatTime(q.readMs)} reading + ${formatTime(wholeSeconds(q.timeTakenMs) - wholeSeconds(q.readMs))} answering</span>` : '')
+            + (rightAfterWrong(q) ? '<span class="rs-meta again"title="Wrong before, right on the redo. One more go helps it stick.">Wrong earlier</span>' : '')
             + ((q.revisits || 0) > 0 ? `<span class="rs-meta views">${RS_ICON.eye}×${q.revisits + 1}</span>` : '')
             + (q.wasRetaken ? `<span class="rs-meta retake">${RS_ICON.redo}Redone</span>` : '')
             + (q.wasForceCorrected ? '<span class="rs-meta forced">Force-corrected</span>' : '')
@@ -5893,9 +6430,10 @@
             const answered = qs.filter(q => q.isAnsweredCorrectly !== null);
             const timed = answered.filter(q => (q.timeTakenMs || 0) > 0);
             const totalMs = computeQuizTimeMs(qs);
-            const avgMs = totalMs / Math.max(1, answered.length);
+            // Answered questions only, like the median: time on ones left unanswered isn't counted.
+            const avgMs = answered.reduce((n, q) => n + (q.timeTakenMs || 0), 0) / Math.max(1, answered.length);
             const sortedTimes = timed.map(q => q.timeTakenMs).sort((a, b) => a - b);
-            const medianMs = sortedTimes.length ? sortedTimes[Math.floor((sortedTimes.length - 1) / 2)] : 0;
+            const medianMs = sortedTimes.length ? medianOf(sortedTimes) : 0;
             const longest = timed.reduce((a, q) => (!a || q.timeTakenMs > a.timeTakenMs ? q : a), null);
             const quickest = timed.reduce((a, q) => (!a || q.timeTakenMs < a.timeTakenMs ? q : a), null);
             const revisited = qs.filter(q => (q.revisits || 0) > 0);
@@ -5958,31 +6496,59 @@
 
             // Time per question.
             const maxMs = Math.max(1, ...st.qs.map(q => q.timeTakenMs || 0));
+            const pct = ms => Math.min(100, (ms / maxMs) * 100);
+            // Tenths of a second under a minute, so a bar and a line that round to the
+            // same whole second can still be told apart.
+            const chartTime = ms => (ms < 60000 ? `${(Math.floor(ms / 100) / 10).toFixed(1)}s` : formatTime(ms));
             const bars = st.qs.map(q => {
                 const ms = q.timeTakenMs || 0;
-                const title = `Q${resultNum(q)} · ${formatTime(ms)}${q.revisits ? ` · viewed ×${q.revisits + 1}` : ''}`;
-                return `<div class="rs-bar ${resultState(q)}" data-rs-num="${resultNum(q)}" title="${title}" style="height:${(ms / maxMs) * 100}%">${q.revisits ? '<span class="rs-ring"></span>' : ''}</div>`;
+                const readNote = splitTimed(q) ? ` · ${chartTime(q.readMs || 0)} reading` : '';
+                const slowAt = (splitTimed(q) ? (q.readMs || 0) : 0) + slowFromMs(q);
+                const slowNote = rightAfterWrong(q) ? ' · wrong earlier' : isSlow(q) ? ` · ${slowReason(q)}` : (q.isAnsweredCorrectly !== null ? ` · slow mark ${chartTime(slowAt)}`: '');
+                const tip = `Q${resultNum(q)} · ${chartTime(ms)}${readNote}${slowNote}${q.revisits ? ` · viewed ×${q.revisits + 1}` : ''}`;
+                const read = splitTimed(q) && ms ? `<span class="rs-read" style="height:${Math.min(100, ((q.readMs || 0) / ms) * 100)}%"></span>` : '';
+                return `<div class="rs-bar ${resultState(q)}" data-rs-num="${resultNum(q)}" data-tip="${tip}" style="height:${pct(ms)}%">${read}${q.revisits ? '<span class="rs-ring"></span>' : ''}</div>`;
             }).join('');
-            const avgLine = st.answered.length ? `<div class="rs-avg" style="bottom:${Math.min(100, (st.avgMs / maxMs) * 100)}%"><span>avg ${formatTime(st.avgMs)}</span></div>` : '';
-            document.getElementById('rs-bars').innerHTML = bars + avgLine;
+            // Average and median: the average's number at the left end of its line, the
+            // median's at the right.
+            const lines = st.answered.length ? [['avg', st.avgMs, 'Average'], ['median', st.medianMs, 'Median']] : [];
+            const linesHTML = lines.map(([kind, ms, name]) =>
+                `<div class="rs-line ${kind}" style="bottom:${pct(ms)}%"><span title="${name}">${chartTime(ms)}</span></div>`).join('');
+            // Where each question starts counting as slow, over its own bar (off the
+            // top of the chart when it's above every bar).
+            const n = st.qs.length, colW = `((100% - ${(n - 1) * 3}px) / ${n})`;
+            const ticks = st.qs.map((q, i) => {
+                const from = q.isAnsweredCorrectly !== null ? (splitTimed(q) ? (q.readMs || 0) : 0) + slowFromMs(q) : Infinity;
+                return from <= maxMs ? `<i class="rs-slow-tick" style="left:calc(${i} * (${colW} + 3px)); width:calc(${colW}); bottom:${pct(from)}%"></i>` : '';
+            }).join('');
+            document.getElementById('rs-bars').innerHTML = bars + `<div class="rs-lines">${linesHTML}${ticks}</div><div class="rs-bar-tip"></div>`;
             const step = st.qs.length > 30 ? 10 : 5;
             document.getElementById('rs-axis').innerHTML = st.qs.map(q => {
                 const n = resultNum(q);
                 return `<span>${n === 1 || n % step === 0 ? n : ''}</span>`;
             }).join('');
 
-            // Worth another look: wrong answers first, then ones you came back to.
+            // Worth another look: wrong answers first, then ones wrong before the redo,
+            // then the rest, slowest first.
+            const worthRank = q => (q.isAnsweredCorrectly === false ? 0 : rightAfterWrong(q) ? 1 : 2);
             const worth = st.qs.filter(isSuggested)
-                .sort((a, b) => ((a.isAnsweredCorrectly === false ? 0 : 1) - (b.isAnsweredCorrectly === false ? 0 : 1)) || (b.timeTakenMs || 0) - (a.timeTakenMs || 0));
+                .sort((a, b) => worthRank(a) - worthRank(b) || (b.timeTakenMs || 0) - (a.timeTakenMs || 0));
             document.getElementById('rs-worth-count').textContent = worth.length ? `- ${worth.length} question${worth.length === 1 ? '' : 's'}` : '';
             const cutEl = document.getElementById('rs-worth-cut');
-            if (Number.isFinite(resultsSlow.cutMs)) {
-                cutEl.textContent = `Slow: over ${formatTime(resultsSlow.cutMs)}`;
-                cutEl.title = `Median ${formatTime(resultsSlow.medianMs)} + 1.5 × spread ${formatTime(resultsSlow.madMs)}. Right answers slower than this are listed too.`;
-            } else {
-                cutEl.textContent = '';
-                cutEl.title = '';
-            }
+            const mathsGoldSeconds = resultsSlow.mathsPace * (st.qs.some(splitTimed) ? answerGoldSeconds() : paceSeconds('gold'));
+            const goldCut = st.qs.some(splitTimed)
+                ? `Gold ${answerGoldSeconds()}s for answering${storedWpm('readAnswerWpm') !== null ? ` · answers ${Math.round(readingWpm())} wpm` : ''}`
+                : `Gold ${paceSeconds('gold')}s${readingWpm() ? ` · reading ${Math.round(readingWpm())} wpm` : ''}`;
+            const anyNotMaths= st.qs.some(q => !judgedAsMaths(q));
+            cutEl.textContent = [
+                anyNotMaths && (resultsSlow.goldOff ? `Gold check off · ran ${paceX(resultsSlow.usualPace)} gold` : goldCut),
+                resultsSlow.mathsPace && `${anyNotMaths ? 'maths' : 'Maths gold'} ${paceTime(mathsGoldSeconds * 1000)}`,
+            ].filter(Boolean).join(' · ');
+            cutEl.title = st.qs.some(splitTimed)
+                ? `Slow means answering (after the question's reading time) from 85% of its target: ${answerGoldSeconds()}s, ${Math.round(answerGoldShare * 100)}% of gold (${answerShareMeasured ? 'the share of your time spent answering this round' : 'the usual share until a round has 5 answers'})${readingWpm() ? `, plus time at ${Math.round(readingWpm())} words a minute for answers longer than ${TYPICAL_ANSWER_WORDS} words` : ''}. Or 1.5× slower than your usual pace this round.`
+                : `Slow means from 85% of a question's gold target (${paceSeconds('gold')}s${readingWpm() ? `, plus reading time at ${Math.round(readingWpm())} words a minute for anything longer than a typical ${TYPICAL_WORDS}-word question` : ''}), or 1.5× slower than your usual pace this round.`;
+            if (resultsSlow.goldOff) cutEl.title += ` This round ran at ${paceX(resultsSlow.usualPace)} gold, over ${HARD_QUIZ_PACE}×, so only the usual-pace check applied.`;
+            if (resultsSlow.mathsPace) cutEl.title += ' Maths was judged only against 1.5× this quiz\'s maths gold.';
             const worthEl = document.getElementById('rs-worth');
             worthEl.innerHTML = worth.length
                 ? worth.map(q => `<div class="rs-row" data-rs-num="${resultNum(q)}"><span class="rs-badge ${resultState(q)}">${resultNum(q)}</span><span class="txt">${resultRowText(q)}</span><span class="side">${resultMetaHTML(q)}</span></div>`).join('')
@@ -6012,6 +6578,52 @@
                 ? ` You came back to <b>${st.revisited.length}</b> question${st.revisited.length === 1 ? '' : 's'} after answering (${st.extraViews} extra view${st.extraViews === 1 ? '' : 's'}).`
                 : ' You didn\'t go back to any questions after answering them.';
             document.getElementById('rs-timesplit').innerHTML = text;
+            const split = st.qs.some(splitTimed);
+            const qFrom = learnedFrom('readQuestionWpm');
+            const qUse = questionWpmKnown()
+                ? `<b>${Math.round(questionWpm())} wpm</b> for questions`
+                : `no question speed yet, so the answers wait for you (it's set after ${READING_KNOWN_FROM} questions where you pressed to show them; ${Math.min(qFrom, READING_KNOWN_FROM)} so far)`;
+            const aUse = storedWpm('readAnswerWpm') !== null
+                ? `<b>${Math.round(readingWpm())} wpm</b> for ${split ? 'answers' : 'reading'}`
+                : `no ${split ? 'answer' : 'reading'} speed yet, so long ${split ? 'answers get' : 'questions get'} no extra time`;
+            const using = split
+                ? `Now using ${qUse}, and ${aUse}. Answering is judged against ${answerGoldSeconds()}s, ${Math.round(answerGoldShare * 100)}% of gold: ${answerShareMeasured ? 'the share of your time it took this round' : 'the usual share until a round has 5 answers'}, since reading the question takes the rest.`
+                : `Gold targets use ${aUse}.`;
+            const { measured, question } = resultsReading;
+            const found = [
+                question && `questions about <b>${Math.round(question.wpm)} wpm</b> (timed on ${question.from})`,
+                measured && `${split ? 'answers' : 'questions and answers'} about <b>${Math.round(measured.wpm)} wpm</b> (from ${measured.from})`,
+            ].filter(Boolean).join(', ');
+            document.getElementById('rs-reading').innerHTML = {
+                measured: () => `Reading on this quiz: ${found}. ${using}`,
+                unclear: () => `Reading couldn't be measured this time: it needs a few questions where you pressed to show the answers, and six answers right first time (no maths) with a spread of lengths. ${using}`,
+                seen: () => `Reading isn't measured on a retake or redo, since you've read these questions before. ${using}`,
+            }[resultsReading.state]();
+
+            // This quiz's own pace.
+            const paceRead = [];
+            const paceKept = resultsReading.state === 'seen';
+            if (paceKept) {
+                if (roundPace.text.points.length) paceRead.push(`The countdowns kept the pace from your first go: <b>${paceX(roundTextFactor())}</b> your usual.`);
+                if (roundPace.maths.points.length) paceRead.push(`Maths countdowns kept theirs, from about <b>${paceTime(roundMathsReadMs())}</b> to read.`);
+            }
+            if (!paceKept && roundPace.text.first !== null) {
+                const end = roundTextFactor();
+                paceRead.push(`This round's warm-ups took <b>${paceX(roundPace.text.first)}</b> your usual time for their length, so the countdowns were timed to match${Math.abs(end - roundPace.text.first) >= 0.05 ? `, <b>${paceX(end)}</b> by the end` : ''}.`);
+            }
+            if (!paceKept && roundPace.maths.first !== null) paceRead.push(`Maths questions took about <b>${paceTime(roundMathsReadMs())}</b> each to read.`);
+            if (!paceKept && roundPace.runOuts) paceRead.push(`The countdown ran out before you pressed on ${roundPace.runOuts} question${roundPace.runOuts === 1 ? '' : 's'}, so it got longer each time.`);
+            if (!paceKept && paceRead.length && quizMathsMode) paceRead.push('Your saved speeds only learn from text questions.');
+            const paceAnswer = [];
+            if (resultsSlow.goldOff) paceAnswer.push(`Your usual answering pace here was <b>${paceX(resultsSlow.usualPace)} gold</b>, so the gold check was off: a question counted as slow from 1.5× your usual pace here.`);
+            else if (resultsSlow.usualPace) paceAnswer.push(`Answering was judged against gold as usual: your usual pace here was <b>${paceX(resultsSlow.usualPace)} gold</b>.`);
+            if (resultsSlow.mathsPace) paceAnswer.push(`Maths answers were judged against this quiz's maths gold, <b>${paceTime(mathsGoldSeconds * 1000)}</b> (your usual maths pace here), slow from 1.5× that.`);
+            else if (quizMathsMode) paceAnswer.push('There were too few maths answers for a pace of their own, so they were judged like text.');
+            [['rs-pace-reading', paceRead], ['rs-pace-answering', paceAnswer]].forEach(([id, lines]) => {
+                const el = document.getElementById(id);
+                el.innerHTML = lines.join(' ');
+                el.classList.toggle('hidden', !lines.length);
+            });
         }
 
         function resultMarkHTML(q) {
@@ -6048,7 +6660,7 @@
                     let cls = '', tag = '';
                     if (o.isCorrectOption) { cls = 'correct'; tag = o.letter === q.userSelectedOptionLetter ? 'Your answer' : 'Correct'; }
                     else if (o.letter === q.userSelectedOptionLetter) { cls = 'wrong'; tag = 'Your answer'; }
-                    return `<div class="rs-opt ${cls}"><span class="l">${o.letter}.</span><span>${o.text}</span>${tag ? `<span class="tagline">${tag}</span>` : ''}</div>`;
+                    return `<div class="rs-opt ${cls}"><span class="l">${o.letter}</span><span class="t">${o.text}</span>${tag ? `<span class="tagline">${tag}</span>` : ''}</div>`;
                 }).join('');
                 body = `<p class="rs-d-q">${q.questionText}</p>${opts}`
                     + (q.explanation ? `<div class="rs-expl"><b>Explanation:</b>${q.explanation}</div>` : '');
@@ -6074,7 +6686,7 @@
             }
             return `<div class="rs-d-head"><span class="rs-badge ${resultState(q)}">${n}</span><h3>Question ${n}</h3>${resultMetaHTML(q)}${resultMarkHTML(q)}</div>`
                 + body
-                + `<div class="rs-d-foot"><button class="btn btn-main" data-rs-step="-1">&larr; Previous</button><span class="rs-kbd"><kbd>←</kbd> <kbd>→</kbd> to move · <kbd>R</kbd> to mark for reset</span><button class="btn btn-main" data-rs-step="1">Next &rarr;</button></div>`;
+                + `<div class="rs-d-foot"><span class="rs-kbd"><span><kbd>←</kbd> <kbd>→</kbd> to move</span><span>·</span><span><kbd>R</kbd> to mark for reset</span></span></div>`;
         }
 
         function renderResultsSortMenu() {
@@ -6116,6 +6728,7 @@
             detailEl.innerHTML = resultDetailHTML(q);
             detailEl.scrollTop = 0;
             renderMath(detailEl);
+            balanceAnswerHeights(detailEl.querySelectorAll('.rs-opt'));
             document.querySelectorAll('#rs-list .rs-row').forEach(row => row.classList.toggle('sel', +row.dataset.rsNum === resultsSelectedNum));
             const sel = document.querySelector('#rs-list .rs-row.sel');
             if (sel && resultsTab === 'review') sel.scrollIntoView({ block: 'nearest' });
@@ -6142,6 +6755,21 @@
         // Kept under its old name: the LaTeX setting re-renders results through it.
         function renderResultsList() { renderResults(); }
 
+        // Hovering a bar shows its question and time straight away.
+        const rsBarsEl = document.getElementById('rs-bars');
+        rsBarsEl.addEventListener('mouseover', (e) => {
+            const tip = rsBarsEl.querySelector('.rs-bar-tip');
+            if (!tip) return;
+            const bar = e.target.closest('.rs-bar');
+            if (!bar) { tip.classList.remove('on'); return; }
+            tip.textContent = bar.dataset.tip;
+            tip.classList.add('on');
+            const half = tip.offsetWidth / 2;
+            tip.style.left = `${Math.max(half, Math.min(rsBarsEl.clientWidth - half, bar.offsetLeft + bar.offsetWidth / 2))}px`;
+            tip.style.bottom = `calc(${bar.offsetHeight}px + ${bar.querySelector('.rs-ring') ? 1.3 : 0.4}rem)`;
+        });
+        rsBarsEl.addEventListener('mouseleave', () => rsBarsEl.querySelector('.rs-bar-tip')?.classList.remove('on'));
+
         function burstFlame() {
             const fire = document.querySelector('#rs-tiles .rs-stat.fire');
             if (!fire) return;
@@ -6159,6 +6787,7 @@
                 burstFlame();
             } else {
                 trimRowPreviews(document.getElementById('rs-list'));
+                balanceAnswerHeights(document.querySelectorAll('#rs-detail .rs-opt'));
                 const sel = document.querySelector('#rs-list .rs-row.sel');
                 if (sel) sel.scrollIntoView({ block: 'nearest' });
             }
@@ -6196,8 +6825,6 @@
             const sortOpt = e.target.closest('[data-rs-sort]');
             if (sortOpt) { setResultsSort(sortOpt.dataset.rsSort); return; }
             if (e.target.closest('[data-rs-mark]')) { toggleResultMark(resultsSelectedNum); return; }
-            const stepBtn = e.target.closest('[data-rs-step]');
-            if (stepBtn) { stepResult(+stepBtn.dataset.rsStep); return; }
             const item = e.target.closest('[data-rs-num]');
             if (item) { selectResult(+item.dataset.rsNum); return; }
             const jump = e.target.closest('[data-rs-jump]');
@@ -6240,11 +6867,80 @@
             redoSuggestedBtnExt.classList.add('hidden');
             redoQuizBtnExt.classList.add('hidden');
             newQuizBtnExt.classList.add('hidden');
+            exportResultsBtnExt.classList.add('hidden');
         }
+
+        // Export: this round as a JSON file, with each question's length, time and
+        // targets, so reading speed and the slow rule can be checked across quizzes.
+        exportResultsBtnExt.addEventListener('click', () => {
+            const round = lastRoundWasRedo ? 'redo suggested' : resultsReading.state === 'seen' ? 'retake' : 'first go';
+            const result = q => (q.isAnsweredCorrectly === null ? 'unanswered' : q.wasForceCorrected ? 'force-corrected' : q.isAnsweredCorrectly ? 'correct' : 'incorrect');
+            const data = {
+                app: APP_VERSION,
+                exportedAt: new Date().toISOString(),
+                quizType: currentQuizType,
+                round,
+                goldSeconds: paceSeconds('gold'),
+                answeringGoldSeconds: answerGoldSeconds(),
+                answeringGoldShare: Math.round(answerGoldShare * 1000) / 1000,
+                readingWpmUsed: readingWpm() ? Math.round(readingWpm()) : null,
+                readingLearns: readingLearns(),
+                readingWpmMeasured: resultsReading.measured ? Math.round(resultsReading.measured.wpm) : null,
+                questionWpmUsed: questionWpmKnown() ? Math.round(questionWpm()) : null,
+                answerWpmMeasuredYet: storedWpm('readAnswerWpm') !== null,
+                questionWpmMeasured: resultsReading.question ? Math.round(resultsReading.question.wpm) : null,
+                answersAfterReading: revealsAnswers(),
+                mathsMode: quizMathsMode,
+                goldCheckOff: resultsSlow.goldOff,
+                usualPace: resultsSlow.usualPace || null,
+                mathsPace: resultsSlow.mathsPace || null,
+                roundReading: {
+                    textFirstFactor: roundPace.text.first,
+                    textFactorEnd: roundPace.text.points.length ? roundTextFactor() : null,
+                    mathsFirstMs: roundPace.maths.first === null ? null : Math.round(roundPace.maths.first),
+                    mathsReadMsEnd: roundPace.maths.points.length ? Math.round(roundMathsReadMs()) : null,
+                    countdownsRanOut: roundPace.runOuts,
+                },
+                questions: [...originalAllQuestionsData].sort(byResultNum).map(q => ({
+                    number: resultNum(q),
+                    question: q.questionText,
+                    options: q.options ? q.options.map(o => ({ letter: o.letter, text: o.text, correct: !!o.isCorrectOption })) : undefined,
+                    chosen: q.userSelectedOptionLetter || undefined,
+                    blanks: q.blanks ? q.blanks.map(b => ({ answered: b.userAnswer || '', accepted: b.displayAnswers || b.answers })) : undefined,
+                    words: questionWords(q),
+                    questionWords: wordCount(q.questionText),
+                    answerWords: answerWords(q),
+                    readMs: Math.round(q.readMs || 0),
+                    answersShownBy: q.revealedBy || null,
+                    answeringMs: Math.round(timedMs(q)),
+                    maths: hasMaths(q),
+                    result: result(q),
+                    timeMs: q.timeTakenMs || 0,
+                    earlierTimeMs: q.priorTimeMs || 0,
+                    views: (q.revisits || 0) + 1,
+                    redone: !!q.wasRetaken,
+                    wrongEarlier: !!q.wrongBefore,
+                    goldTargetMs: Math.round(goldTargetMs(q)),
+                    slowFromMs: Number.isFinite(slowFromMs(q)) ? Math.round(slowFromMs(q)) : null,
+                    slow: slowReason(q),
+                })),
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const pad = v => String(v).padStart(2, '0');
+            const d = new Date();
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Quiz results ${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}${pad(d.getMinutes())}.json`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+        });
 
         function startParsedQuiz() {
             const shuffleQ = homeState.randomiseQuestions;
             const shuffleA = currentQuizType === 'multiple-choice' && homeState.randomiseAnswers;
+            roundIsFirstGo = true;
             initializeQuiz(originalAllQuestionsData, shuffleQ, shuffleA, false);
         }
 
@@ -6253,6 +6949,10 @@
         // the parse report says so up front when a quiz contains maths.
         const LATEX_SOURCE_PATTERN = /\\\(|\\\[|\$\$/;   // \(  \[  $$
         const DOUBLED_BACKSLASH_PATTERN = /\\\\[([]/;       // \\(  \\[
+        // $...$ doesn't render (a lone $ is currency), so this only matches when it holds
+        // a command, ^ or _, and isn't closed by a $ that starts an amount.
+        const SINGLE_DOLLAR_SOURCE = String.raw`(?<![\\$\w])\$(?![\s$])([^$\n]*?[\\^_][^$\n]*?)(?<![\s\\])\$(?![\d$])`;
+        const SINGLE_DOLLAR_MATHS = new RegExp(SINGLE_DOLLAR_SOURCE);
 
         function collectQuestionStrings(value, out = []) {
             if (typeof value === 'string') out.push(value);
@@ -6270,18 +6970,133 @@
                     '<strong>Maths will show as plain text.</strong> This quiz contains maths, but the maths renderer ' +
                     "couldn't load. It is downloaded from the internet, so check your connection and reload the page." };
             }
-            if (!latexEnabled) {
+            if (!showsMaths()) {
                 return { canFix: true, html:
                     '<strong>Maths will show as plain text.</strong> This quiz contains maths, but ' +
                     'Render LaTeX Maths is turned off (Settings &rarr; Quiz &rarr; Content).' };
             }
-            if (DOUBLED_BACKSLASH_PATTERN.test(text)) {
-                return { canFix: false, html:
-                    "<strong>Some maths won't render.</strong> Part of this quiz writes maths with two backslashes " +
-                    'before the bracket instead of one. Ask the AI to use a single backslash.' };
-            }
             return null;
         }
+
+        // A maths quiz: enough of its questions have maths. Decided when it's pasted, and
+        // the switch in the parse report can override it for this quiz.
+        const MATHS_QUIZ_SHARE = 0.25;
+        const MATHS_QUIZ_MIN = 3;
+        let mathsFixResult = null;
+        const isMathsQuiz = (count, total) => count >= MATHS_QUIZ_MIN && count / total >= MATHS_QUIZ_SHARE;
+
+        const mathsTextSlots = q => [[q, 'questionText'], [q, 'explanation'], [q, 'hint'], ...(q.options || []).map(o => [o, 'text'])]
+            .filter(([o, k]) => typeof o[k] === 'string' && o[k]);
+        const shortMathsSource = text => (text.length > 140 ? `${text.slice(0, 140)}...` : text);
+        // Typesets the text the way the quiz will, then looks at what went wrong.
+        function checkMathText(text) {
+            if (!/\\[()[\]]|\$/.test(text)) return { expressions: 0, problems: [] };
+            const box = document.createElement('div');
+            box.innerHTML = text;
+            // An unknown command doesn't count as an error to KaTeX: it's drawn in the
+            // error colour instead. A colour nothing else uses makes those findable.
+            try { typesetMath(box, '#010203'); } catch (e) { return { expressions: 0, problems: [] }; }
+            const errors = [...box.querySelectorAll('.katex-error')];
+            const problems = errors.map(el => ({
+                type: 'error',
+                note: `Won't render: ${(el.title || '').replace(/^ParseError: KaTeX parse error: /, '').split(' at position')[0].split(' at end of input')[0]}`,
+                raw: shortMathsSource(el.textContent),
+            }));
+            box.querySelectorAll('.katex-html').forEach(html => {
+                const marked = [...html.querySelectorAll('[style*="rgb(1, 2, 3)"]')].filter(el => !el.parentElement.closest('[style*="rgb(1, 2, 3)"]'));
+                if (marked.length) problems.push({ type: 'error', note: "Won't render: unknown command", raw: marked.map(el => el.textContent).join('') });
+            });
+            const expressions = box.querySelectorAll('.katex').length + errors.length;
+            box.querySelectorAll('.katex-display, .katex, .katex-error').forEach(el => el.remove());
+            const left = box.textContent;
+            if (DOUBLED_BACKSLASH_PATTERN.test(left)) {
+                problems.push({ type: 'doubled', note: 'Two backslashes before the bracket', raw: shortMathsSource(left) });
+            } else if (/\\[()[\]]|\$\$/.test(left)) {
+                problems.push({ type: 'unclosed', note: "Maths that isn't closed properly, so it shows as plain text", raw: shortMathsSource(left) });
+            }
+            if (SINGLE_DOLLAR_MATHS.test(left)) {
+                problems.push({ type: 'dollars', note: "Between single $ signs, which don't render", raw: shortMathsSource(left) });
+            }
+            return { expressions, problems };
+        }
+        const canFixMathProblem = problem => problem.type === 'doubled' || problem.type === 'dollars';
+        // \\( x \\) and \\[ x \\], with any doubled commands inside them, and $x^2$.
+        function fixMathText(text) {
+            const halve = (open, close) => (match, inner) => `${open}${inner.replace(/\\\\/g, '\\')}${close}`;
+            return text
+                .replace(/(?<!\\)\\\\\(([^\n]*?)\\\\\)/g, halve('\\(', '\\)'))
+                .replace(/(?<!\\)\\\\\[([^\n]*?)\\\\\]/g, halve('\\[', '\\]'))
+                .replace(new RegExp(SINGLE_DOLLAR_SOURCE, 'g'), (match, inner) => `\\(${inner}\\)`);
+        }
+        function fixMathsProblems() {
+            const fixed = new Set(), failed = new Set();
+            originalAllQuestionsData.forEach(q => mathsTextSlots(q).forEach(([owner, key]) => {
+                const text = owner[key], before = checkMathText(text).problems;
+                if (!before.some(canFixMathProblem)) return;
+                const next = fixMathText(text), after = checkMathText(next).problems;
+                // Kept only if it worked: nothing fixable left, and nothing new broken.
+                if (next !== text && !after.some(canFixMathProblem) && after.length <= before.filter(p => !canFixMathProblem(p)).length) {
+                    owner[key] = next;
+                    quizDataInput.value = quizDataInput.value.split(text).join(next);
+                    fixed.add(q.originalOrder);
+                } else {
+                    failed.add(q.originalOrder);
+                }
+            }));
+            mathsFixResult = { fixed: [...fixed], failed: [...failed] };
+            updateParseReportMaths();
+        }
+        function updateParseReportCheck() {
+            const box = document.getElementById('parse-report-check');
+            box.innerHTML = '';
+            if (!showsMaths() || typeof window.renderMathInElement !== 'function') return;
+            let expressions = 0;
+            const items = [];
+            originalAllQuestionsData.forEach(q => mathsTextSlots(q).forEach(([owner, key]) => {
+                const found = checkMathText(owner[key]);
+                expressions += found.expressions;
+                found.problems.forEach(p => items.push({ ...p, number: q.originalOrder }));
+            }));
+            if (!expressions && !items.length) return;
+            const list = nums => nums.join(', ');
+            const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+            const res = mathsFixResult;
+            const fixedNote = res && res.fixed.length ? `Fixed ${plural(res.fixed.length, 'question')} (${list(res.fixed)}). ` : '';
+            if (!items.length) {
+                // A normal quiz stays quiet unless something's wrong.
+                if (!quizMathsMode && !fixedNote) return;
+                box.innerHTML = `<div class="maths-notice done"><div class="t">✓ ${fixedNote || 'Checked: '}${plural(expressions, 'maths expression')} ${fixedNote ? 'now ' : ''}${expressions === 1 ? 'renders' : 'render'}.</div></div>`;
+                return;
+            }
+            const stuck = new Set(res ? res.failed : []);
+            const fixable = new Set(items.filter(i => canFixMathProblem(i) && !stuck.has(i.number)).map(i => i.number));
+            const worst = new Set(items.map(i => i.number));
+            const failedNote = stuck.size ? `Couldn't fix ${stuck.size === 1 ? 'question' : 'questions'} ${list([...stuck])}. ` : '';
+            const lead = fixedNote || failedNote
+                ? `${fixedNote}${failedNote}<strong>${plural(worst.size, 'question')} still ${worst.size === 1 ? 'has' : 'have'} maths that won't render.</strong> Edit ${worst.size === 1 ? 'it' : 'them'}, or ask the AI for a fresh answer.`
+                : `<strong>${plural(worst.size, 'question')} ${worst.size === 1 ? 'has' : 'have'} maths that won't render.</strong> ${fixable.size ? `${fixable.size === worst.size ? (fixable.size === 1 ? 'It' : 'They') : fixable.size} can be fixed here${fixable.size === worst.size ? '' : `; the ${worst.size - fixable.size === 1 ? 'other needs' : 'others need'} editing or a fresh answer from the AI`}.` : 'Edit the text, or ask the AI for a fresh answer.'}`;
+            box.innerHTML = `<div class="latex-warning stacked"><div class="latex-warning-head"><div class="latex-warning-text">${lead}</div>${fixable.size ? `<button id="parse-report-fix-btn" class="btn btn-blue" type="button">Fix ${fixable.size}</button>` : ''}</div>`
+                + `<div class="maths-issues scrollable-content">${items.map(i => `<div class="maths-issue"><div class="r">Question ${escapeHtml(i.number)} - ${escapeHtml(i.note)}${canFixMathProblem(i) && !stuck.has(i.number) ? '<em>can fix</em>' : ''}</div><code>${escapeHtml(i.raw)}</code></div>`).join('')}</div></div>`;
+            document.getElementById('parse-report-fix-btn')?.addEventListener('click', fixMathsProblems);
+        }
+        function updateParseReportMaths() {
+            const total = originalAllQuestionsData.length, count = originalAllQuestionsData.filter(hasMaths).length;
+            const notice = document.getElementById('parse-report-maths');
+            notice.classList.toggle('hidden', !count);
+            notice.classList.toggle('on', quizMathsMode);
+            document.getElementById('parse-report-maths-switch').setAttribute('aria-checked', String(quizMathsMode));
+            const has = count === 1 ? 'question has' : 'questions have';
+            document.getElementById('parse-report-maths-text').innerHTML = quizMathsMode
+                ? `<strong>Maths quiz.</strong> ${count} of ${total} ${has} maths. Maths is shown as maths for this quiz${latexEnabled ? '' : ' (Render LaTeX Maths stays off for other quizzes)'}, and maths questions get their own warm-ups and pace.`
+                : `<strong>Not a maths quiz.</strong> ${count} of ${total} ${has} maths${isMathsQuiz(count, total) ? '' : ', too few for maths mode'}, so this runs as a normal quiz.`;
+            document.getElementById('parse-report-ask').classList.toggle('hidden', !quizMathsMode || homeState.useLatex);
+            updateParseReportLatexWarning();
+            updateParseReportCheck();
+        }
+        document.getElementById('parse-report-maths-switch').addEventListener('click', () => {
+            quizMathsMode = !quizMathsMode;
+            updateParseReportMaths();
+        });
 
         function updateParseReportLatexWarning() {
             const warning = getLatexWarning(originalAllQuestionsData);
@@ -6296,13 +7111,14 @@
             if (toggle) toggle.checked = true;
             latexEnabled = true;
             localStorage.setItem('latexEnabled', 'true');
-            // Re-check rather than just hiding: a doubled-backslash warning may
-            // still apply once rendering is on.
-            updateParseReportLatexWarning();
+            // Re-check rather than just hiding: the maths check runs once rendering is on.
+            updateParseReportMaths();
         });
 
         function showParseReportModal(report) {
-            updateParseReportLatexWarning();
+            mathsFixResult = null;
+            quizMathsMode = isMathsQuiz(originalAllQuestionsData.filter(hasMaths).length, originalAllQuestionsData.length);
+            updateParseReportMaths();
             const clean = report.failures.length === 0;
             parseReportTitle.classList.toggle('all-good', clean);
             parseReportTitle.textContent = clean
@@ -6361,8 +7177,9 @@
 
         submitAnswerBtn.addEventListener('click', handleNextAction);
 
-        const commonNewQuizLogic = () => { 
+        const commonNewQuizLogic = () => {
             isQuizActive = false; hideExternalResultsButtons();
+            quizMathsMode = false;
             resultsScreen.classList.add('hidden');
             quizScreen.classList.add('hidden'); pauseQuizBtn.classList.add('hidden');
             explanationBtn.classList.add('hidden');
@@ -6875,6 +7692,15 @@ Example Question Formatting:
                 return;
             }
 
+            // Answers still hidden: Space shows them; moving between questions still works.
+            if (gateShown()) {
+                switch (e.key) {
+                    case ' ': case 'Enter': e.preventDefault(); if (!e.repeat) revealAnswers('press'); break;
+                    case 'a': case 'ArrowLeft': e.preventDefault(); if (currentQuestionDisplayOrderIndex > 0) navigateToQuestion(currentQuestionDisplayOrderIndex - 1); break;
+                    case 'd': case 'ArrowRight': e.preventDefault(); if (currentQuestionDisplayOrderIndex < questionOrder.length - 1) navigateToQuestion(currentQuestionDisplayOrderIndex + 1); break;
+                }
+                return;
+            }
             const options = Array.from(currentQuestionDOM.querySelectorAll('.btn-option'));
             if (options.length === 0) return;
             // Keyboard and mouse share one selection state, so the highlighted option
@@ -6920,6 +7746,10 @@ Example Question Formatting:
             silverMedalInput.value = localStorage.getItem('silverMedal') || '84.5';
             bronzeMedalInput.value = localStorage.getItem('bronzeMedal') || '79.5';
             for (const type in PACE_KEYS) ['gold', 'silver', 'bronze'].forEach(medal => { paceInput(type, medal).value = paceSeconds(medal, type); });
+            readingLearnToggle.checked = readingLearns();
+            readingWpmInput.value = storedWpm('readAnswerWpm') ?? '';
+            questionWpmInput.value = storedWpm('readQuestionWpm') ?? '';
+            revealAfterReadingToggle.checked = revealsAnswers();
 
             // MC Settings
             keyboardFunctionsToggle.checked = localStorage.getItem('keyboardFunctions') !== 'false';
@@ -7044,7 +7874,7 @@ Example Question Formatting:
                 paceInput(type, medal).value = t[medal];
             }
             // Recolour the tiles straight away if these results are showing.
-            if (type === currentQuizType && !resultsScreen.classList.contains('hidden')) renderResultsOverview(computeResultStats());
+            if (type === currentQuizType) refreshResultsSlow();
         }
         for (const type in PACE_KEYS) ['gold', 'silver', 'bronze'].forEach(medal => {
             const input = paceInput(type, medal);
@@ -7052,6 +7882,59 @@ Example Question Formatting:
             document.querySelectorAll(`.pace-btn[data-input="${PACE_PREFIX[type]}-${medal}-pace-input"]`).forEach(btn => {
                 btn.addEventListener('click', () => setPaceTimes(type, medal, paceSeconds(medal, type) + (btn.dataset.action === 'plus' ? 1 : -1)));
             });
+        });
+
+        // Slow depends on the gold pace and reading speed, so changing either redraws results.
+        function refreshResultsSlow() {
+            if (resultsScreen.classList.contains('hidden')) return;
+            resultsSlow = computeSlowModel(originalAllQuestionsData);
+            renderResults();
+            updateRedoSuggestedBtn();
+        }
+        const readingLearnToggle = document.getElementById('reading-learn-toggle');
+        const readingWpmInput = document.getElementById('reading-wpm-input');
+        const WPM_INPUTS = { readAnswerWpm: () => readingWpmInput, readQuestionWpm: () => questionWpmInput };
+        const WPM_MAX = { readAnswerWpm: READING_WPM_LIMITS[1], readQuestionWpm: 800 };
+        function storeWpm(key, value) {
+            const v = Math.round(Math.min(WPM_MAX[key], Math.max(READING_WPM_LIMITS[0], value)));
+            localStorage.setItem(key, v);
+            WPM_INPUTS[key]().value = v;
+        }
+        function setWpmByHand(key, value) {
+            if (Number.isNaN(value)) { WPM_INPUTS[key]().value = storedWpm(key) ?? ''; return; }
+            storeWpm(key, value);
+            localStorage.setItem(`${key}From`, Math.max(learnedFrom(key), READING_KNOWN_FROM));
+            refreshResultsSlow();
+        }
+        readingWpmInput.addEventListener('change', () => setWpmByHand('readAnswerWpm', parseFloat(readingWpmInput.value)));
+        // With no speed yet there's nothing to step from, so it asks you to type one.
+        function stepWpm(key, btn) {
+            const now = storedWpm(key);
+            if (now === null) { WPM_INPUTS[key]().focus(); return; }
+            setWpmByHand(key, now + (btn.dataset.action === 'plus' ? 10 : -10));
+        }
+        document.querySelectorAll('.reading-btn').forEach(btn => btn.addEventListener('click', () => stepWpm('readAnswerWpm', btn)));
+        const questionWpmInput = document.getElementById('question-wpm-input');
+        const revealAfterReadingToggle = document.getElementById('reveal-after-reading-toggle');
+        questionWpmInput.addEventListener('change', () => setWpmByHand('readQuestionWpm', parseFloat(questionWpmInput.value)));
+        document.querySelectorAll('.question-wpm-btn').forEach(btn => btn.addEventListener('click', () => stepWpm('readQuestionWpm', btn)));
+        document.getElementById('reset-reading-btn').addEventListener('click', () => {
+            showConfirmationModal(
+                'Reset Reading Speeds?',
+                "This clears both speeds, so they're blank and get measured again from your next quizzes. This action cannot be undone.",
+                () => {
+                    ['readAnswerWpm', 'readAnswerWpmFrom', 'readQuestionWpm', 'readQuestionWpmFrom'].forEach(key => localStorage.removeItem(key));
+                    readingWpmInput.value = '';
+                    questionWpmInput.value = '';
+                    refreshResultsSlow();
+                },
+            );
+        });
+        // Takes effect from the next question shown.
+        revealAfterReadingToggle.addEventListener('change', () => localStorage.setItem('revealAfterReading', revealAfterReadingToggle.checked));
+        readingLearnToggle.addEventListener('change', () => {
+            localStorage.setItem('readingLearn', readingLearnToggle.checked);
+            refreshResultsSlow();
         });
 
         ['gold', 'silver', 'bronze'].forEach(medal => {
@@ -7168,6 +8051,7 @@ Example Question Formatting:
         let heldDeadlineLeftMs = 0;
         function holdQuizForSettings() {
             if (isQuizPaused) return;
+            bankReading();
             const currentQ = getCurrentQuestionData();
             if (currentQ && currentQ.isAnsweredCorrectly === null && questionSpecificTimerStartMs > 0) {
                 currentQ.timeTakenMs = (currentQ.timeTakenMs || 0) + (Date.now() - questionSpecificTimerStartMs);
@@ -7186,6 +8070,7 @@ Example Question Formatting:
             if (currentQ && currentQ.isAnsweredCorrectly === null) {
                 questionSpecificTimerStartMs = Date.now();
                 startTimers(heldDeadlineLeftMs || null);
+                startReading();
             }
         }
 
@@ -7249,6 +8134,7 @@ Example Question Formatting:
             clearTimeout(autoAdvanceTimeout);
             clearTimeout(questionRenderTimeout);
             stopTimers(false);
+            bankReading(true);
             questionSpecificTimerStartMs = 0;   // the in-progress question's time is reset with it
             activeQuizSettings = captureQuizSettings();
             const isMC = currentQuizType === 'multiple-choice';
@@ -7259,6 +8145,10 @@ Example Question Formatting:
                 if (q.isAnsweredCorrectly !== null) return;
                 unansweredSlots.push(slot);
                 q.timeTakenMs = 0;
+                q.readMs = 0;
+                q.priorReadMs = 0;
+                q.revealed = false;
+                q.revealedBy = null;
                 q.status = 'unanswered';
                 q.pendingOptionLetter = null;
                 if (isMC) {
@@ -7401,7 +8291,7 @@ Example Question Formatting:
                             'backgroundType', 'selectedPalette', 'powerSaving',
                             'customPalettes', 'favouritePalettes', 'latexEnabled',
                             'goldMedal', 'silverMedal', 'bronzeMedal', 'paceGold', 'paceSilver', 'paceBronze',
-                            'fitbPaceGold', 'fitbPaceSilver', 'fitbPaceBronze',
+                            'fitbPaceGold', 'fitbPaceSilver', 'fitbPaceBronze', 'readingLearn', 'readAnswerWpm', 'readAnswerWpmFrom', 'readQuestionWpm', 'readQuestionWpmFrom', 'revealAfterReading',
                             'keyboardFunctions', 'autoNextType', 'autoNextDuration', 
                             'clickToSubmit', 'doubleClickToSubmit', 'hideSubmitButton', 
                             'randomiseQuestionOrder', 'randomiseAnswerOrder',
